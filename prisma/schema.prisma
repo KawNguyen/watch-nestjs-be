@@ -1,0 +1,361 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  CUSTOMER
+}
+
+enum UserGender {
+  MALE
+  FEMALE
+}
+
+enum WatchGender {
+  MEN
+  WOMEN
+  UNISEX
+}
+
+// Add this enum before the User model
+enum PaymentMethod {
+  COD
+  MOMO
+}
+
+// Enums for Order Status
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELED
+}
+
+model User {
+  userId       String        @id @default(uuid())
+  email        String        @unique
+  password     String
+  role         UserRole      @default(CUSTOMER)
+  profile      Profile?
+  cart         Cart?
+  orders       Order[]
+  stockEntries StockEntry[]
+  favorites    Favorite[]
+  otp          String?
+  otpExpiry    DateTime?
+  reviews      Review[]
+  couponUsages CouponUsage[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Profile {
+  profileId String      @id @default(uuid())
+  user      User        @relation(fields: [userId], references: [userId])
+  userId    String      @unique
+  name      String
+  avatar    String?
+  phone     String?
+  gender    UserGender?
+  addresses Address[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model Address {
+  id        String   @id @default(uuid())
+  profile   Profile  @relation(fields: [profileId], references: [profileId])
+  profileId String
+  street    String?
+  district  String?
+  ward      String?
+  city      String?
+  country   String?
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Brand Table
+model Brand {
+  brandId   String   @id @default(uuid())
+  slug      String?  @unique
+  code      String   @unique @default(dbgenerated("concat('BR', upper(substring(replace(cast(gen_random_uuid() as varchar), '-', ''), 1, 8)))"))
+  name      String   @unique @db.VarChar(100)
+  country   String?  @db.VarChar(100)
+  logo      String?
+  watches   Watch[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+}
+
+// Material Table (Case Materials)
+model Material {
+  materialId String   @id @default(uuid())
+  slug       String?  @unique
+  code       String   @unique @default(dbgenerated("concat('MT', upper(substring(replace(cast(gen_random_uuid() as varchar), '-', ''), 1, 8)))"))
+  name       String   @unique
+  watches    Watch[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([name])
+}
+
+// Band Material Table
+model BandMaterial {
+  bandMaterialId String   @id @default(uuid())
+  slug           String?  @unique
+  code           String   @unique @default(dbgenerated("concat('BM', upper(substring(replace(cast(gen_random_uuid() as varchar), '-', ''), 1, 8)))"))
+  name           String   @unique
+  watches        Watch[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([name])
+}
+
+// Movement Table
+model Movement {
+  movementId String   @id @default(uuid())
+  slug       String?  @unique
+  code       String   @unique @default(dbgenerated("concat('MV', upper(substring(replace(cast(gen_random_uuid() as varchar), '-', ''), 1, 8)))"))
+  name       String   @unique
+  watches    Watch[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([name])
+}
+
+model Watch {
+  watchId         String        @id @default(uuid())
+  slug            String?       @unique
+  code            String        @unique @default(dbgenerated("concat('W', upper(substring(replace(cast(gen_random_uuid() as varchar), '-', ''), 1, 9)))"))
+  name            String        @db.VarChar(100)
+  description     String?       @db.Text
+  gender          WatchGender   @default(UNISEX)
+  brandId         String
+  brand           Brand         @relation(fields: [brandId], references: [brandId])
+  materialId      String?
+  material        Material?     @relation(fields: [materialId], references: [materialId])
+  bandMaterialId  String?
+  bandMaterial    BandMaterial? @relation(fields: [bandMaterialId], references: [bandMaterialId])
+  movementId      String?
+  movement        Movement?     @relation(fields: [movementId], references: [movementId])
+  diameter        Float?
+  waterResistance Int?
+  warranty        Int           @default(24)
+  videoUrl        String?
+  images          Images[]
+  stockItems      StockItem[]
+  cartItems       CartItem[]
+  orderItems      OrderItem[]
+  quantities      Quantity[]
+  favorites       Favorite[]
+  price           Price[]
+  reviews         Review[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model Quantity {
+  quantityId String   @id @default(uuid())
+  watch      Watch    @relation(fields: [watchId], references: [watchId])
+  watchId    String
+  quantity   Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([watchId])
+}
+
+model Favorite {
+  favoriteId String   @id @default(uuid())
+  user       User     @relation(fields: [userId], references: [userId])
+  userId     String
+  watch      Watch    @relation(fields: [watchId], references: [watchId])
+  watchId    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, watchId])
+  @@index([userId])
+  @@index([watchId])
+}
+
+// Image Table (Watch Images)
+model Images {
+  imageId       String   @id @default(uuid())
+  poster_url    String
+  thumbnail_url String
+  watch         Watch    @relation(fields: [watchId], references: [watchId])
+  watchId       String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// Cart Table (User Shopping Cart)
+model Cart {
+  cartId    String     @id @default(uuid())
+  user      User       @relation(fields: [userId], references: [userId])
+  userId    String     @unique
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+// Cart Item Table (Items in Cart)
+model CartItem {
+  cartItemid String   @id @default(uuid())
+  cart       Cart     @relation(fields: [cartId], references: [cartId])
+  cartId     String
+  watch      Watch    @relation(fields: [watchId], references: [watchId])
+  watchId    String
+  quantity   Int      @default(1)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// Stock Entry Table
+model StockEntry {
+  stockEntryId String      @id @default(uuid())
+  addedBy      User        @relation(fields: [addedById], references: [userId])
+  addedById    String
+  items        StockItem[]
+  totalPrice   Float // Add total price for entire stock entry
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+// Stock Item Table
+model StockItem {
+  stockItemId  String     @id @default(uuid())
+  stockEntry   StockEntry @relation(fields: [stockEntryId], references: [stockEntryId])
+  stockEntryId String
+  watch        Watch      @relation(fields: [watchId], references: [watchId])
+  watchId      String
+  quantity     Int        @default(1)
+  price        Float // Add price per unit
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+// Order Table
+model Order {
+  orderId       String        @id @default(uuid())
+  user          User          @relation(fields: [userId], references: [userId])
+  userId        String
+  address       Address?      @relation(fields: [addressId], references: [id])
+  addressId     String?
+  items         OrderItem[]
+  paymentMethod PaymentMethod @default(COD)
+  coupon        Coupon?       @relation(fields: [couponId], references: [couponId])
+  shippingNotes String?
+  couponId      String?
+  orginalPrice  Float
+  totalPrice    Float
+  status        OrderStatus   @default(PENDING)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+// Order Item Table
+model OrderItem {
+  orderItemId String @id @default(uuid())
+  order       Order  @relation(fields: [orderId], references: [orderId])
+  orderId     String
+  watch       Watch  @relation(fields: [watchId], references: [watchId])
+  watchId     String
+  quantity    Int    @default(1)
+  price       Float
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Price {
+  priceId   String    @id @default(uuid())
+  watch     Watch     @relation(fields: [watchId], references: [watchId])
+  watchId   String
+  value     Float
+  startDate DateTime  @default(now())
+  endDate   DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([watchId])
+}
+
+model Review {
+  reviewId  String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [userId])
+  userId    String
+  watch     Watch    @relation(fields: [watchId], references: [watchId])
+  watchId   String
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([watchId])
+}
+
+model Coupon {
+  couponId      String        @id @default(uuid())
+  code          String        @unique
+  description   String?
+  discountType  String // 'PERCENT' hoặc 'AMOUNT' không cần thiết lắm
+  discountValue Float
+  minOrderValue Float? // không cần thiết lắm
+  count         Int? // số lượng mã giảm giá có thể sử dụng
+  usedCount     Int           @default(0)
+  startDate     DateTime
+  endDate       DateTime
+  orders        Order[]
+  couponUsage   CouponUsage[]
+  isActive      Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Ads {
+  adsId     String   @id @default(uuid())
+  title     String
+  content   String?
+  imageUrl  String?
+  link      String?
+  isActive  Boolean  @default(true)
+  startDate DateTime
+  endDate   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CouponUsage {
+  couponUsageId String   @id @default(uuid())
+  user          User     @relation(fields: [userId], references: [userId])
+  userId        String
+  coupon        Coupon   @relation(fields: [couponId], references: [couponId])
+  couponId      String
+  usedAt        DateTime @default(now())
+
+  @@unique([userId, couponId])
+}
