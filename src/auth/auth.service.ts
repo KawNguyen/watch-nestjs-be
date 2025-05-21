@@ -32,7 +32,7 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+    const otpExpiry = new Date(Date.now() + 3 * 60 * 1000);
 
     const user = await this.prisma.user.create({
       data: {
@@ -100,7 +100,7 @@ export class AuthService {
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+    const otpExpiry = new Date(Date.now() + 3 * 60 * 1000);
 
     await this.prisma.user.update({
       where: { email },
@@ -120,7 +120,7 @@ export class AuthService {
       from: process.env.EMAIL_USER,
       to: email,
       subject: 'OTP Verification Code',
-      text: `Your OTP code is: ${otp}. This code will expire in 10 minutes.`,
+      text: `Your OTP code is: ${otp}. This code will expire in 3 minutes.`,
     });
   }
 
