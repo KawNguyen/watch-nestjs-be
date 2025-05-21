@@ -400,7 +400,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\Admin\\Desktop\\watch-nestjs\\generated\\prisma",
+      "value": "E:\\ProjectGitHub\\watch-nestjs-be\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -414,7 +414,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\Admin\\Desktop\\watch-nestjs\\prisma\\schema.prisma",
+    "sourceFilePath": "E:\\ProjectGitHub\\watch-nestjs-be\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
