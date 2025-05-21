@@ -93,12 +93,20 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    const token = this.jwtService.sign({
-      userId: user.userId,
-      email: user.email,
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+
+    await this.prisma.user.update({
+      where: { email },
+      data: {
+        otp,
+        otpExpiry,
+      },
     });
 
-    return { token };
+    await this.sendOtpEmail(email, otp);
+
+    return { message: 'Please check your email for OTP.' };
   }
 
   private async sendOtpEmail(email: string, otp: string) {
