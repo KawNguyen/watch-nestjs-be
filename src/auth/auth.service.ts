@@ -60,6 +60,12 @@ export class AuthService {
   async verifyOtp(email: string, otp: string) {
     const user = await this.prisma.user.findUnique({
       where: { email },
+      include: { profile: {
+        select: {
+          avatar: true,
+          name: true,
+        }
+      } },
     });
 
     if (
