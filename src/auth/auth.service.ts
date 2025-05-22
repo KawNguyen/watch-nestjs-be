@@ -1,9 +1,10 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { profile } from 'console';
 import * as nodemailer from 'nodemailer';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { UserService } from 'src/user/user.service';
+import { CreateUserDto } from 'src/user/dto/user.dto';
 
 @Injectable()
 export class AuthService {
@@ -12,6 +13,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private userService: UserService,
   ) {
     this.transporter = nodemailer.createTransport({
       service: 'gmail',
@@ -22,16 +24,20 @@ export class AuthService {
     });
   }
 
-  async register(email: string, password: string) {
+  async register(
+    firstName: string,
+    lastName: string,
+    email: string,
+    password: string,
+  ) {
     const existingUser = await this.prisma.user.findUnique({
       where: { email },
     });
     if (existingUser) {
-      throw new UnauthorizedException('The email is already registered');
+      throw new UnauthorizedException('Email này đã được đăng ký');
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const otpExpiry = new Date(Date.now() + 3 * 60 * 1000);
 
@@ -39,7 +45,8 @@ export class AuthService {
       data: {
         profile: {
           create: {
-            name: email.split('@')[0],
+            firstName,
+            lastName,
           },
         },
         email,
@@ -52,8 +59,7 @@ export class AuthService {
     await this.sendOtpEmail(email, otp);
 
     return {
-      message:
-        'Registration successful. Please check your email for verification.',
+      message: 'Đăng ký thành công. Vui lòng kiểm tra email để xác thực.',
       userId: user.userId,
     };
   }
@@ -62,10 +68,11 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({
       where: { email },
       include: {
+        
         profile: {
           select: {
-            avatar: true,
-            name: true,
+            firstName: true,
+            lastName: true,
           },
         },
       },
@@ -77,7 +84,7 @@ export class AuthService {
       !user.otpExpiry ||
       new Date() > user.otpExpiry
     ) {
-      throw new UnauthorizedException('Invalid or expired OTP ');
+      throw new UnauthorizedException('OTP is invalid or has expired');
     }
 
     await this.prisma.user.update({
@@ -85,12 +92,9 @@ export class AuthService {
       data: { otp: null, otpExpiry: null },
     });
 
-    const token = this.jwtService.sign({
-      userId: user.userId,
-      email: user.email,
-    });
+    const accessToken = await this.generateToken(user.userId, user.email);
 
-    return { token, user: { ...user, password: undefined } };
+    return {user: { ...user, accessToken, otp:undefined, otpExpiry:undefined, updateAt: undefined, createAt: undefined, password: undefined } };
   }
 
   async login(email: string, password: string) {
@@ -99,7 +103,7 @@ export class AuthService {
     });
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new UnauthorizedException('Email or password is incorrect');
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -115,70 +119,40 @@ export class AuthService {
 
     await this.sendOtpEmail(email, otp);
 
-    return { message: 'Please check your email for OTP.' };
+    return { message: 'Please check your mail for OTP' };
   }
 
   private async sendOtpEmail(email: string, otp: string) {
     await this.transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: email,
-      subject: 'OTP Verification Code',
-      text: `Your OTP code is: ${otp}. This code will expire in 3 minutes.`,
+      subject: 'OTP Verification',
+      text: `Your OTP is: ${otp}, expires in 3 minutes`,
     });
   }
 
-  async googleLogin(user: any) {
+  async loginGoogle(email: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
     if (!user) {
-      throw new UnauthorizedException('No user from Google');
+      throw new UnauthorizedException('User not found');
     }
 
-    let existingUser = await this.prisma.user.findUnique({
-      where: { email: user.email },
-      include: {
-        profile: {
-          select: {
-            avatar: true,
-            name: true,
-          },
-        },
-      },
-    });
+    const accessToken = await this.generateToken(email, user?.userId);
 
-    if (!existingUser) {
-      existingUser = await this.prisma.user.create({
-        data: {
-          email: user.email,
-          password: '', // Không cần password cho Google login
-          profile: {
-            create: {
-              name: `${user.firstName} ${user.lastName}`,
-              avatar: user.picture,
-            },
-          },
-        },
-        include: {
-          profile: {
-            select: {
-              avatar: true,
-              name: true,
-            },
-          },
-        },
-      });
-    }
+    return { user: { ...user, accessToken } };
+  }
 
-    const token = this.jwtService.sign({
-      userId: existingUser.userId,
-      email: existingUser.email,
-    });
+  async validateGoogleUser(googleUser: CreateUserDto) {
+    const user = await this.userService.findByEmail(googleUser.email);
+    if (!user) return this.userService.create(googleUser);
+    return user;
+  }
 
-    return { 
-      token, 
-      user: {
-        userId: existingUser.userId,
-        email: existingUser.email,
-        profile: existingUser.profile,
-      }
-    };
+  async generateToken(userId: string, email: string) {
+    const payload = { userId, email };
+    return await this.jwtService.signAsync(payload);
   }
 }

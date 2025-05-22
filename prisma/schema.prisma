@@ -47,8 +47,10 @@ enum OrderStatus {
 
 model User {
   userId       String        @id @default(uuid())
+  avatar       String?
   email        String        @unique
   password     String
+  accessToken  String?
   role         UserRole      @default(CUSTOMER)
   profile      Profile?
   cart         Cart?
@@ -67,8 +69,8 @@ model Profile {
   profileId String      @id @default(uuid())
   user      User        @relation(fields: [userId], references: [userId])
   userId    String      @unique
-  name      String
-  avatar    String?
+  firstName String      @default("")
+  lastName  String      @default("")
   phone     String?
   gender    UserGender?
   addresses Address[]

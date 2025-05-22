@@ -1,25 +1,53 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsEmail, IsNotEmpty, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+import { AddressDto, UserProfileDto } from '../../user/dto/user.dto';
 
 export class RegisterDto {
-  @ApiProperty({ example: 'user@example.com' })
+  @IsString()
+  @IsNotEmpty()
+  firstName: string;
+
+  @IsString()
+  @IsNotEmpty()
+  lastName: string;
+
+  @IsEmail()
+  @IsNotEmpty()
   email: string;
 
-  @ApiProperty({ example: '123456' })
+  @IsString()
+  @IsNotEmpty()
   password: string;
+
+  @IsString()
+  @IsNotEmpty()
+  avatar?: string;
+
+  @ValidateNested()
+  @Type(() => UserProfileDto)
+  profile?: UserProfileDto;
+
+  @ValidateNested()
+  @Type(() => AddressDto)
+  address?: AddressDto;
 }
 
 export class LoginDto {
-  @ApiProperty({ example: 'user@example.com' })
+  @IsEmail()
+  @IsNotEmpty()
   email: string;
 
-  @ApiProperty({ example: '123456' })
+  @IsString()
+  @IsNotEmpty()
   password: string;
 }
 
 export class VerifyOtpDto {
-  @ApiProperty({ example: 'user@example.com' })
+  @IsEmail()
+  @IsNotEmpty()
   email: string;
 
-  @ApiProperty({ example: '123456' })
+  @IsString()
+  @IsNotEmpty()
   otp: string;
 }

@@ -1,8 +1,16 @@
-import { Controller, Post, Body, Get, UseGuards, Req } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  UseGuards,
+  Req,
+  Res,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { RegisterDto, LoginDto, VerifyOtpDto } from './dto/auth.dto';
-import { AuthGuard } from '@nestjs/passport';
+import { GoogleAuthGuard } from './guards/google-auth/google-auth.guard';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -14,7 +22,12 @@ export class AuthController {
   @ApiResponse({ status: 201, description: 'Registration successful' })
   @ApiResponse({ status: 400, description: 'Bad request' })
   async register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto.email, registerDto.password);
+    return this.authService.register(
+      registerDto.firstName,
+      registerDto.lastName,
+      registerDto.email,
+      registerDto.password,
+    );
   }
 
   @Post('verify-otp')
@@ -33,26 +46,30 @@ export class AuthController {
     return this.authService.login(loginDto.email, loginDto.password);
   }
 
-  @Get('google')
+  @Get('google/login')
   @ApiOperation({ summary: 'Google OAuth2 Login' })
   @ApiResponse({ status: 200, description: 'Redirect to Google login page' })
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(GoogleAuthGuard)
   async googleAuth(@Req() req) {
     // This route will be handled by Passport.js
-    
   }
 
   @Get('google/callback')
   @ApiOperation({ summary: 'Google OAuth2 Callback' })
   @ApiResponse({ status: 200, description: 'Login successful with Google' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @UseGuards(AuthGuard('google'))
-  async googleAuthRedirect(@Req() req) {
-    try{
-      return await this.authService.googleLogin(req.user);
-    }catch(error){
-      console.error(error);
-      return error;
-    }
+  @UseGuards(GoogleAuthGuard)
+  async googleAuthRedirect(@Req() req, @Res() res) {
+    const response = await this.authService.loginGoogle(req.user.email);
+    console.log(response)
+
+    res.cookie('accessToken', response.user.accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite:'strict',
+      maxAge: 3600000,
+    });
+
+    res.redirect(`http://localhost:3001`);
   }
 }
