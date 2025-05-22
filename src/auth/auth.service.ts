@@ -1,6 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { profile } from 'console';
 import * as nodemailer from 'nodemailer';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -60,12 +61,14 @@ export class AuthService {
   async verifyOtp(email: string, otp: string) {
     const user = await this.prisma.user.findUnique({
       where: { email },
-      include: { profile: {
-        select: {
-          avatar: true,
-          name: true,
-        }
-      } },
+      include: {
+        profile: {
+          select: {
+            avatar: true,
+            name: true,
+          },
+        },
+      },
     });
 
     if (
@@ -131,17 +134,33 @@ export class AuthService {
 
     let existingUser = await this.prisma.user.findUnique({
       where: { email: user.email },
+      include: {
+        profile: {
+          select: {
+            avatar: true,
+            name: true,
+          },
+        },
+      },
     });
 
     if (!existingUser) {
       existingUser = await this.prisma.user.create({
         data: {
           email: user.email,
-          password: '', // Google users don't need password
+          password: '', // Không cần password cho Google login
           profile: {
             create: {
               name: `${user.firstName} ${user.lastName}`,
               avatar: user.picture,
+            },
+          },
+        },
+        include: {
+          profile: {
+            select: {
+              avatar: true,
+              name: true,
             },
           },
         },
@@ -153,6 +172,13 @@ export class AuthService {
       email: existingUser.email,
     });
 
-    return { token };
+    return { 
+      token, 
+      user: {
+        userId: existingUser.userId,
+        email: existingUser.email,
+        profile: existingUser.profile,
+      }
+    };
   }
 }

@@ -1,15 +1,13 @@
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, VerifyCallback } from 'passport-google-oauth20';
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
-  constructor(private configService: ConfigService) {
+  constructor() {
     super({
-      passReqToCallback: true,
-      clientID: configService.get<string>('GOOGLE_CLIENT_ID') || '',
-      clientSecret: configService.get<string>('GOOGLE_CLIENT_SECRET') || '',
+      clientID: process.env.GOOGLE_CLIENT_ID || '',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
       callbackURL: 'http://localhost:3000/auth/google/callback',
       scope: ['email', 'profile'],
     });
@@ -21,14 +19,19 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     profile: any,
     done: VerifyCallback,
   ): Promise<any> {
-    const { name, emails, photos } = profile;
-    const user = {
-      email: emails[0].value,
-      firstName: name.givenName,
-      lastName: name.familyName,
-      picture: photos[0].value,
-      accessToken,
-    };
-    done(null, user);
+    try {
+      // Kiểm tra và xử lý dữ liệu an toàn hơn
+      const user = {
+        email: profile.emails?.[0]?.value || '',
+        firstName: profile._json?.given_name || '',
+        lastName: profile._json?.family_name || '',
+        picture: profile._json?.picture || '',
+      };
+
+      done(null, user);
+    } catch (error) {
+      console.error('Google Strategy Validation Error:', error);
+      done(error, false);
+    }
   }
 }

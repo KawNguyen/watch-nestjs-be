@@ -37,7 +37,10 @@ export class AuthController {
   @ApiOperation({ summary: 'Google OAuth2 Login' })
   @ApiResponse({ status: 200, description: 'Redirect to Google login page' })
   @UseGuards(AuthGuard('google'))
-  async googleAuth(@Req() req) {}
+  async googleAuth(@Req() req) {
+    // This route will be handled by Passport.js
+    
+  }
 
   @Get('google/callback')
   @ApiOperation({ summary: 'Google OAuth2 Callback' })
@@ -45,6 +48,11 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req) {
-    return this.authService.googleLogin(req.user);
+    try{
+      return await this.authService.googleLogin(req.user);
+    }catch(error){
+      console.error(error);
+      return error;
+    }
   }
 }
