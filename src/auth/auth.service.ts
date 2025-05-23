@@ -59,7 +59,7 @@ export class AuthService {
     await this.sendOtpEmail(email, otp);
 
     return {
-      message: 'Đăng ký thành công. Vui lòng kiểm tra email để xác thực.',
+      message: 'Please check your mail for OTP',
       userId: user.userId,
     };
   }
@@ -67,15 +67,15 @@ export class AuthService {
   async verifyOtp(email: string, otp: string) {
     const user = await this.prisma.user.findUnique({
       where: { email },
-      include: {
-        
-        profile: {
-          select: {
-            firstName: true,
-            lastName: true,
-          },
-        },
-      },
+      // include: {
+      //   profile: {
+      //     select: {
+      //       firstName: true,
+      //       lastName: true,
+      //       avatar: true,
+      //     },
+      //   },
+      // },
     });
 
     if (
@@ -94,7 +94,19 @@ export class AuthService {
 
     const accessToken = await this.generateToken(user.userId, user.email);
 
-    return {user: { ...user, accessToken, otp:undefined, otpExpiry:undefined, updateAt: undefined, createAt: undefined, password: undefined } };
+
+    return {
+      // user: {
+      //   ...user,
+      //   accessToken,
+      //   otp: undefined,
+      //   otpExpiry: undefined,
+      //   updatedAt: undefined,
+      //   createdAt: undefined,
+      //   password: undefined,
+      // },
+      accessToken,
+    };
   }
 
   async login(email: string, password: string) {
@@ -154,5 +166,15 @@ export class AuthService {
   async generateToken(userId: string, email: string) {
     const payload = { userId, email };
     return await this.jwtService.signAsync(payload);
+  }
+
+  async logout(userId: string) {
+    // Xử lý logic đăng xuất ở đây
+    // Ví dụ: Xóa token khỏi cơ sở dữ liệu hoặc thực hiện các thao tác 
+    const user = await this.prisma.user.update({
+      where: { userId },
+      data: { accessToken: null },
+    })
+    return user;
   }
 }

@@ -50,6 +50,9 @@ export class UserService {
       where: {
         userId,
       },
+      include: {
+        profile: true,
+      }
     });
 
     if (!user) {

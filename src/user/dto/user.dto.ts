@@ -8,22 +8,27 @@ export class AddressDto {
 
   @IsString()
   @IsNotEmpty()
-  city: string;
+  district: string;
+  
+  @IsString()
+  @IsNotEmpty()
+  ward: string;
 
   @IsString()
   @IsNotEmpty()
-  state: string;
+  city: string;
 
   @IsString()
   @IsNotEmpty()
   country: string;
 
-  @IsString()
-  @IsOptional()
-  postalCode?: string;
 }
 
 export class UserProfileDto {
+  @IsString()
+  @IsOptional()
+  avatar?: string;
+  
   @IsString()
   @IsNotEmpty()
   firstName: string;
@@ -50,10 +55,6 @@ export class CreateUserDto {
   @IsString()
   @IsNotEmpty()
   password: string;
-
-  @IsString()
-  @IsOptional()
-  avatar?: string;
 
   @ValidateNested()
   @Type(() => UserProfileDto)

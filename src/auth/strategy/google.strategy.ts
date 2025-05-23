@@ -40,8 +40,8 @@ export class GoogleStrategy extends PassportStrategy(Strategy) {
         profile: {
           firstName: profile._json?.given_name || '',
           lastName: profile._json?.family_name || '',
+          avatar: profile._json?.picture || '',
         },
-        avatar: profile._json?.picture || '',
         password: '',
       });
 

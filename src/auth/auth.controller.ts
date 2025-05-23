@@ -34,8 +34,15 @@ export class AuthController {
   @ApiOperation({ summary: 'Verify OTP code' })
   @ApiResponse({ status: 200, description: 'OTP verified successfully' })
   @ApiResponse({ status: 401, description: 'Invalid OTP' })
-  async verifyOtp(@Body() verifyOtpDto: VerifyOtpDto) {
-    return this.authService.verifyOtp(verifyOtpDto.email, verifyOtpDto.otp);
+  async verifyOtp(@Body() verifyOtpDto: VerifyOtpDto, @Res() res) {
+    const accessToken = this.authService.verifyOtp(verifyOtpDto.email, verifyOtpDto.otp);
+
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite:'strict',
+      maxAge: 3600000 * 24,
+    })
   }
 
   @Post('login')
