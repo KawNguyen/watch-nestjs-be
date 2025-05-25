@@ -94,7 +94,6 @@ export class AuthService {
 
     const accessToken = await this.generateToken(user.userId, user.email);
 
-
     return {
       // user: {
       //   ...user,
@@ -105,6 +104,8 @@ export class AuthService {
       //   createdAt: undefined,
       //   password: undefined,
       // },
+      message: 'Login successfully',
+      userId: user.userId,
       accessToken,
     };
   }
@@ -170,11 +171,11 @@ export class AuthService {
 
   async logout(userId: string) {
     // Xử lý logic đăng xuất ở đây
-    // Ví dụ: Xóa token khỏi cơ sở dữ liệu hoặc thực hiện các thao tác 
+    // Ví dụ: Xóa token khỏi cơ sở dữ liệu hoặc thực hiện các thao tác
     const user = await this.prisma.user.update({
       where: { userId },
       data: { accessToken: null },
-    })
+    });
     return user;
   }
 }

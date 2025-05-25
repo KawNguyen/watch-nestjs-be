@@ -402,7 +402,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "E:\\ProjectGitHub\\watch-nestjs-be\\generated\\prisma",
+      "value": "C:\\Users\\Admin\\Desktop\\watch-nestjs\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -416,7 +416,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "E:\\ProjectGitHub\\watch-nestjs-be\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Users\\Admin\\Desktop\\watch-nestjs\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -430,6 +430,7 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
+  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {

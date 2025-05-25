@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -34,25 +34,46 @@ export class UserService {
     });
   }
 
-  async findOne(id: string) {
-    return this.prisma.user.findUnique({
-      where: {
-        userId: id,
-      },
-      include: {
-        profile: true,
-      },
-    });
-  }
-
-  async update(userId: string, updateUserDto: UpdateUserDto) {
+  async findOne(userId: string, requesterId: string) {
+    if (userId !== requesterId) {
+      throw new ForbiddenException(
+        'You do not have permission to view this profile',
+      );
+    }
     const user = await this.prisma.user.findUnique({
       where: {
         userId,
       },
       include: {
         profile: true,
-      }
+      },
+    });
+
+    if (!user) {
+      return null;
+    }
+
+    return user;
+  }
+
+  async update(
+    userId: string,
+    updateUserDto: UpdateUserDto,
+    requesterId: string,
+  ) {
+    if (userId !== requesterId) {
+      throw new ForbiddenException(
+        'You do not have permission to update this profile',
+      );
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: {
+        userId,
+      },
+      include: {
+        profile: true,
+      },
     });
 
     if (!user) {
@@ -73,7 +94,13 @@ export class UserService {
     });
   }
 
-  async remove(userId: string) {
+  async remove(userId: string, requesterId: string) {
+    if (userId !== requesterId) {
+      throw new ForbiddenException(
+        'You do not have permission to delete this profile',
+      );
+    }
+
     return this.prisma.user.delete({
       where: { userId },
     });

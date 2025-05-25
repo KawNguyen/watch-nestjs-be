@@ -9,20 +9,13 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import googleAuthConfig from './config/google-auth.config';
 import { UserService } from 'src/user/user.service';
+import jwtConfig from './config/jwt.config';
 
 @Module({
   imports: [
     PassportModule,
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        secret: configService.get('JWT_SECRET'),
-        signOptions: {
-          expiresIn: configService.get('JWT_EXPIRES_IN', '1d'),
-        },
-      }),
-      inject: [ConfigService],
-    }),
+    JwtModule.registerAsync(jwtConfig.asProvider()),
+    ConfigModule.forFeature(jwtConfig),
     ConfigModule.forFeature(googleAuthConfig),
   ],
   providers: [
