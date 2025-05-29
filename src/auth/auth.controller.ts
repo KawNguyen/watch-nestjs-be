@@ -13,13 +13,18 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { RegisterDto, LoginDto, VerifyOtpDto } from './dto/auth.dto';
 import { GoogleAuthGuard } from './guards/google-auth/google-auth.guard';
-import { LocalAuthGuard } from './guards/local-auth/local-auth.guard';
+import { ConfigService } from '@nestjs/config';
+import { Public } from './decorators/public.decorators';
 
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
-
+  constructor(
+    private authService: AuthService,
+    private configService: ConfigService,
+  ) {}
+  
+  @Public()
   @Post('register')
   @ApiOperation({ summary: 'Register new user' })
   @ApiResponse({ status: 201, description: 'Registration successful' })
@@ -33,6 +38,7 @@ export class AuthController {
     );
   }
 
+  @Public()
   @Post('verify-otp')
   @ApiOperation({ summary: 'Verify OTP code' })
   @ApiResponse({ status: 200, description: 'OTP verified successfully' })
@@ -45,31 +51,25 @@ export class AuthController {
 
     res.cookie('accessToken', response.accessToken, {
       httpOnly: true,
-      secure: true,
+      secure: this.configService.get('NODE_ENV') === 'production',
       sameSite: 'strict',
       maxAge: 3600000 * 24,
     });
 
-    res
-      .status(200)
-      .json({ message: 'OTP verified successfully', userId: response.userId });
+    res.status(200).json({ message: 'OTP verified successfully' });
   }
 
+  @Public()
   @Post('login')
   @ApiOperation({ summary: 'User login' })
   @ApiResponse({ status: 200, description: 'Login successful' })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
   async login(@Res() res, @Body() loginDto: LoginDto) {
-    await this.authService.login(loginDto.email, loginDto.password);
-
-    // res.cookie('accessToken', response.user.accessToken, {
-    //   httpOnly: true,
-    //   secure: false,
-    //   sameSite: 'strict',
-    //   maxAge: 3600000 * 1,
-    // });
-
-    // res.status(200).json({ message: 'Login successful' });
+    const response = await this.authService.login(
+      loginDto.email,
+      loginDto.password,
+    );
+    res.status(200).json({ message: response.message });
   }
 
   @Post('logout')
@@ -81,12 +81,15 @@ export class AuthController {
     res.status(200).json({ message: 'Logout successful' });
   }
 
+
+  @Public()
   @Get('google/login')
   @ApiOperation({ summary: 'Google OAuth2 Login' })
   @ApiResponse({ status: 200, description: 'Redirect to Google login page' })
   @UseGuards(GoogleAuthGuard)
   async googleAuth() {}
 
+  @Public()
   @Get('google/callback')
   @ApiOperation({ summary: 'Google OAuth2 Callback' })
   @ApiResponse({ status: 200, description: 'Login successful with Google' })
@@ -95,9 +98,9 @@ export class AuthController {
   async googleAuthRedirect(@Req() req, @Res() res) {
     const response = await this.authService.loginGoogle(req.user.email);
 
-    res.cookie('accessToken', response.user.accessToken, {
+    res.cookie('accessToken', response.accessToken, {
       httpOnly: true,
-      secure: true,
+      secure: this.configService.get('NODE_ENV') === 'production',
       sameSite: 'strict',
       maxAge: 3600000,
     });

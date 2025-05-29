@@ -1,41 +1,45 @@
 import {
   Controller,
   Get,
-  Post,
   Body,
   Patch,
   Param,
   Delete,
-  UseGuards,
   Req,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/user.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth/jwt-auth.guard';
+import { Public } from 'src/auth/decorators/public.decorators';
 
 @ApiTags('User')
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @Public()
   @ApiOperation({ summary: 'Get all user' })
-  @UseGuards(JwtAuthGuard)
   @Get()
   findAll() {
     return this.userService.findAll();
   }
 
+  @ApiOperation({ summary: 'Get user was login' })
+  @Get('me')
+  findMe(@Req() req: Request) {
+    const userId = (req as any).user.userId;
+    return this.userService.findMe(userId);
+  }
+
   @ApiOperation({ summary: 'Get user by id' })
-  @UseGuards(JwtAuthGuard)
   @Get(':userId')
   findOne(@Param('userId') userId: string, @Req() req: Request) {
     const requesterId = (req as any).user.userId;
-    return this.userService.findOne(userId, requesterId);
+    const requesterRole = (req as any).user.role;
+    return this.userService.findOne(userId, requesterId, requesterRole);
   }
 
   @ApiOperation({ summary: 'Update user' })
-  @UseGuards(JwtAuthGuard)
   @Patch('update/:userId')
   update(
     @Param('userId') userId: string,
@@ -47,7 +51,6 @@ export class UserController {
   }
 
   @ApiOperation({ summary: 'Delete user' })
-  @UseGuards(JwtAuthGuard)
   @Delete('delete/:userId')
   remove(@Param('userId') id: string, @Req() req: Request) {
     const requesterId = (req as any).user.userId;

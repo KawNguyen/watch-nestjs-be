@@ -45,7 +45,8 @@ export class GoogleStrategy extends PassportStrategy(Strategy) {
         password: '',
       });
 
-      done(null, user);
+      // done(null, user);
+      return user
     } catch (error) {
       console.error('Google Strategy Validation Error:', error);
       done(error, false);

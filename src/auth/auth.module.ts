@@ -6,7 +6,7 @@ import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategy/jwt.strategy';
 import { GoogleStrategy } from './strategy/google.strategy';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import googleAuthConfig from './config/google-auth.config';
 import { UserService } from 'src/user/user.service';
 import jwtConfig from './config/jwt.config';

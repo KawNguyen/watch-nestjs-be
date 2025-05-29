@@ -1,4 +1,4 @@
-import { ConfigService, registerAs } from '@nestjs/config';
+import { registerAs } from '@nestjs/config';
 import { JwtModuleOptions } from '@nestjs/jwt';
 
 export default registerAs(

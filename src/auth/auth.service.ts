@@ -67,15 +67,6 @@ export class AuthService {
   async verifyOtp(email: string, otp: string) {
     const user = await this.prisma.user.findUnique({
       where: { email },
-      // include: {
-      //   profile: {
-      //     select: {
-      //       firstName: true,
-      //       lastName: true,
-      //       avatar: true,
-      //     },
-      //   },
-      // },
     });
 
     if (
@@ -92,20 +83,14 @@ export class AuthService {
       data: { otp: null, otpExpiry: null },
     });
 
-    const accessToken = await this.generateToken(user.userId, user.email);
+    const accessToken = await this.generateToken(
+      user.userId,
+      user.email,
+      user.role,
+    );
 
     return {
-      // user: {
-      //   ...user,
-      //   accessToken,
-      //   otp: undefined,
-      //   otpExpiry: undefined,
-      //   updatedAt: undefined,
-      //   createdAt: undefined,
-      //   password: undefined,
-      // },
       message: 'Login successfully',
-      userId: user.userId,
       accessToken,
     };
   }
@@ -147,15 +132,31 @@ export class AuthService {
   async loginGoogle(email: string) {
     const user = await this.prisma.user.findUnique({
       where: { email },
+      include: {
+        profile: {
+          select: {
+            firstName: true,
+            lastName: true,
+            avatar: true,
+          },
+        },
+      },
     });
 
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
 
-    const accessToken = await this.generateToken(email, user?.userId);
+    const accessToken = await this.generateToken(
+      user?.userId,
+      email,
+      user?.role,
+    );
 
-    return { user: { ...user, accessToken } };
+    return {
+      message: 'Login successfully with Google',
+      accessToken,
+    };
   }
 
   async validateGoogleUser(googleUser: CreateUserDto) {
@@ -164,14 +165,12 @@ export class AuthService {
     return user;
   }
 
-  async generateToken(userId: string, email: string) {
-    const payload = { userId, email };
-    return await this.jwtService.signAsync(payload);
+  async generateToken(userId: string, email: string, role: string) {
+    const payload = { userId, email, role };
+    return this.jwtService.signAsync(payload);
   }
 
   async logout(userId: string) {
-    // Xử lý logic đăng xuất ở đây
-    // Ví dụ: Xóa token khỏi cơ sở dữ liệu hoặc thực hiện các thao tác
     const user = await this.prisma.user.update({
       where: { userId },
       data: { accessToken: null },

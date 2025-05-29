@@ -34,8 +34,32 @@ export class UserService {
     });
   }
 
-  async findOne(userId: string, requesterId: string) {
-    if (userId !== requesterId) {
+  async findMe(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { userId },
+      select: {
+        userId: false,
+        email: false,
+        profile: {
+          select: {
+            firstName: true,
+            lastName: true,
+            avatar: true,
+          },
+        },
+      },
+    });
+  
+    if (!user) {
+      throw new ForbiddenException('User not found or unauthorized');
+    }
+  
+    return user;
+  }
+  
+
+  async findOne(userId: string, requesterId: string, role: string) {
+    if (userId !== requesterId && role !== 'ADMIN') {
       throw new ForbiddenException(
         'You do not have permission to view this profile',
       );
