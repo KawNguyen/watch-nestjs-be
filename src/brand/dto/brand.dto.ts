@@ -12,10 +12,10 @@ export class CreateBrandDto {
   @ApiProperty({ example: 'Switzerland' })
   country: string;
 
-  @IsString()
-  @IsOptional()
-  @ApiProperty({ example: 'Link logo' })
-  logo: string;
+  // @IsString()
+  // @IsOptional()
+  // @ApiProperty({ example: 'Link logo' })
+  // logo: string;
 } 
 
 export class UpdateBrandDto extends PartialType(CreateBrandDto) {} 

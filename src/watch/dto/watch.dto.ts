@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { WatchGender } from '@prisma/client';
 import {
   IsString,
   IsOptional,
@@ -7,7 +8,6 @@ import {
   IsEnum,
   IsArray,
 } from 'class-validator';
-import { WatchGender } from 'generated/prisma';
 
 export class CreateWatchDto {
   @ApiProperty({ example: 'New Watch Name' })

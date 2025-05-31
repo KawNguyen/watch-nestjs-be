@@ -24,6 +24,33 @@ export class AuthService {
     });
   }
 
+  async loginAdmin(email: string, password: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user || user.role !== 'ADMIN') {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid email or password');
+    };
+
+    const accessToken = await this.generateToken(
+      user?.userId,
+      email,
+      user?.role,
+    );
+
+    return {
+      message: 'Login successfully',
+      accessToken,
+    };
+  }
+
   async register(
     firstName: string,
     lastName: string,

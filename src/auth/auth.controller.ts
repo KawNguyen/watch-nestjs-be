@@ -23,7 +23,28 @@ export class AuthController {
     private authService: AuthService,
     private configService: ConfigService,
   ) {}
-  
+
+  @Public()
+  @Post('sign-in')
+  @ApiOperation({ summary: 'Sign-in in FE ADMIN' })
+  @ApiResponse({ status: 200, description: 'Sign-in successful' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async signIn(@Body() loginDto: LoginDto, @Res() res) {
+    const response = await this.authService.loginAdmin(
+      loginDto.email,
+      loginDto.password,
+    );
+
+    res.cookie('accessToken', response.accessToken, {
+      httpOnly: true,
+      secure: this.configService.get('NODE_ENV') === 'production',
+      sameSite: 'strict',
+      maxAge: 3600000 * 24,
+    });
+
+    res.status(200).json({ message: response.message });
+  }
+
   @Public()
   @Post('register')
   @ApiOperation({ summary: 'Register new user' })
@@ -80,7 +101,6 @@ export class AuthController {
     res.clearCookie('accessToken');
     res.status(200).json({ message: 'Logout successful' });
   }
-
 
   @Public()
   @Get('google/login')

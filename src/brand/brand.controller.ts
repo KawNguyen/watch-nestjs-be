@@ -6,19 +6,20 @@ import {
   Param,
   Patch,
   Post,
-  Req,
-  UseGuards,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { BrandService } from './brand.service';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth/jwt-auth.guard';
 import { CreateBrandDto, UpdateBrandDto } from './dto/brand.dto';
 import { Public } from 'src/auth/decorators/public.decorators';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enum';
+import { File as MulterFile } from 'multer';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('Brand')
-@Controller('brands')
+@Controller('brand')
 export class BrandController {
   constructor(private readonly brandService: BrandService) {}
 
@@ -38,20 +39,31 @@ export class BrandController {
   @ApiOperation({ summary: 'Create a new brand' })
   @Roles(Role.ADMIN)
   @Post('create')
-  async createBrand(@Body() createBrandDto: CreateBrandDto) {
-    return this.brandService.createBrand(createBrandDto);
+  @UseInterceptors(FileInterceptor('file'))
+  async createBrand(
+    @Body() createBrandDto: CreateBrandDto,
+    @UploadedFile() file: MulterFile,
+  ) {
+    if (!file) {
+      throw new Error('File is required for brand creation');
+    }
+    console.log('file', file);
+    return this.brandService.createBrand(
+      createBrandDto,
+      file.buffer,
+      file.originalname,
+    );
   }
 
   @ApiOperation({ summary: 'Update brand by ID' })
   @Roles(Role.ADMIN)
   @Patch('update/:brandId')
   async updateBrand(
-    @Param('brandId')
-    brandId: string,
-    @Body()
-    updateBrandDto: UpdateBrandDto,
+    @Param('brandId') brandId: string,
+    @Body() updateBrandDto: UpdateBrandDto,
+    @UploadedFile() file?: MulterFile,
   ) {
-    return this.brandService.updateBrand(brandId, updateBrandDto);
+    return this.brandService.updateBrand(brandId, updateBrandDto, file?.path);
   }
 
   @ApiOperation({ summary: 'Delete brand by ID' })

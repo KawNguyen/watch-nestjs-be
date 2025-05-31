@@ -11,6 +11,7 @@ import { MovementModule } from './movement/movement.module';
 import { RolesGuard } from './auth/guards/roles/roles.guard';
 import { MaterialModule } from './material/material.module';
 import { WatchModule } from './watch/watch.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -24,7 +25,9 @@ import { WatchModule } from './watch/watch.module';
     MaterialModule,
     BandMaterialModule,
     MovementModule,
-    WatchModule
+    WatchModule,
+    CloudinaryModule,
+    
   ],
   providers: [
     {
@@ -34,7 +37,7 @@ import { WatchModule } from './watch/watch.module';
     {
       provide: APP_GUARD,
       useClass: RolesGuard,
-    }
+    },
   ],
 })
 export class AppModule {}
