@@ -27,7 +27,7 @@ export class MaterialController {
   }
 
   @ApiOperation({ summary: 'Get material by ID' })
-  @Get(':materialId')
+  @Get(':materialId') 
   getMaterialById(materialId: string) {
     return this.materialService.getMaterialById(materialId);
   }
@@ -41,7 +41,7 @@ export class MaterialController {
 
   @ApiOperation({ summary: 'Update material' })
   @Roles(Role.ADMIN)
-  @Patch('update')
+  @Patch('update/:materialId')
   updateMaterial(
     @Param('materialId') materialId: string,
     @Body() updateMaterialDto: UpdateMaterialDto,
@@ -51,7 +51,7 @@ export class MaterialController {
 
   @ApiOperation({ summary: 'Delete material' })
   @Roles(Role.ADMIN)
-  @Delete('delete')
+  @Delete('delete/:materialId')
   deleteMaterial(@Param('materialId') materialId: string) {
     return this.materialService.deleteMaterial(materialId);
   }

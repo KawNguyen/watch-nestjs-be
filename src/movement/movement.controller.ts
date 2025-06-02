@@ -43,7 +43,7 @@ export class MovementController {
   @Roles(Role.ADMIN)
   @Patch('update/:movementId')
   updateMovement(
-    @Param() movementId: string,
+    @Param('movementId') movementId: string,
     @Body() movementDto: UpdateMovementDto,
   ) {
     return this.movementService.updateMovement(movementId, movementDto);
@@ -52,7 +52,7 @@ export class MovementController {
   @ApiOperation({ summary: 'Delete movement' })
   @Roles(Role.ADMIN)
   @Delete('delete/:movementId')
-  deleteMovement(@Param() movementId: string) {
+  deleteMovement(@Param('movementId') movementId: string) {
     return this.movementService.deleteMovement(movementId);
   }
 }
