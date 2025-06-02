@@ -5,6 +5,7 @@ import * as nodemailer from 'nodemailer';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
 import { CreateUserDto } from 'src/user/dto/user.dto';
+import { authenticate, session } from 'passport';
 
 @Injectable()
 export class AuthService {
@@ -37,7 +38,7 @@ export class AuthService {
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid email or password');
-    };
+    }
 
     const accessToken = await this.generateToken(
       user?.userId,
@@ -45,10 +46,28 @@ export class AuthService {
       user?.role,
     );
 
+    await this.prisma.session.create({
+      data: {
+        userId: user.userId,
+        token: accessToken,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      },
+    });
+
     return {
       message: 'Login successfully',
       accessToken,
     };
+  }
+
+  async checkAuth(token: string) {
+    const session = await this.prisma.session.findUnique({
+      where: { token },
+    });
+    if (!session) {
+      throw new UnauthorizedException('Session not found');
+    }
+    return { authenticated: true, userId: session.userId };
   }
 
   async register(
@@ -202,6 +221,11 @@ export class AuthService {
       where: { userId },
       data: { accessToken: null },
     });
+
+    await this.prisma.session.deleteMany({
+      where: { userId },
+    });
+
     return user;
   }
 }

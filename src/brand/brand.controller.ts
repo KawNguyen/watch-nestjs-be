@@ -58,12 +58,19 @@ export class BrandController {
   @ApiOperation({ summary: 'Update brand by ID' })
   @Roles(Role.ADMIN)
   @Patch('update/:brandId')
+  @UseInterceptors(FileInterceptor('file'))
   async updateBrand(
     @Param('brandId') brandId: string,
     @Body() updateBrandDto: UpdateBrandDto,
     @UploadedFile() file?: MulterFile,
   ) {
-    return this.brandService.updateBrand(brandId, updateBrandDto, file?.path);
+    console.log('file', file);
+    return this.brandService.updateBrand(
+      brandId,
+      updateBrandDto,
+      file.buffer,
+      file.originalname
+    );
   }
 
   @ApiOperation({ summary: 'Delete brand by ID' })

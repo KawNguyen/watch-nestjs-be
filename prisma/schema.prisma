@@ -7,6 +7,18 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Session {
+  sessionId String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [userId])
+
+  @@index([userId])
+}
+
 model User {
   email        String        @unique
   password     String
@@ -16,6 +28,7 @@ model User {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   userId       String        @id @default(uuid())
+  sessions     Session[]
   accessToken  String?
   cart         Cart?
   couponUsages CouponUsage[]

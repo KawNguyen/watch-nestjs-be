@@ -39,7 +39,7 @@ export class UserService {
       where: { userId },
       select: {
         userId: false,
-        email: false,
+        email: true,
         profile: {
           select: {
             firstName: true,

@@ -11,10 +11,11 @@ export class CloudinaryService {
     fileBuffer: Buffer,
     fileName: string,
   ): Promise<any> {
+    const cleanFileName = fileName.replace(/\.[^/.]+$/, '');
     return new Promise((resolve, reject) => {
       cloudinary.uploader
         .upload_stream(
-          { resource_type: 'image', public_id: fileName },
+          { resource_type: 'image', public_id: cleanFileName },
           (error, result) => {
             if (error) {
               reject(error);
@@ -24,6 +25,18 @@ export class CloudinaryService {
           },
         )
         .end(fileBuffer);
+    });
+  }
+
+  async deleteImage(publicId: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      cloudinary.uploader.destroy(publicId, (error, result) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(result);
+        }
+      });
     });
   }
 
@@ -39,15 +52,4 @@ export class CloudinaryService {
     });
   }
 
-  async deleteImage(publicId: string): Promise<any> {
-    return new Promise((resolve, reject) => {
-      this.cloudinaryInstance.uploader.destroy(publicId, (error, result) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(result);
-        }
-      });
-    });
-  }
 }

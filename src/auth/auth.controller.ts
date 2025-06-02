@@ -45,6 +45,19 @@ export class AuthController {
     res.status(200).json({ message: response.message });
   }
 
+  @ApiOperation({ summary: 'Check authentication status' })
+  @Get('check-auth')
+  @ApiResponse({ status: 200, description: 'User is authenticated' })
+  @ApiResponse({ status: 401, description: 'User is not authenticated' })
+  async checkAuth(@Req() req, @Res() res) {
+    const user = await this.authService.checkAuth(req.cookies.accessToken);
+    if (user) {
+      res.status(200).json({ message: 'User is authenticated', user });
+    } else {
+      res.status(401).json({ message: 'User is not authenticated' });
+    }
+  }
+
   @Public()
   @Post('register')
   @ApiOperation({ summary: 'Register new user' })

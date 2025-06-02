@@ -7,6 +7,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { CreateBrandDto, UpdateBrandDto } from './dto/brand.dto';
 import { generateSlug } from 'src/utils/slug.util';
+import { extractPublicIdFromUrl } from 'src/utils/extract-public-id.util';
 
 @Injectable()
 export class BrandService {
@@ -68,8 +69,15 @@ export class BrandService {
   async updateBrand(
     brandId: string,
     updateBrandDto: UpdateBrandDto,
-    imagePath?: string,
+    fileBuffer?: Buffer,
+    fileName?: string,
   ) {
+    console.log(
+      'Received file buffer and name for update',
+      fileBuffer,
+      fileName,
+    );
+
     const existingBrand = await this.prismaService.brand.findUnique({
       where: { brandId },
     });
@@ -79,8 +87,17 @@ export class BrandService {
     }
 
     let logoUrl = existingBrand.logo;
-    if (imagePath) {
-      const uploadResult = await this.cloudinaryService.uploadImage(imagePath);
+
+    if (fileBuffer && fileName) {
+      if (existingBrand.logo) {
+        const publicId = extractPublicIdFromUrl(existingBrand.logo);
+        await this.cloudinaryService.deleteImage(publicId);
+      }
+
+      const uploadResult = await this.cloudinaryService.uploadImageFromBuffer(
+        fileBuffer,
+        fileName,
+      );
       logoUrl = uploadResult.secure_url;
     }
 
@@ -105,6 +122,11 @@ export class BrandService {
 
     if (!brand) {
       throw new NotFoundException('Brand not found');
+    }
+
+    if (brand.logo) {
+      const publicId = extractPublicIdFromUrl(brand.logo);
+      await this.cloudinaryService.deleteImage(publicId);
     }
 
     await this.prismaService.brand.delete({
