@@ -39,9 +39,6 @@ export class BrandService {
     fileBuffer: Buffer,
     fileName: string,
   ) {
-    console.log('Received DTO:', createBrandDto);
-    console.log('Received file name:', fileName);
-
     const existingBrand = await this.prismaService.brand.findUnique({
       where: { name: createBrandDto.name },
     });

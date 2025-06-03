@@ -136,7 +136,8 @@ model Watch {
   watchId         String        @id @default(uuid())
   cartItems       CartItem[]
   favorites       Favorite[]
-  images          Images[]
+  poster          Poster[]
+  banner          Banner[]
   orderItems      OrderItem[]
   price           Price[]
   quantities      Quantity[]
@@ -173,14 +174,22 @@ model Favorite {
   @@index([watchId])
 }
 
-model Images {
-  imageId       String   @id @default(uuid())
-  poster_url    String
-  thumbnail_url String
-  watchId       String
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  watch         Watch    @relation(fields: [watchId], references: [watchId])
+model Poster {
+  posterId  String   @id @default(uuid())
+  url       String
+  watchId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  watch     Watch    @relation(fields: [watchId], references: [watchId])
+}
+
+model Banner {
+  bannerId  String   @id @default(uuid())
+  url       String
+  watchId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  watch     Watch    @relation(fields: [watchId], references: [watchId])
 }
 
 model Cart {

@@ -27,6 +27,7 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     MovementModule,
     WatchModule,
     CloudinaryModule,
+    WatchModule,
     
   ],
   providers: [

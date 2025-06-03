@@ -9,6 +9,16 @@ import {
   IsArray,
 } from 'class-validator';
 
+export class PosterDto {
+  @IsString()
+  poster_url: string;
+}
+
+export class BannerDto {
+  @IsString()
+  banner_url: string;
+}
+
 export class CreateWatchDto {
   @ApiProperty({ example: 'New Watch Name' })
   @IsString()
@@ -73,7 +83,17 @@ export class CreateWatchDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  images?: string[];
+  poster: PosterDto[];
+
+  @ApiProperty({
+    type: [String],
+    required: false,
+    example: ['http://example.com/image1.jpg'],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  banner: BannerDto[];
 }
 
 export class UpdateWatchDto {
@@ -135,10 +155,20 @@ export class UpdateWatchDto {
   @ApiProperty({
     type: [String],
     required: false,
-    example: ['http://example.com/image2.jpg'],
+    example: ['http://example.com/image1.jpg'],
   })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  images?: string[];
+  poster: PosterDto[];
+
+  @ApiProperty({
+    type: [String],
+    required: false,
+    example: ['http://example.com/image1.jpg'],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  banner: BannerDto;
 }
