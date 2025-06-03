@@ -4,16 +4,17 @@ import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
 import { ValidationPipe } from '@nestjs/common';
 
-
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
 
-  app.setGlobalPrefix('api/v1', {exclude: ['/']});
+  app.setGlobalPrefix('api/v1', { exclude: ['/'] });
 
   app.enableCors({
     origin: ['http://localhost:3000', 'http://localhost:3001'],
@@ -30,12 +31,8 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  
   app.use(cookieParser());
-  // app.use({
-  //   csruf
-  // })
 
-  await app.listen(3000);
+  await app.listen(process.env.PORT || 7777);
 }
 bootstrap();

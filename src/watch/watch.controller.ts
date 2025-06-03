@@ -4,6 +4,7 @@ import {
   Controller,
   Get,
   Param,
+  Patch,
   Post,
   UploadedFiles,
   UseInterceptors,
@@ -47,5 +48,32 @@ export class WatchController {
     const bannerFiles = files.filter((f) => f.fieldname === 'banner');
 
     return this.watchService.createWatch(data, posterFiles, bannerFiles);
+  }
+
+  @ApiOperation({ summary: 'Update a watch' })
+  @Patch('update/:watchId')
+  @Roles(Role.ADMIN)
+  @UseInterceptors(FileInterceptor('files'))
+  async updateWatch(
+    @Param('watchId') watchId: string,
+    @Body() data: CreateWatchDto,
+    @UploadedFiles() files: MulterFile[],
+  ) {
+    const posterFiles = files.filter((f) => f.fieldname === 'poster');
+    const bannerFiles = files.filter((f) => f.fieldname === 'banner');
+
+    return this.watchService.updateWatch(
+      watchId,
+      data,
+      posterFiles,
+      bannerFiles,
+    );
+  }
+
+  @ApiOperation({ summary: 'Delete a watch' })
+  @Patch('delete/:watchId')
+  @Roles(Role.ADMIN)
+  async deleteWatch(@Param('watchId') watchId: string) {
+    return this.watchService.deleteWatch(watchId);
   }
 }
