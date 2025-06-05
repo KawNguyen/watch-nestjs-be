@@ -16,6 +16,7 @@ import {
 } from './dto/band-material.dto';
 import { Role } from 'src/auth/enums/role.enum';
 import { Roles } from 'src/auth/decorators/roles.decorator';
+import { formatResponse } from 'src/common/helpers/response.helper';
 
 @ApiTags('Band Material')
 @Controller('band-material')
@@ -25,42 +26,46 @@ export class BandMaterialController {
   @Public()
   @ApiOperation({ summary: 'Get all band materials' })
   @Get()
-  getAllBandMaterials() {
-    return this.bandMaterial.getAllBandMaterials();
+  async getAllBandMaterials() {
+    const data = await this.bandMaterial.getAllBandMaterials();
+    return formatResponse(data, 'Band materials fetched successfully');
   }
 
   @ApiOperation({ summary: 'Get band material by ID' })
   @Get(':bandMaterialId')
-  getBandMaterialById(bandMaterialId: string) {
-    return this.bandMaterial.getBandMaterialById(bandMaterialId);
+  async getBandMaterialById(bandMaterialId: string) {
+    const data = await this.bandMaterial.getBandMaterialById(bandMaterialId);
   }
 
   @ApiOperation({ summary: 'Update band materials by ID' })
   @Roles(Role.ADMIN)
   @Post('create')
-  createBandMaterialDto(@Body() createBandMaterialDto: CreateBandMaterialDto) {
-    return this.bandMaterial.createBandMaterial(createBandMaterialDto);
+  async createBandMaterialDto(@Body() createBandMaterialDto: CreateBandMaterialDto) {
+    const data = await this.bandMaterial.createBandMaterial(createBandMaterialDto);
+    return formatResponse(data, 'Band material created successfully');
   }
 
   @ApiOperation({ summary: 'Update band materials by ID' })
   @Roles(Role.ADMIN)
   @Patch('update/:bandMaterialId')
-  updateBandMaterialById(
+  async updateBandMaterialById(
     @Param('bandMaterialId')
     bandMaterialId: string,
     @Body()
     updateBandMaterialDto: UpdateBandMaterialDto,
   ) {
-    return this.bandMaterial.updateBandMaterial(
+    const data = await this.bandMaterial.updateBandMaterial(
       bandMaterialId,
       updateBandMaterialDto,
     );
+    return formatResponse(data, 'Band material updated successfully');
   }
 
   @ApiOperation({ summary: 'Delete band materials by ID' })
   @Roles(Role.ADMIN)
   @Delete('delete/:bandMaterialId')
-  deleteBandMaterialById(@Param("brandMaterialId") bandMaterialId: string) {
-    return this.bandMaterial.deleteBandMaterial(bandMaterialId);
+  async deleteBandMaterialById(@Param("brandMaterialId") bandMaterialId: string) {
+    const data = await this.bandMaterial.deleteBandMaterial(bandMaterialId);
+    return formatResponse(data, 'Band material deleted successfully');
   }
 }

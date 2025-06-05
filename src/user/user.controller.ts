@@ -11,6 +11,8 @@ import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/user.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Public } from 'src/auth/decorators/public.decorators';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { Role } from 'src/auth/enums/role.enum';
 
 @ApiTags('User')
 @Controller('user')
@@ -19,6 +21,7 @@ export class UserController {
 
   @Public()
   @ApiOperation({ summary: 'Get all user' })
+  @Roles(Role.ADMIN)
   @Get()
   findAll() {
     return this.userService.findAll();

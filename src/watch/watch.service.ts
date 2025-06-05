@@ -1,9 +1,9 @@
 import { File as MulterFile } from 'multer';
 
 import { generateSlug } from 'src/utils/slug.util';
-import { ConflictException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateWatchDto } from './dto/watch.dto';
+import { CreateWatchDto, UpdateWatchDto } from './dto/watch.dto';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Injectable()
@@ -33,7 +33,7 @@ export class WatchService {
     });
 
     if (existingWatch) {
-      throw new ConflictException(
+      throw new BadRequestException(
         `Watch with name "${data.name}" already exists`,
       );
     }
@@ -76,7 +76,7 @@ export class WatchService {
 
   async updateWatch(
     watchId: string,
-    data: CreateWatchDto,
+    data: UpdateWatchDto,
     posterUpdates?: { posterId: string; file: MulterFile }[],
     bannerUpdates?: { bannerId: string; file: MulterFile }[],
   ) {
@@ -89,7 +89,9 @@ export class WatchService {
     });
 
     if (!existingWatch) {
-      throw new ConflictException(`Watch with ID "${watchId}" does not exist`);
+      throw new BadRequestException(
+        `Watch with ID "${watchId}" does not exist`,
+      );
     }
 
     const slug = generateSlug(data.name || existingWatch.name);
@@ -147,7 +149,9 @@ export class WatchService {
     });
 
     if (!existingWatch) {
-      throw new ConflictException(`Watch with ID "${watchId}" does not exist`);
+      throw new BadRequestException(
+        `Watch with ID "${watchId}" does not exist`,
+      );
     }
 
     return this.prismaService.watch.delete({

@@ -17,6 +17,7 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enum';
 import { File as MulterFile } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { formatResponse } from 'src/common/helpers/response.helper';
 
 @ApiTags('Brand')
 @Controller('brand')
@@ -27,13 +28,15 @@ export class BrandController {
   @Public()
   @Get()
   async getAllBrands() {
-    return this.brandService.getAllBrands();
+    const data = await this.brandService.getAllBrands();
+    return formatResponse(data, 'Brands fetched successfully');
   }
 
   @ApiOperation({ summary: 'Get brand by ID' })
   @Get(':brandId')
-  async getBrandById(brandId: string) {
-    return this.brandService.getBrandById(brandId);
+  async getBrandById(@Param('brandId') brandId: string) {
+    const data = await this.brandService.getBrandById(brandId);
+    return formatResponse(data, 'Brand fetched successfully');
   }
 
   @ApiOperation({ summary: 'Create a new brand' })
@@ -64,19 +67,20 @@ export class BrandController {
     @Body() updateBrandDto: UpdateBrandDto,
     @UploadedFile() file?: MulterFile,
   ) {
-    console.log('file', file);
-    return this.brandService.updateBrand(
+    const data = this.brandService.updateBrand(
       brandId,
       updateBrandDto,
       file.buffer,
-      file.originalname
+      file.originalname,
     );
+    return formatResponse(data, 'Brand updated successfully');
   }
 
   @ApiOperation({ summary: 'Delete brand by ID' })
   @Roles(Role.ADMIN)
   @Delete('delete/:brandId')
   async deleteBrand(@Param('brandId') brandId: string) {
-    return this.brandService.deleteBrand(brandId);
+    const data = await this.brandService.getBrandById(brandId);
+    return formatResponse(data, 'Brand deleted successfully');
   }
 }

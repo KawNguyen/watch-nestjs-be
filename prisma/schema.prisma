@@ -139,7 +139,7 @@ model Watch {
   poster          Poster[]
   banner          Banner[]
   orderItems      OrderItem[]
-  price           Price[]
+  price           Float
   quantities      Quantity[]
   reviews         Review[]
   stockItems      StockItem[]
@@ -264,18 +264,18 @@ model OrderItem {
   watch       Watch    @relation(fields: [watchId], references: [watchId])
 }
 
-model Price {
-  watchId   String
-  value     Float
-  startDate DateTime  @default(now())
-  endDate   DateTime?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  priceId   String    @id @default(uuid())
-  watch     Watch     @relation(fields: [watchId], references: [watchId])
+// model Price {
+//   watchId   String
+//   value     Float
+//   startDate DateTime  @default(now())
+//   endDate   DateTime?
+//   createdAt DateTime  @default(now())
+//   updatedAt DateTime  @updatedAt
+//   priceId   String    @id @default(uuid())
+//   watch     Watch     @relation(fields: [watchId], references: [watchId])
 
-  @@index([watchId])
-}
+//   @@index([watchId])
+// }
 
 model Review {
   reviewId  String   @id @default(uuid())

@@ -20,7 +20,9 @@ export class UserService {
   }
 
   async findAll() {
-    return this.prisma.user.findMany({ include: { profile: true } });
+    return this.prisma.user.findMany({
+      select: { userId: true, email: true, password: false, profile: true },
+    });
   }
 
   async findByEmail(email: string) {
@@ -28,7 +30,10 @@ export class UserService {
       where: {
         email,
       },
-      include: {
+      select: {
+        userId: true,
+        email: true,
+        password: false,
         profile: true,
       },
     });
@@ -38,7 +43,7 @@ export class UserService {
     const user = await this.prisma.user.findUnique({
       where: { userId },
       select: {
-        userId: false,
+        userId: true,
         email: true,
         profile: {
           select: {
@@ -49,14 +54,13 @@ export class UserService {
         },
       },
     });
-  
+
     if (!user) {
       throw new ForbiddenException('User not found or unauthorized');
     }
-  
+
     return user;
   }
-  
 
   async findOne(userId: string, requesterId: string, role: string) {
     if (userId !== requesterId && role !== 'ADMIN') {
@@ -68,7 +72,10 @@ export class UserService {
       where: {
         userId,
       },
-      include: {
+      select: {
+        userId: true,
+        email: true,
+        password: false,
         profile: true,
       },
     });

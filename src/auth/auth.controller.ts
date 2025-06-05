@@ -63,13 +63,17 @@ export class AuthController {
   @ApiOperation({ summary: 'Register new user' })
   @ApiResponse({ status: 201, description: 'Registration successful' })
   @ApiResponse({ status: 400, description: 'Bad request' })
-  async register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(
+  async register(@Body() registerDto: RegisterDto, @Res() res) {
+    const response = await this.authService.register(
       registerDto.firstName,
       registerDto.lastName,
       registerDto.email,
       registerDto.password,
     );
+
+    res.status(202).json({
+      message: response.message,
+    });
   }
 
   @Public()
@@ -103,7 +107,8 @@ export class AuthController {
       loginDto.email,
       loginDto.password,
     );
-    res.status(200).json({ message: response.message });
+
+    res.status(202).json({ message: response.message });
   }
 
   @Post('logout')

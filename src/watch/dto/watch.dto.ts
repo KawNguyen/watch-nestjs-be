@@ -70,6 +70,10 @@ export class CreateWatchDto {
   @IsInt()
   warranty?: number;
 
+  @ApiProperty({ example: 1000, required: true })
+  @IsNumber()
+  price: number;
+
   @ApiProperty({ example: 'http://example.com/video.mp4', required: false })
   @IsOptional()
   @IsString()
@@ -146,6 +150,11 @@ export class UpdateWatchDto {
   @IsOptional()
   @IsInt()
   warranty?: number;
+
+  @ApiProperty({ example: 1000, required: false })
+  @IsOptional()
+  @IsNumber()
+  price?: number;
 
   @ApiProperty({ example: 'http://example.com/new-video.mp4', required: false })
   @IsOptional()
