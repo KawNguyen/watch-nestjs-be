@@ -6,6 +6,6 @@ export class CreateMaterialDto {
   @IsNotEmpty()
   @ApiProperty({ example: 'Steel' })
   name: string;
-} 
+}
 
-export class UpdateMaterialDto extends PartialType(CreateMaterialDto) {} 
+export class UpdateMaterialDto extends PartialType(CreateMaterialDto) {}

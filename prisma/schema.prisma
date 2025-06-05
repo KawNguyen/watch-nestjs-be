@@ -8,13 +8,13 @@ datasource db {
 }
 
 model Session {
-  sessionId String   @id @default(uuid())
+  id        String   @id @default(uuid())
   userId    String
   token     String   @unique
   expiresAt DateTime
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [userId])
+  user      User     @relation(fields: [userId], references: [id])
 
   @@index([userId])
 }
@@ -27,8 +27,7 @@ model User {
   otpExpiry    DateTime?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
-  userId       String        @id @default(uuid())
-  sessions     Session[]
+  id           String        @id @default(uuid())
   accessToken  String?
   cart         Cart?
   couponUsages CouponUsage[]
@@ -36,6 +35,7 @@ model User {
   orders       Order[]
   profile      Profile?
   reviews      Review[]
+  sessions     Session[]
   stockEntries StockEntry[]
 }
 
@@ -45,12 +45,12 @@ model Profile {
   gender    UserGender?
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
-  profileId String      @id @default(uuid())
+  id        String      @id @default(uuid())
   firstName String      @default("")
   lastName  String      @default("")
   avatar    String?
   addresses Address[]
-  user      User        @relation(fields: [userId], references: [userId])
+  user      User        @relation(fields: [userId], references: [id])
 }
 
 model Address {
@@ -63,7 +63,7 @@ model Address {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   profileId String
-  profile   Profile  @relation(fields: [profileId], references: [profileId])
+  profile   Profile  @relation(fields: [profileId], references: [id])
   orders    Order[]
 }
 
@@ -75,44 +75,44 @@ model Brand {
   logo      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  brandId   String   @id @default(uuid())
+  id        String   @id @default(uuid())
   watches   Watch[]
 
   @@index([name])
 }
 
 model Material {
-  slug       String?  @unique
-  code       String   @unique @default(dbgenerated("concat('MT', upper(\"substring\"(replace(((gen_random_uuid())::character varying)::text, '-'::text, ''::text), 1, 8)))"))
-  name       String   @unique
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  materialId String   @id @default(uuid())
-  watches    Watch[]
+  slug      String?  @unique
+  code      String   @unique @default(dbgenerated("concat('MT', upper(\"substring\"(replace(((gen_random_uuid())::character varying)::text, '-'::text, ''::text), 1, 8)))"))
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  id        String   @id @default(uuid())
+  watches   Watch[]
 
   @@index([name])
 }
 
 model BandMaterial {
-  slug           String?  @unique
-  code           String   @unique @default(dbgenerated("concat('BM', upper(\"substring\"(replace(((gen_random_uuid())::character varying)::text, '-'::text, ''::text), 1, 8)))"))
-  name           String   @unique
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  bandMaterialId String   @id @default(uuid())
-  watches        Watch[]
+  slug      String?  @unique
+  code      String   @unique @default(dbgenerated("concat('BM', upper(\"substring\"(replace(((gen_random_uuid())::character varying)::text, '-'::text, ''::text), 1, 8)))"))
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  id        String   @id @default(uuid())
+  watches   Watch[]
 
   @@index([name])
 }
 
 model Movement {
-  slug       String?  @unique
-  code       String   @unique @default(dbgenerated("concat('MV', upper(\"substring\"(replace(((gen_random_uuid())::character varying)::text, '-'::text, ''::text), 1, 8)))"))
-  name       String   @unique
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  movementId String   @id @default(uuid())
-  watches    Watch[]
+  slug      String?  @unique
+  code      String   @unique @default(dbgenerated("concat('MV', upper(\"substring\"(replace(((gen_random_uuid())::character varying)::text, '-'::text, ''::text), 1, 8)))"))
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  id        String   @id @default(uuid())
+  watches   Watch[]
 
   @@index([name])
 }
@@ -133,41 +133,41 @@ model Watch {
   videoUrl        String?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
-  watchId         String        @id @default(uuid())
+  id              String        @id @default(uuid())
+  price           Float
+  banner          Banner[]
   cartItems       CartItem[]
   favorites       Favorite[]
-  poster          Poster[]
-  banner          Banner[]
   orderItems      OrderItem[]
-  price           Float
+  poster          Poster[]
   quantities      Quantity[]
   reviews         Review[]
   stockItems      StockItem[]
-  bandMaterial    BandMaterial? @relation(fields: [bandMaterialId], references: [bandMaterialId])
-  brand           Brand         @relation(fields: [brandId], references: [brandId])
-  material        Material?     @relation(fields: [materialId], references: [materialId])
-  movement        Movement?     @relation(fields: [movementId], references: [movementId])
+  bandMaterial    BandMaterial? @relation(fields: [bandMaterialId], references: [id])
+  brand           Brand         @relation(fields: [brandId], references: [id])
+  material        Material?     @relation(fields: [materialId], references: [id])
+  movement        Movement?     @relation(fields: [movementId], references: [id])
 }
 
 model Quantity {
-  watchId    String
-  quantity   Int      @default(0)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  quantityId String   @id @default(uuid())
-  watch      Watch    @relation(fields: [watchId], references: [watchId])
+  watchId   String
+  quantity  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  id        String   @id @default(uuid())
+  watch     Watch    @relation(fields: [watchId], references: [id])
 
   @@index([watchId])
 }
 
 model Favorite {
-  userId     String
-  watchId    String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  favoriteId String   @id @default(uuid())
-  user       User     @relation(fields: [userId], references: [userId])
-  watch      Watch    @relation(fields: [watchId], references: [watchId])
+  userId    String
+  watchId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  watch     Watch    @relation(fields: [watchId], references: [id])
 
   @@unique([userId, watchId])
   @@index([userId])
@@ -175,51 +175,51 @@ model Favorite {
 }
 
 model Poster {
-  posterId  String   @id @default(uuid())
-  url       String
+  id        String   @id @default(uuid())
   watchId   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  watch     Watch    @relation(fields: [watchId], references: [watchId])
+  url       String
+  watch     Watch    @relation(fields: [watchId], references: [id])
 }
 
 model Banner {
-  bannerId  String   @id @default(uuid())
-  url       String
+  id        String   @id @default(uuid())
   watchId   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  watch     Watch    @relation(fields: [watchId], references: [watchId])
+  url       String
+  watch     Watch    @relation(fields: [watchId], references: [id])
 }
 
 model Cart {
   userId    String     @unique
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
-  cartId    String     @id @default(uuid())
-  user      User       @relation(fields: [userId], references: [userId])
+  id        String     @id @default(uuid())
+  user      User       @relation(fields: [userId], references: [id])
   items     CartItem[]
 }
 
 model CartItem {
-  cartId     String
-  watchId    String
-  quantity   Int      @default(1)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  cartItemid String   @id @default(uuid())
-  cart       Cart     @relation(fields: [cartId], references: [cartId])
-  watch      Watch    @relation(fields: [watchId], references: [watchId])
+  cartId    String
+  watchId   String
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  id        String   @id @default(uuid())
+  cart      Cart     @relation(fields: [cartId], references: [id])
+  watch     Watch    @relation(fields: [watchId], references: [id])
 }
 
 model StockEntry {
-  addedById    String
-  totalPrice   Float
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  stockEntryId String      @id @default(uuid())
-  addedBy      User        @relation(fields: [addedById], references: [userId])
-  items        StockItem[]
+  addedById  String
+  totalPrice Float
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  id         String      @id @default(uuid())
+  addedBy    User        @relation(fields: [addedById], references: [id])
+  items      StockItem[]
 }
 
 model StockItem {
@@ -229,9 +229,9 @@ model StockItem {
   price        Float
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
-  stockItemId  String     @id @default(uuid())
-  stockEntry   StockEntry @relation(fields: [stockEntryId], references: [stockEntryId])
-  watch        Watch      @relation(fields: [watchId], references: [watchId])
+  id           String     @id @default(uuid())
+  stockEntry   StockEntry @relation(fields: [stockEntryId], references: [id])
+  watch        Watch      @relation(fields: [watchId], references: [id])
 }
 
 model Order {
@@ -242,58 +242,45 @@ model Order {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   couponId      String?
-  orderId       String        @id @default(uuid())
+  id            String        @id @default(uuid())
   orginalPrice  Float
   paymentMethod PaymentMethod @default(COD)
   shippingNotes String?
   address       Address?      @relation(fields: [addressId], references: [id])
-  coupon        Coupon?       @relation(fields: [couponId], references: [couponId])
-  user          User          @relation(fields: [userId], references: [userId])
+  coupon        Coupon?       @relation(fields: [couponId], references: [id])
+  user          User          @relation(fields: [userId], references: [id])
   items         OrderItem[]
 }
 
 model OrderItem {
-  orderId     String
-  watchId     String
-  quantity    Int      @default(1)
-  price       Float
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  orderItemId String   @id @default(uuid())
-  order       Order    @relation(fields: [orderId], references: [orderId])
-  watch       Watch    @relation(fields: [watchId], references: [watchId])
+  orderId   String
+  watchId   String
+  quantity  Int      @default(1)
+  price     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  id        String   @id @default(uuid())
+  order     Order    @relation(fields: [orderId], references: [id])
+  watch     Watch    @relation(fields: [watchId], references: [id])
 }
 
-// model Price {
-//   watchId   String
-//   value     Float
-//   startDate DateTime  @default(now())
-//   endDate   DateTime?
-//   createdAt DateTime  @default(now())
-//   updatedAt DateTime  @updatedAt
-//   priceId   String    @id @default(uuid())
-//   watch     Watch     @relation(fields: [watchId], references: [watchId])
-
-//   @@index([watchId])
-// }
-
 model Review {
-  reviewId  String   @id @default(uuid())
+  id        String   @id @default(uuid())
   userId    String
   watchId   String
   rating    Int
   comment   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [userId])
-  watch     Watch    @relation(fields: [watchId], references: [watchId])
+  user      User     @relation(fields: [userId], references: [id])
+  watch     Watch    @relation(fields: [watchId], references: [id])
 
   @@index([userId])
   @@index([watchId])
 }
 
 model Coupon {
-  couponId      String        @id @default(uuid())
+  id            String        @id @default(uuid())
   code          String        @unique
   description   String?
   discountType  String
@@ -324,12 +311,12 @@ model Ads {
 }
 
 model CouponUsage {
-  couponUsageId String   @id @default(uuid())
-  userId        String
-  couponId      String
-  usedAt        DateTime @default(now())
-  coupon        Coupon   @relation(fields: [couponId], references: [couponId])
-  user          User     @relation(fields: [userId], references: [userId])
+  id       String   @id @default(uuid())
+  userId   String
+  couponId String
+  usedAt   DateTime @default(now())
+  coupon   Coupon   @relation(fields: [couponId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
 
   @@unique([userId, couponId])
 }

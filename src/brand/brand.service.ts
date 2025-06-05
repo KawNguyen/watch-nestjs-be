@@ -22,9 +22,9 @@ export class BrandService {
     });
   }
 
-  async getBrandById(brandId: string) {
+  async getBrandById(id: string) {
     const brand = await this.prismaService.brand.findUnique({
-      where: { brandId },
+      where: { id },
     });
 
     if (!brand) {
@@ -64,7 +64,7 @@ export class BrandService {
   }
 
   async updateBrand(
-    brandId: string,
+    id: string,
     updateBrandDto: UpdateBrandDto,
     fileBuffer?: Buffer,
     fileName?: string,
@@ -76,7 +76,7 @@ export class BrandService {
     );
 
     const existingBrand = await this.prismaService.brand.findUnique({
-      where: { brandId },
+      where: { id },
     });
 
     if (!existingBrand) {
@@ -103,7 +103,7 @@ export class BrandService {
       : existingBrand.slug;
 
     return this.prismaService.brand.update({
-      where: { brandId },
+      where: { id },
       data: {
         ...updateBrandDto,
         slug,
@@ -112,9 +112,9 @@ export class BrandService {
     });
   }
 
-  async deleteBrand(brandId: string) {
+  async deleteBrand(id: string) {
     const brand = await this.prismaService.brand.findUnique({
-      where: { brandId },
+      where: { id },
     });
 
     if (!brand) {
@@ -127,7 +127,7 @@ export class BrandService {
     }
 
     await this.prismaService.brand.delete({
-      where: { brandId },
+      where: { id },
     });
 
     return { message: 'Brand deleted successfully' };

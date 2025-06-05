@@ -15,9 +15,9 @@ export class MaterialService {
     return this.prismaService.material.findMany();
   }
 
-  async getMaterialById(materialId: string) {
+  async getMaterialById(id: string) {
     const material = await this.prismaService.material.findUnique({
-      where: { materialId },
+      where: { id },
     });
 
     if (!material) {
@@ -42,11 +42,11 @@ export class MaterialService {
   }
 
   async updateMaterial(
-    materialId: string,
+    id: string,
     updateMaterialDto: UpdateMaterialDto,
   ) {
     const existingMaterial = await this.prismaService.material.findUnique({
-      where: { materialId },
+      where: { id },
     });
 
     if (!existingMaterial) {
@@ -57,14 +57,14 @@ export class MaterialService {
       ? generateSlug(updateMaterialDto.name)
       : existingMaterial.slug;
     return this.prismaService.material.update({
-      where: { materialId },
+      where: { id },
       data: { ...updateMaterialDto, slug },
     });
   }
 
-  async deleteMaterial(materialId: string) {
+  async deleteMaterial(id: string) {
     const existingMaterial = await this.prismaService.material.findUnique({
-      where: { materialId },
+      where: { id },
     });
 
     if (!existingMaterial) {
@@ -72,7 +72,7 @@ export class MaterialService {
     }
 
     return this.prismaService.material.delete({
-      where: { materialId },
+      where: { id },
     });
   }
 }

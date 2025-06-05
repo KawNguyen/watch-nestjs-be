@@ -21,7 +21,7 @@ export class UserService {
 
   async findAll() {
     return this.prisma.user.findMany({
-      select: { userId: true, email: true, password: false, profile: true },
+      select: { id: true, email: true, password: false, profile: true },
     });
   }
 
@@ -31,7 +31,7 @@ export class UserService {
         email,
       },
       select: {
-        userId: true,
+        id: true,
         email: true,
         password: false,
         profile: true,
@@ -39,11 +39,15 @@ export class UserService {
     });
   }
 
-  async findMe(userId: string) {
+  async findMe(id: string) {
+    if (!id) {
+      throw new ForbiddenException('User ID is required');
+    }
+    
     const user = await this.prisma.user.findUnique({
-      where: { userId },
+      where: { id },
       select: {
-        userId: true,
+        id: true,
         email: true,
         profile: {
           select: {
@@ -62,18 +66,18 @@ export class UserService {
     return user;
   }
 
-  async findOne(userId: string, requesterId: string, role: string) {
-    if (userId !== requesterId && role !== 'ADMIN') {
+  async findOne(id: string, requesterId: string, role: string) {
+    if (id !== requesterId && role !== 'ADMIN') {
       throw new ForbiddenException(
         'You do not have permission to view this profile',
       );
     }
     const user = await this.prisma.user.findUnique({
       where: {
-        userId,
+        id,
       },
       select: {
-        userId: true,
+        id: true,
         email: true,
         password: false,
         profile: true,
@@ -88,11 +92,11 @@ export class UserService {
   }
 
   async update(
-    userId: string,
+    id: string,
     updateUserDto: UpdateUserDto,
     requesterId: string,
   ) {
-    if (userId !== requesterId) {
+    if (id !== requesterId) {
       throw new ForbiddenException(
         'You do not have permission to update this profile',
       );
@@ -100,7 +104,7 @@ export class UserService {
 
     const user = await this.prisma.user.findUnique({
       where: {
-        userId,
+        id,
       },
       include: {
         profile: true,
@@ -112,7 +116,7 @@ export class UserService {
     }
 
     return this.prisma.user.update({
-      where: { userId },
+      where: { id },
       data: {
         ...updateUserDto,
         profile: updateUserDto.profile
@@ -125,15 +129,15 @@ export class UserService {
     });
   }
 
-  async remove(userId: string, requesterId: string) {
-    if (userId !== requesterId) {
+  async remove(id: string, requesterId: string) {
+    if (id !== requesterId) {
       throw new ForbiddenException(
         'You do not have permission to delete this profile',
       );
     }
 
     return this.prisma.user.delete({
-      where: { userId },
+      where: { id },
     });
   }
 }

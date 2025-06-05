@@ -18,9 +18,9 @@ export class BandMaterialService {
     return this.prisma.bandMaterial.findMany();
   }
 
-  async getBandMaterialById(bandMaterialId: string) {
+  async getBandMaterialById(id: string) {
     const bandMaterial = await this.prisma.bandMaterial.findUnique({
-      where: { bandMaterialId },
+      where: { id },
     });
 
     if (!bandMaterial) {
@@ -46,12 +46,9 @@ export class BandMaterialService {
     });
   }
 
-  async updateBandMaterial(
-    bandMaterialId: string,
-    updateDto: UpdateBandMaterialDto,
-  ) {
+  async updateBandMaterial(id: string, updateDto: UpdateBandMaterialDto) {
     const existing = await this.prisma.bandMaterial.findUnique({
-      where: { bandMaterialId },
+      where: { id },
     });
 
     if (!existing) {
@@ -61,14 +58,14 @@ export class BandMaterialService {
     const slug = updateDto.name ? generateSlug(updateDto.name) : existing.slug;
 
     return this.prisma.bandMaterial.update({
-      where: { bandMaterialId },
+      where: { id },
       data: { ...updateDto, slug },
     });
   }
 
-  async deleteBandMaterial(bandMaterialId: string) {
+  async deleteBandMaterial(id: string) {
     const existing = await this.prisma.bandMaterial.findUnique({
-      where: { bandMaterialId },
+      where: { id },
     });
 
     if (!existing) {
@@ -76,7 +73,7 @@ export class BandMaterialService {
     }
 
     return this.prisma.bandMaterial.delete({
-      where: { bandMaterialId },
+      where: { id },
     });
   }
 }

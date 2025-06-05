@@ -16,6 +16,6 @@ export class CreateBrandDto {
   // @IsOptional()
   // @ApiProperty({ example: 'Link logo' })
   // logo: string;
-} 
+}
 
-export class UpdateBrandDto extends PartialType(CreateBrandDto) {} 
+export class UpdateBrandDto extends PartialType(CreateBrandDto) {}

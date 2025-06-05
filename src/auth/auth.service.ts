@@ -5,7 +5,6 @@ import * as nodemailer from 'nodemailer';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
 import { CreateUserDto } from 'src/user/dto/user.dto';
-import { authenticate, session } from 'passport';
 
 @Injectable()
 export class AuthService {
@@ -41,16 +40,18 @@ export class AuthService {
     }
 
     const accessToken = await this.generateToken(
-      user?.userId,
+      user?.id,
       email,
       user?.role,
     );
 
     await this.prisma.session.create({
       data: {
-        userId: user.userId,
         token: accessToken,
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        user: {
+          connect: { id: user.id },
+        },
       },
     });
 
@@ -67,7 +68,7 @@ export class AuthService {
     if (!session) {
       throw new UnauthorizedException('Session not found');
     }
-    return { authenticated: true, userId: session.userId };
+    return { authenticated: true, id: session.id };
   }
 
   async register(
@@ -106,7 +107,7 @@ export class AuthService {
 
     return {
       message: 'Please check your mail for OTP',
-      userId: user.userId,
+      id: user.id,
     };
   }
 
@@ -130,7 +131,7 @@ export class AuthService {
     });
 
     const accessToken = await this.generateToken(
-      user.userId,
+      user.id,
       user.email,
       user.role,
     );
@@ -194,7 +195,7 @@ export class AuthService {
     }
 
     const accessToken = await this.generateToken(
-      user?.userId,
+      user?.id,
       email,
       user?.role,
     );
@@ -211,19 +212,19 @@ export class AuthService {
     return user;
   }
 
-  async generateToken(userId: string, email: string, role: string) {
-    const payload = { userId, email, role };
+  async generateToken(id: string, email: string, role: string) {
+    const payload = { id, email, role };
     return this.jwtService.signAsync(payload);
   }
 
-  async logout(userId: string) {
+  async logout(id: string) {
     const user = await this.prisma.user.update({
-      where: { userId },
+      where: { id },
       data: { accessToken: null },
     });
 
     await this.prisma.session.deleteMany({
-      where: { userId },
+      where: { id },
     });
 
     return user;

@@ -11,13 +11,13 @@ export class MovementService {
     return this.prismaService.movement.findMany();
   }
 
-  async getMovementById(movementId: string) {
+  async getMovementById(id: string) {
     const movement = await this.prismaService.movement.findUnique({
-      where: { movementId },
+      where: { id },
     });
 
     if (!movement) {
-      throw new NotFoundException(`Movement with ID ${movementId} not found`);
+      throw new NotFoundException(`Movement with ID ${id} not found`);
     }
 
     return movement;
@@ -35,39 +35,40 @@ export class MovementService {
     }
 
     const slug = generateSlug(movementData.name);
+
     return this.prismaService.movement.create({
       data: { ...movementData, slug },
     });
   }
 
-  async updateMovement(movementId: string, movementData: UpdateMovementDto) {
+  async updateMovement(id: string, movementData: UpdateMovementDto) {
     const existingMovement = await this.prismaService.movement.findUnique({
-      where: { movementId },
+      where: { id },
     });
 
     if (!existingMovement) {
-      throw new NotFoundException(`Movement with ID ${movementId} not found`);
+      throw new NotFoundException(`Movement with ID ${id} not found`);
     }
     const slug = movementData.name
       ? generateSlug(movementData.name)
       : existingMovement.slug;
     return this.prismaService.movement.update({
-      where: { movementId },
+      where: { id },
       data: { ...movementData, slug },
     });
   }
 
-  async deleteMovement(movementId: string) {
+  async deleteMovement(id: string) {
     const existingMovement = await this.prismaService.movement.findUnique({
-      where: { movementId },
+      where: { id },
     });
 
     if (!existingMovement) {
-      throw new NotFoundException(`Movement with ID ${movementId} not found`);
+      throw new NotFoundException(`Movement with ID ${id} not found`);
     }
 
     return this.prismaService.movement.delete({
-      where: { movementId },
+      where: { id },
     })
   }
 }

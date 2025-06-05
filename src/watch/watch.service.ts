@@ -17,9 +17,9 @@ export class WatchService {
     return this.prismaService.watch.findMany();
   }
 
-  async getWatchById(watchId: string) {
+  async getWatchById(id: string) {
     return this.prismaService.watch.findUnique({
-      where: { watchId },
+      where: { id },
     });
   }
 
@@ -75,13 +75,13 @@ export class WatchService {
   }
 
   async updateWatch(
-    watchId: string,
+    id: string,
     data: UpdateWatchDto,
-    posterUpdates?: { posterId: string; file: MulterFile }[],
-    bannerUpdates?: { bannerId: string; file: MulterFile }[],
+    posterUpdates?: { id: string; file: MulterFile }[],
+    bannerUpdates?: { id: string; file: MulterFile }[],
   ) {
     const existingWatch = await this.prismaService.watch.findUnique({
-      where: { watchId },
+      where: { id },
       include: {
         poster: true,
         banner: true,
@@ -89,16 +89,14 @@ export class WatchService {
     });
 
     if (!existingWatch) {
-      throw new BadRequestException(
-        `Watch with ID "${watchId}" does not exist`,
-      );
+      throw new BadRequestException(`Watch with ID "${id}" does not exist`);
     }
 
     const slug = generateSlug(data.name || existingWatch.name);
 
     if (posterUpdates && posterUpdates.length > 0) {
       await Promise.all(
-        posterUpdates.map(async ({ posterId, file }) => {
+        posterUpdates.map(async ({ id, file }) => {
           const uploadResult =
             await this.cloudinaryService.uploadImageFromBuffer(
               file.buffer,
@@ -107,7 +105,7 @@ export class WatchService {
           const newPosterUrl = uploadResult.secure_url;
 
           await this.prismaService.poster.update({
-            where: { posterId },
+            where: { id },
             data: { url: newPosterUrl },
           });
         }),
@@ -116,7 +114,7 @@ export class WatchService {
 
     if (bannerUpdates && bannerUpdates.length > 0) {
       await Promise.all(
-        bannerUpdates.map(async ({ bannerId, file }) => {
+        bannerUpdates.map(async ({ id, file }) => {
           const uploadResult =
             await this.cloudinaryService.uploadImageFromBuffer(
               file.buffer,
@@ -125,7 +123,7 @@ export class WatchService {
           const newBannerUrl = uploadResult.secure_url;
 
           await this.prismaService.banner.update({
-            where: { bannerId },
+            where: { id },
             data: { url: newBannerUrl },
           });
         }),
@@ -135,7 +133,7 @@ export class WatchService {
     const { poster, banner, ...restData } = data as any;
 
     return this.prismaService.watch.update({
-      where: { watchId },
+      where: { id },
       data: {
         ...restData,
         slug,
@@ -143,19 +141,17 @@ export class WatchService {
     });
   }
 
-  async deleteWatch(watchId: string) {
+  async deleteWatch(id: string) {
     const existingWatch = await this.prismaService.watch.findUnique({
-      where: { watchId },
+      where: { id },
     });
 
     if (!existingWatch) {
-      throw new BadRequestException(
-        `Watch with ID "${watchId}" does not exist`,
-      );
+      throw new BadRequestException(`Watch with ID "${id}" does not exist`);
     }
 
     return this.prismaService.watch.delete({
-      where: { watchId },
+      where: { id },
     });
   }
 }
