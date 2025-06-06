@@ -12,14 +12,6 @@ import { Type } from 'class-transformer';
 import { WatchGender } from '@prisma/client';
 
 export class CreateWatchDto {
-  @IsOptional()
-  @IsString()
-  slug?: string;
-
-  @IsOptional()
-  @IsString()
-  code?: string;
-
   @IsString()
   @MaxLength(100)
   name: string;
@@ -37,15 +29,15 @@ export class CreateWatchDto {
 
   @IsOptional()
   @IsUUID()
-  materialId?: string;
+  materialId: string;
 
   @IsOptional()
   @IsUUID()
-  bandMaterialId?: string;
+  bandMaterialId: string;
 
   @IsOptional()
   @IsUUID()
-  movementId?: string;
+  movementId: string;
 
   @IsOptional()
   @Type(() => Number)

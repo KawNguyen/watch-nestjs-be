@@ -118,22 +118,22 @@ model Movement {
 }
 
 model Watch {
-  slug            String?       @unique
-  code            String        @unique @default(dbgenerated("concat('W', upper(\"substring\"(replace(((gen_random_uuid())::character varying)::text, '-'::text, ''::text), 1, 9)))"))
-  name            String        @db.VarChar(100)
+  slug            String?      @unique
+  code            String       @unique @default(dbgenerated("concat('W', upper(\"substring\"(replace(((gen_random_uuid())::character varying)::text, '-'::text, ''::text), 1, 9)))"))
+  name            String       @db.VarChar(100)
   description     String?
-  gender          WatchGender   @default(UNISEX)
+  gender          WatchGender  @default(UNISEX)
   brandId         String
   materialId      String
   bandMaterialId  String
   movementId      String
   diameter        Float?
   waterResistance Int?
-  warranty        Int           @default(24)
+  warranty        Int          @default(24)
   videoUrl        String?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  id              String        @id @default(uuid())
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  id              String       @id @default(uuid())
   price           Float
   banner          Banner[]
   cartItems       CartItem[]
@@ -143,10 +143,10 @@ model Watch {
   quantities      Quantity[]
   reviews         Review[]
   stockItems      StockItem[]
-  bandMaterial    BandMaterial? @relation(fields: [bandMaterialId], references: [id])
-  brand           Brand         @relation(fields: [brandId], references: [id])
-  material        Material?     @relation(fields: [materialId], references: [id])
-  movement        Movement?     @relation(fields: [movementId], references: [id])
+  bandMaterial    BandMaterial @relation(fields: [bandMaterialId], references: [id])
+  brand           Brand        @relation(fields: [brandId], references: [id])
+  material        Material     @relation(fields: [materialId], references: [id])
+  movement        Movement     @relation(fields: [movementId], references: [id])
 }
 
 model Quantity {
