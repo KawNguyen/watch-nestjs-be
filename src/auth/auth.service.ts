@@ -40,9 +40,9 @@ export class AuthService {
     }
 
     const accessToken = await this.generateToken(
-      user?.id,
+      user.id,
       email,
-      user?.role,
+      user.role,
     );
 
     await this.prisma.session.create({
