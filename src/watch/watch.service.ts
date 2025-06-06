@@ -14,7 +14,12 @@ export class WatchService {
   ) {}
 
   async getAllWatches() {
-    return this.prismaService.watch.findMany();
+    return this.prismaService.watch.findMany({
+      include: {
+        poster: true,
+        banner: true,
+      },
+    });
   }
 
   async getWatchById(id: string) {

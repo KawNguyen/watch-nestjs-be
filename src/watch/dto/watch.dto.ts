@@ -1,183 +1,85 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { WatchGender } from '@prisma/client';
 import {
   IsString,
   IsOptional,
-  IsNumber,
-  IsInt,
   IsEnum,
-  IsArray,
+  IsNumber,
+  IsUUID,
+  IsUrl,
+  IsInt,
+  MaxLength,
 } from 'class-validator';
-
-export class PosterDto {
-  @IsString()
-  poster_url: string;
-}
-
-export class BannerDto {
-  @IsString()
-  banner_url: string;
-}
+import { Type } from 'class-transformer';
+import { WatchGender } from '@prisma/client';
 
 export class CreateWatchDto {
-  @ApiProperty({ example: 'New Watch Name' })
+  @IsOptional()
   @IsString()
+  slug?: string;
+
+  @IsOptional()
+  @IsString()
+  code?: string;
+
+  @IsString()
+  @MaxLength(100)
   name: string;
 
-  @ApiProperty({
-    example: 'Detailed description of the watch',
-    required: false,
-  })
   @IsOptional()
   @IsString()
   description?: string;
 
-  @ApiProperty({ example: 'MALE', enum: WatchGender })
+  @IsOptional()
   @IsEnum(WatchGender)
-  gender: WatchGender;
+  gender?: WatchGender = WatchGender.UNISEX;
 
-  @ApiProperty({ example: 'uuid-of-brand' })
-  @IsString()
+  @IsUUID()
   brandId: string;
 
-  @ApiProperty({ example: 'uuid-of-material', required: false })
   @IsOptional()
-  @IsString()
+  @IsUUID()
   materialId?: string;
 
-  @ApiProperty({ example: 'uuid-of-band-material', required: false })
   @IsOptional()
-  @IsString()
+  @IsUUID()
   bandMaterialId?: string;
 
-  @ApiProperty({ example: 'uuid-of-movement', required: false })
   @IsOptional()
-  @IsString()
+  @IsUUID()
   movementId?: string;
 
-  @ApiProperty({ example: 40.5, required: false })
   @IsOptional()
-  @IsNumber()
+  @Type(() => Number)
+  @IsNumber({}, { message: 'diameter must be a valid number' })
   diameter?: number;
 
-  @ApiProperty({ example: 50, required: false })
   @IsOptional()
-  @IsInt()
+  @Type(() => Number)
+  @IsInt({ message: 'waterResistance must be an integer number' })
   waterResistance?: number;
 
-  @ApiProperty({ example: 24, required: false })
   @IsOptional()
-  @IsInt()
-  warranty?: number;
+  @Type(() => Number)
+  @IsInt({ message: 'warranty must be an integer number' })
+  warranty?: number = 24;
 
-  @ApiProperty({ example: 1000, required: true })
-  @IsNumber()
-  price: number;
-
-  @ApiProperty({ example: 'http://example.com/video.mp4', required: false })
   @IsOptional()
-  @IsString()
+  @IsUrl()
   videoUrl?: string;
 
-  @ApiProperty({
-    type: [String],
-    required: false,
-    example: ['http://example.com/image1.jpg'],
-  })
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  poster: PosterDto[];
-
-  @ApiProperty({
-    type: [String],
-    required: false,
-    example: ['http://example.com/image1.jpg'],
-  })
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  banner: BannerDto[];
+  @Type(() => Number)
+  @IsNumber({}, { message: 'price must be a valid number' })
+  price: number;
 }
 
-export class UpdateWatchDto {
-  @ApiProperty({ example: 'Updated Watch Name', required: false })
+export class UpdateWatchDto extends CreateWatchDto {
+  @IsUUID()
+  id: string;
+
   @IsOptional()
   @IsString()
-  name?: string;
+  poster?: string;
 
-  @ApiProperty({ example: 'Updated description', required: false })
   @IsOptional()
   @IsString()
-  description?: string;
-
-  @ApiProperty({ example: 'FEMALE', enum: WatchGender, required: false })
-  @IsOptional()
-  @IsEnum(WatchGender)
-  gender?: WatchGender;
-
-  @ApiProperty({ example: 'new-uuid-of-brand', required: false })
-  @IsOptional()
-  @IsString()
-  brandId?: string;
-
-  @ApiProperty({ example: 'new-uuid-of-material', required: false })
-  @IsOptional()
-  @IsString()
-  materialId?: string;
-
-  @ApiProperty({ example: 'new-uuid-of-band-material', required: false })
-  @IsOptional()
-  @IsString()
-  bandMaterialId?: string;
-
-  @ApiProperty({ example: 'new-uuid-of-movement', required: false })
-  @IsOptional()
-  @IsString()
-  movementId?: string;
-
-  @ApiProperty({ example: 42.0, required: false })
-  @IsOptional()
-  @IsNumber()
-  diameter?: number;
-
-  @ApiProperty({ example: 100, required: false })
-  @IsOptional()
-  @IsInt()
-  waterResistance?: number;
-
-  @ApiProperty({ example: 36, required: false })
-  @IsOptional()
-  @IsInt()
-  warranty?: number;
-
-  @ApiProperty({ example: 1000, required: false })
-  @IsOptional()
-  @IsNumber()
-  price?: number;
-
-  @ApiProperty({ example: 'http://example.com/new-video.mp4', required: false })
-  @IsOptional()
-  @IsString()
-  videoUrl?: string;
-
-  @ApiProperty({
-    type: [String],
-    required: false,
-    example: ['http://example.com/image1.jpg'],
-  })
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  poster: PosterDto[];
-
-  @ApiProperty({
-    type: [String],
-    required: false,
-    example: ['http://example.com/image1.jpg'],
-  })
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  banner: BannerDto;
+  banner?: string;
 }

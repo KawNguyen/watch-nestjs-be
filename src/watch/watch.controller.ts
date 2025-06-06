@@ -10,10 +10,10 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { WatchService } from './watch.service';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Public } from 'src/auth/decorators/public.decorators';
 import { CreateWatchDto, UpdateWatchDto } from './dto/watch.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { AnyFilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enum';
 import { formatResponse } from 'src/common/helpers/response.helper';
@@ -42,11 +42,56 @@ export class WatchController {
   @ApiOperation({ summary: 'Create a new watch' })
   @Post('create')
   @Roles(Role.ADMIN)
-  @UseInterceptors(FileInterceptor('files'))
+  @UseInterceptors(AnyFilesInterceptor())
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', description: 'Name of the watch' },
+        price: { type: 'number', description: 'Price of the watch' },
+        gender: {
+          type: 'string',
+          enum: ['MEN', 'WOMEN', 'UNISEX'],
+          description: 'Gender category',
+        },
+        brandId: { type: 'string', description: 'Brand ID' },
+        bandMaterialId: { type: 'string', description: 'Band material ID' },
+        movementId: { type: 'string', description: 'Movement ID' },
+        materialId: { type: 'string', description: 'Material ID' },
+        diameter: { type: 'number', description: 'Diameter of the watch' },
+        waterResistance: {
+          type: 'number',
+          description: 'Water resistance level',
+        },
+        warranty: { type: 'number', description: 'Warranty period in months' },
+        videoUrl: { type: 'string', description: 'Video URL of the watch' },
+        description: {
+          type: 'string',
+          description: 'Detailed description of the watch',
+        },
+        poster: {
+          type: 'string',
+          format: 'binary',
+          description: 'Poster image file',
+        },
+        banner: {
+          type: 'string',
+          format: 'binary',
+          description: 'Banner image file',
+        },
+      },
+    },
+  })
   async createWatch(
     @Body() watchDto: CreateWatchDto,
     @UploadedFiles() files: MulterFile[],
   ) {
+    console.log('Uploaded files:', files);
+    if (!files || files.length === 0) {
+      throw new Error('Files are required for watch creation');
+    }
+
     const posterFiles = files.filter((f) => f.fieldname === 'poster');
     const bannerFiles = files.filter((f) => f.fieldname === 'banner');
 

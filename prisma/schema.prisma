@@ -124,9 +124,9 @@ model Watch {
   description     String?
   gender          WatchGender   @default(UNISEX)
   brandId         String
-  materialId      String?
-  bandMaterialId  String?
-  movementId      String?
+  materialId      String
+  bandMaterialId  String
+  movementId      String
   diameter        Float?
   waterResistance Int?
   warranty        Int           @default(24)
