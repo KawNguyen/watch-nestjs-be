@@ -18,6 +18,10 @@ export class WatchService {
       include: {
         poster: true,
         banner: true,
+        brand: true,
+        bandMaterial: true,
+        movement: true,
+        material: true,
       },
     });
   }
