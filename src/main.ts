@@ -7,6 +7,8 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  
+  app.use(cookieParser());
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -40,8 +42,6 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
-
-  app.use(cookieParser());
 
   await app.listen(process.env.PORT || 3001);
 }
