@@ -39,7 +39,7 @@ export class AuthController {
       httpOnly: true,
       // secure: this.configService.get('NODE_ENV') === 'production',
       secure: true,
-      sameSite: 'lax',
+      sameSite: 'None',
       maxAge: 3600000 * 24,
     });
 
