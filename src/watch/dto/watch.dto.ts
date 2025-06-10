@@ -7,9 +7,59 @@ import {
   IsUrl,
   IsInt,
   MaxLength,
+  Min,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { WatchGender } from '@prisma/client';
+
+export class GetWatchesDto {
+  @IsOptional()
+  @IsEnum(WatchGender)
+  gender?: WatchGender;
+
+  @IsOptional()
+  @IsString()
+  brandSlug?: string;
+
+  @IsOptional()
+  @IsString()
+  materialSlug?: string;
+
+  @IsOptional()
+  @IsString()
+  bandMaterialSlug?: string;
+
+  @IsOptional()
+  @IsString()
+  movementSlug?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  minPrice?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  maxPrice?: number;
+
+  @IsOptional()
+  @IsString()
+  keyword?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(1)
+  limit?: number = 12;
+}
+
 
 export class CreateWatchDto {
   @IsString()

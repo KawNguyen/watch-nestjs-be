@@ -2,17 +2,25 @@ import { File as MulterFile } from 'multer';
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
   Post,
+  Query,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
 import { WatchService } from './watch.service';
-import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Public } from 'src/auth/decorators/public.decorators';
-import { CreateWatchDto, UpdateWatchDto } from './dto/watch.dto';
+import { CreateWatchDto, GetWatchesDto, UpdateWatchDto } from './dto/watch.dto';
 import { AnyFilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enum';
@@ -23,12 +31,28 @@ import { formatResponse } from 'src/common/helpers/response.helper';
 export class WatchController {
   constructor(private watchService: WatchService) {}
 
-  @ApiOperation({ summary: 'Get all watches' })
+  @ApiOperation({ summary: 'Get all watches (with optional filters)' })
+  @ApiQuery({ name: 'gender', required: false, enum: ['MALE', 'FEMALE', 'UNISEX'] })
+  @ApiQuery({ name: 'brandSlug', required: false, type: String })
+  @ApiQuery({ name: 'materialSlug', required: false, type: String })
+  @ApiQuery({ name: 'bandMaterialSlug', required: false, type: String })
+  @ApiQuery({ name: 'movementSlug', required: false, type: String })
+  @ApiQuery({ name: 'minPrice', required: false, type: Number })
+  @ApiQuery({ name: 'maxPrice', required: false, type: Number })
+  @ApiQuery({ name: 'keyword', required: false, type: String })
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 12 })
   @Public()
   @Get()
-  async getAllWatches() {
-    const data = await this.watchService.getAllWatches();
-    return formatResponse(data, 'Watches fetched successfully');
+  async getWatches(@Query() query: GetWatchesDto) {
+    const data = await this.watchService.getWatches(query);
+
+    return formatResponse(data.data, 'Watches fetched successfully', {
+      totalItems: data.total,
+      page: data.page,
+      limit: data.limit,
+      totalPages: data.totalPages,
+    });
   }
 
   @ApiOperation({ summary: 'Get watch by ID' })
@@ -124,7 +148,7 @@ export class WatchController {
     return formatResponse(data, 'Watch updated successfully');
   }
   @ApiOperation({ summary: 'Delete a watch' })
-  @Patch('delete/:watchId')
+  @Delete('delete/:watchId')
   @Roles(Role.ADMIN)
   async deleteWatch(@Param('watchId') watchId: string) {
     const data = await this.watchService.deleteWatch(watchId);

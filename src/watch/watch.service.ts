@@ -3,27 +3,118 @@ import { File as MulterFile } from 'multer';
 import { generateSlug } from 'src/utils/slug.util';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateWatchDto, UpdateWatchDto } from './dto/watch.dto';
+import { CreateWatchDto, GetWatchesDto, UpdateWatchDto } from './dto/watch.dto';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class WatchService {
   constructor(
-    private readonly prismaService: PrismaService,
+    private prismaService: PrismaService,
     private cloudinaryService: CloudinaryService,
   ) {}
 
-  async getAllWatches() {
-    return this.prismaService.watch.findMany({
-      include: {
-        poster: true,
-        banner: true,
-        brand: true,
-        bandMaterial: true,
-        movement: true,
-        material: true,
+  async getWatches(dto: GetWatchesDto) {
+    const {
+      gender,
+      brandSlug,
+      materialSlug,
+      bandMaterialSlug,
+      movementSlug,
+      minPrice,
+      maxPrice,
+      keyword,
+      page = 1,
+      limit = 12,
+    } = dto;
+
+    const skip = (page - 1) * limit;
+
+    const where: Prisma.WatchWhereInput = {
+      gender: gender,
+      price: {
+        gte: minPrice,
+        lte: maxPrice,
       },
-    });
+      ...(keyword && {
+        OR: [
+          { name: { contains: keyword, mode: 'insensitive' } },
+          { description: { contains: keyword, mode: 'insensitive' } },
+        ],
+      }),
+      ...(brandSlug && {
+        brand: {
+          slug: brandSlug,
+        },
+      }),
+      ...(materialSlug && {
+        material: {
+          slug: materialSlug,
+        },
+      }),
+      ...(bandMaterialSlug && {
+        bandMaterial: {
+          slug: bandMaterialSlug,
+        },
+      }),
+      ...(movementSlug && {
+        movement: {
+          slug: movementSlug,
+        },
+      }),
+    };
+
+    const [data, total] = await this.prismaService.$transaction([
+      this.prismaService.watch.findMany({
+        where,
+        include: {
+          brand: {
+            select: {
+              name: true,
+            },
+          },
+          material: {
+            select: {
+              name: true,
+            },
+          },
+          bandMaterial: {
+            select: {
+              name: true,
+            },
+          },
+          movement: {
+            select: {
+              name: true,
+            },
+          },
+          banner: {
+            select: {
+              url: true,
+            },
+          },
+          poster: {
+            select: {
+              url: true,
+            },
+          },
+        },
+        skip,
+        take: limit,
+        orderBy: {
+          createdAt: 'desc',
+        },
+      }),
+      this.prismaService.watch.count({ where }),
+    ]);
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   async getWatchById(id: string) {
