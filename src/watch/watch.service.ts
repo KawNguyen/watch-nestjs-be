@@ -6,6 +6,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateWatchDto, GetWatchesDto, UpdateWatchDto } from './dto/watch.dto';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { Prisma } from '@prisma/client';
+import { extractPublicIdFromUrl } from 'src/utils/extract-public-id.util';
 
 @Injectable()
 export class WatchService {
@@ -68,6 +69,10 @@ export class WatchService {
       this.prismaService.watch.findMany({
         where,
         include: {
+          // id: true,
+          // name: true,
+          // slug: true,
+          // price: true,
           brand: {
             select: {
               name: true,
@@ -244,10 +249,24 @@ export class WatchService {
   async deleteWatch(id: string) {
     const existingWatch = await this.prismaService.watch.findUnique({
       where: { id },
+      include: {
+        poster: true,
+        banner: true,
+      },
     });
 
     if (!existingWatch) {
       throw new BadRequestException(`Watch with ID "${id}" does not exist`);
+    }
+
+    if (existingWatch.poster) {
+      const publicId = extractPublicIdFromUrl(existingWatch.poster[0].url);
+      await this.cloudinaryService.deleteImage(publicId);
+    }
+
+    if (existingWatch.banner) {
+      const publicId = extractPublicIdFromUrl(existingWatch.banner[0].url);
+      await this.cloudinaryService.deleteImage(publicId);
     }
 
     return this.prismaService.watch.delete({

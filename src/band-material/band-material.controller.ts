@@ -35,6 +35,7 @@ export class BandMaterialController {
   @Get(':bandMaterialId')
   async getBandMaterialById(bandMaterialId: string) {
     const data = await this.bandMaterial.getBandMaterialById(bandMaterialId);
+    return formatResponse(data, 'Band material fetched successfully');
   }
 
   @ApiOperation({ summary: 'Update band materials by ID' })

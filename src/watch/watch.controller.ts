@@ -32,7 +32,7 @@ export class WatchController {
   constructor(private watchService: WatchService) {}
 
   @ApiOperation({ summary: 'Get all watches (with optional filters)' })
-  @ApiQuery({ name: 'gender', required: false, enum: ['MALE', 'FEMALE', 'UNISEX'] })
+  @ApiQuery({ name: 'gender', required: false, enum: ['MEN', 'WOMEN', 'UNISEX'] })
   @ApiQuery({ name: 'brandSlug', required: false, type: String })
   @ApiQuery({ name: 'materialSlug', required: false, type: String })
   @ApiQuery({ name: 'bandMaterialSlug', required: false, type: String })
