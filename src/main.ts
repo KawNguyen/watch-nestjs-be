@@ -23,7 +23,8 @@ async function bootstrap() {
 
   app.enableCors({
     origin: (origin, callback) => {
-      const allowedOrigins = ['http://localhost:3000', 'http://localhost:3001'];
+      // const allowedOrigins = ['http://localhost:3000', 'http://localhost:3001'];
+      const allowedOrigins = "*"
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
