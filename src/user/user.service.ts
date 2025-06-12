@@ -20,9 +20,11 @@ export class UserService {
   }
 
   async findAll() {
-    return this.prisma.user.findMany({
+    const data = await this.prisma.user.findMany({
       select: { id: true, email: true, password: false, profile: true },
     });
+
+    return data;
   }
 
   async findByEmail(email: string) {
@@ -43,7 +45,7 @@ export class UserService {
     if (!id) {
       throw new ForbiddenException('User ID is required');
     }
-    
+
     const user = await this.prisma.user.findUnique({
       where: { id },
       select: {
@@ -91,11 +93,7 @@ export class UserService {
     return user;
   }
 
-  async update(
-    id: string,
-    updateUserDto: UpdateUserDto,
-    requesterId: string,
-  ) {
+  async update(id: string, updateUserDto: UpdateUserDto, requesterId: string) {
     if (id !== requesterId) {
       throw new ForbiddenException(
         'You do not have permission to update this profile',

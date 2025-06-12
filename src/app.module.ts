@@ -30,7 +30,6 @@ import { FavoriteModule } from './favorite/favorite.module';
     CloudinaryModule,
     WatchModule,
     FavoriteModule,
-    
   ],
   providers: [
     {

@@ -69,6 +69,6 @@ export class MovementService {
 
     return this.prismaService.movement.delete({
       where: { id },
-    })
+    });
   }
 }

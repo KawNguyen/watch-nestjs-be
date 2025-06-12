@@ -1,4 +1,10 @@
-import { IsString, IsEmail, IsOptional, IsNotEmpty, ValidateNested } from 'class-validator';
+import {
+  IsString,
+  IsEmail,
+  IsOptional,
+  IsNotEmpty,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class AddressDto {
@@ -9,7 +15,7 @@ export class AddressDto {
   @IsString()
   @IsNotEmpty()
   district: string;
-  
+
   @IsString()
   @IsNotEmpty()
   ward: string;
@@ -21,14 +27,13 @@ export class AddressDto {
   @IsString()
   @IsNotEmpty()
   country: string;
-
 }
 
 export class UserProfileDto {
   @IsString()
   @IsOptional()
   avatar?: string;
-  
+
   @IsString()
   @IsNotEmpty()
   firstName: string;
@@ -47,7 +52,6 @@ export class UserProfileDto {
 }
 
 export class CreateUserDto {
-
   @IsEmail()
   @IsNotEmpty()
   email: string;

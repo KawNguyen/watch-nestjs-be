@@ -41,8 +41,12 @@ export class BandMaterialController {
   @ApiOperation({ summary: 'Update band materials by ID' })
   @Roles(Role.ADMIN)
   @Post('create')
-  async createBandMaterialDto(@Body() createBandMaterialDto: CreateBandMaterialDto) {
-    const data = await this.bandMaterial.createBandMaterial(createBandMaterialDto);
+  async createBandMaterialDto(
+    @Body() createBandMaterialDto: CreateBandMaterialDto,
+  ) {
+    const data = await this.bandMaterial.createBandMaterial(
+      createBandMaterialDto,
+    );
     return formatResponse(data, 'Band material created successfully');
   }
 
@@ -65,7 +69,9 @@ export class BandMaterialController {
   @ApiOperation({ summary: 'Delete band materials by ID' })
   @Roles(Role.ADMIN)
   @Delete('delete/:bandMaterialId')
-  async deleteBandMaterialById(@Param("brandMaterialId") bandMaterialId: string) {
+  async deleteBandMaterialById(
+    @Param('brandMaterialId') bandMaterialId: string,
+  ) {
     const data = await this.bandMaterial.deleteBandMaterial(bandMaterialId);
     return formatResponse(data, 'Band material deleted successfully');
   }

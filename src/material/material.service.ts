@@ -41,10 +41,7 @@ export class MaterialService {
     });
   }
 
-  async updateMaterial(
-    id: string,
-    updateMaterialDto: UpdateMaterialDto,
-  ) {
+  async updateMaterial(id: string, updateMaterialDto: UpdateMaterialDto) {
     const existingMaterial = await this.prismaService.material.findUnique({
       where: { id },
     });

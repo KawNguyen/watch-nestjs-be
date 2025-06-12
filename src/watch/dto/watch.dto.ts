@@ -60,7 +60,6 @@ export class GetWatchesDto {
   limit?: number = 12;
 }
 
-
 export class CreateWatchDto {
   @IsString()
   @MaxLength(100)

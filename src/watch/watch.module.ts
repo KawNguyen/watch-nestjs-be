@@ -6,6 +6,6 @@ import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
 @Module({
   imports: [CloudinaryModule],
   providers: [WatchService],
-  controllers: [WatchController]
+  controllers: [WatchController],
 })
 export class WatchModule {}

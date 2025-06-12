@@ -39,11 +39,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    const accessToken = await this.generateToken(
-      user.id,
-      email,
-      user.role,
-    );
+    const accessToken = await this.generateToken(user.id, email, user.role);
 
     await this.prisma.session.create({
       data: {
@@ -194,11 +190,7 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    const accessToken = await this.generateToken(
-      user?.id,
-      email,
-      user?.role,
-    );
+    const accessToken = await this.generateToken(user?.id, email, user?.role);
 
     return {
       message: 'Login successfully with Google',
