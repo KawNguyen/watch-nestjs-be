@@ -75,22 +75,30 @@ export class WatchService {
           // price: true,
           brand: {
             select: {
+              id: true,
               name: true,
+              slug: true,
             },
           },
           material: {
             select: {
+              id: true,
               name: true,
+              slug: true,
             },
           },
           bandMaterial: {
             select: {
+              id: true,
               name: true,
+              slug: true,
             },
           },
           movement: {
             select: {
+              id: true,
               name: true,
+              slug: true,
             },
           },
           banner: {
