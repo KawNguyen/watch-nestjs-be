@@ -22,16 +22,16 @@ async function bootstrap() {
   app.setGlobalPrefix('api/v1', { exclude: ['/'] });
 
   app.enableCors({
-    // origin: (origin, callback) => {
-    //   // const allowedOrigins = ['http://localhost:3000', 'http://localhost:3001'];
-    //   const allowedOrigins = "*"
-    //   if (!origin || allowedOrigins.includes(origin)) {
-    //     callback(null, true);
-    //   } else {
-    //     callback(new Error('Not allowed by CORS'));
-    //   }
-    // },
-    origin: "*",
+    origin: (origin, callback) => {
+      const allowedOrigins = ['http://localhost:3000', 'http://localhost:3001', "https://3000-firebase-watch-admin-nextjs-1749693865609.cluster-xpmcxs2fjnhg6xvn446ubtgpio.cloudworkstations.dev"];
+      // const allowedOrigins = "*"
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    // origin: "*",
     credentials: true,
   });
 
