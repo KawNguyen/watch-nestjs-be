@@ -13,7 +13,6 @@ export class FavoriteService {
   constructor(private prismaService: PrismaService) {}
 
   async getFavoriteME(userId: string, requesterId: string) {
-    console.log(userId);
     if (!userId) {
       throw new ForbiddenException('User ID is required');
     }
@@ -108,37 +107,26 @@ export class FavoriteService {
     return favorite;
   }
 
-  async removeFavorite(
-    removeFavoriteDto: RemoveFavoriteDto,
-    requesterId: string,
-  ) {
-    const { userId, watchId } = removeFavoriteDto;
+  async removeFavorites(userId: string, favoriteIds: string[]) {
+    if (!favoriteIds || favoriteIds.length === 0) {
+      throw new ForbiddenException('No favorite IDs provided');
+    }
 
-    const favorite = await this.prismaService.favorite.findUnique({
+    const favorites = await this.prismaService.favorite.findMany({
       where: {
-        userId_watchId: {
-          userId,
-          watchId,
-        },
+        id: { in: favoriteIds },
       },
     });
 
-    if (!favorite) {
-      throw new NotFoundException('Favorite not found');
+    const invalidItems = favorites.filter((f) => f.userId !== userId);
+    if (invalidItems.length > 0) {
+      throw new ForbiddenException('Some favorite items do not belong to you');
     }
 
-    if (userId !== requesterId) {
-      throw new ForbiddenException(
-        'You do not have permission to add favorite this profile',
-      );
-    }
-
-    return await this.prismaService.favorite.delete({
+    return this.prismaService.favorite.deleteMany({
       where: {
-        userId_watchId: {
-          userId,
-          watchId,
-        },
+        id: { in: favoriteIds },
+        userId,
       },
     });
   }

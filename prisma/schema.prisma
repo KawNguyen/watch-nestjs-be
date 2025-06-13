@@ -198,7 +198,7 @@ model Cart {
   updatedAt DateTime   @updatedAt
   id        String     @id @default(uuid())
   user      User       @relation(fields: [userId], references: [id])
-  items     CartItem[]
+  cartItems CartItem[]
 }
 
 model CartItem {
@@ -219,7 +219,7 @@ model StockEntry {
   updatedAt  DateTime    @updatedAt
   id         String      @id @default(uuid())
   addedBy    User        @relation(fields: [addedById], references: [id])
-  items      StockItem[]
+  stockItems StockItem[]
 }
 
 model StockItem {
@@ -249,7 +249,7 @@ model Order {
   address       Address?      @relation(fields: [addressId], references: [id])
   coupon        Coupon?       @relation(fields: [couponId], references: [id])
   user          User          @relation(fields: [userId], references: [id])
-  items         OrderItem[]
+  orderItems    OrderItem[]
 }
 
 model OrderItem {

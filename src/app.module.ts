@@ -13,6 +13,7 @@ import { MaterialModule } from './material/material.module';
 import { WatchModule } from './watch/watch.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { FavoriteModule } from './favorite/favorite.module';
+import { CartModule } from './cart/cart.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { FavoriteModule } from './favorite/favorite.module';
     CloudinaryModule,
     WatchModule,
     FavoriteModule,
+    CartModule,
   ],
   providers: [
     {
