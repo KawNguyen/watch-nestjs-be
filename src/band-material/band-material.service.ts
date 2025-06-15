@@ -8,7 +8,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { generateSlug } from 'src/utils/slug.util';
+import { generateSlug } from 'src/utils/slug.utils';
 
 @Injectable()
 export class BandMaterialService {

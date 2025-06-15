@@ -16,7 +16,7 @@ import {
 } from './dto/band-material.dto';
 import { Role } from 'src/auth/enums/role.enum';
 import { Roles } from 'src/auth/decorators/roles.decorator';
-import { formatResponse } from 'src/common/helpers/response.helper';
+import { formatResponse } from 'src/common/helpers/response.helpers';
 
 @ApiTags('Band Material')
 @Controller('band-material')

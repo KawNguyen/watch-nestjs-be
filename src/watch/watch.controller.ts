@@ -24,7 +24,7 @@ import { CreateWatchDto, GetWatchesDto, UpdateWatchDto } from './dto/watch.dto';
 import { AnyFilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enum';
-import { formatResponse } from 'src/common/helpers/response.helper';
+import { formatResponse } from 'src/common/helpers/response.helpers';
 
 @ApiTags('Watch')
 @Controller('watch')

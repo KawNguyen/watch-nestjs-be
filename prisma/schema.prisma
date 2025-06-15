@@ -23,6 +23,11 @@ model User {
   email        String        @unique
   password     String
   role         UserRole      @default(CUSTOMER)
+  phone        String?
+  gender       UserGender?
+  firstName    String        @default("")
+  lastName     String        @default("")
+  avatar       String?
   otp          String?
   otpExpiry    DateTime?
   createdAt    DateTime      @default(now())
@@ -33,24 +38,10 @@ model User {
   couponUsages CouponUsage[]
   favorites    Favorite[]
   orders       Order[]
-  profile      Profile?
   reviews      Review[]
   sessions     Session[]
+  addresses    Address[]
   stockEntries StockEntry[]
-}
-
-model Profile {
-  userId    String      @unique
-  phone     String?
-  gender    UserGender?
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  id        String      @id @default(uuid())
-  firstName String      @default("")
-  lastName  String      @default("")
-  avatar    String?
-  addresses Address[]
-  user      User        @relation(fields: [userId], references: [id])
 }
 
 model Address {
@@ -62,9 +53,9 @@ model Address {
   country   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  profileId String
-  profile   Profile  @relation(fields: [profileId], references: [id])
   orders    Order[]
+  User      User?    @relation(fields: [userId], references: [id])
+  userId    String?
 }
 
 model Brand {
@@ -140,24 +131,12 @@ model Watch {
   favorites       Favorite[]
   orderItems      OrderItem[]
   poster          Poster[]
-  quantities      Quantity[]
   reviews         Review[]
   stockItems      StockItem[]
   bandMaterial    BandMaterial @relation(fields: [bandMaterialId], references: [id])
   brand           Brand        @relation(fields: [brandId], references: [id])
   material        Material     @relation(fields: [materialId], references: [id])
   movement        Movement     @relation(fields: [movementId], references: [id])
-}
-
-model Quantity {
-  watchId   String
-  quantity  Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  id        String   @id @default(uuid())
-  watch     Watch    @relation(fields: [watchId], references: [id])
-
-  @@index([watchId])
 }
 
 model Favorite {
@@ -235,21 +214,22 @@ model StockItem {
 }
 
 model Order {
-  userId        String
-  addressId     String?
-  totalPrice    Float
-  status        OrderStatus   @default(PENDING)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  couponId      String?
-  id            String        @id @default(uuid())
-  orginalPrice  Float
-  paymentMethod PaymentMethod @default(COD)
-  shippingNotes String?
-  address       Address?      @relation(fields: [addressId], references: [id])
-  coupon        Coupon?       @relation(fields: [couponId], references: [id])
-  user          User          @relation(fields: [userId], references: [id])
-  orderItems    OrderItem[]
+  userId             String
+  addressId          String?
+  totalPrice         Float
+  status             OrderStatus   @default(PENDING)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  couponId           String?
+  id                 String        @id @default(uuid())
+  orginalPrice       Float
+  paymentMethod      PaymentMethod @default(COD)
+  shippingNotes      String?
+  cancellationReason String?
+  address            Address?      @relation(fields: [addressId], references: [id])
+  coupon             Coupon?       @relation(fields: [couponId], references: [id])
+  user               User          @relation(fields: [userId], references: [id])
+  orderItems         OrderItem[]
 }
 
 model OrderItem {
@@ -297,7 +277,7 @@ model Coupon {
   orders        Order[]
 }
 
-model Ads {
+model Advertisement {
   adsId     String   @id @default(uuid())
   title     String
   content   String?

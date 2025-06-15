@@ -1,27 +1,40 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { checkDuplicateAddresses } from './utils/address.utils';
+import { buildUpsertData } from './helper/address.helpers';
+import { assertCanAccessResource } from 'src/common/helpers/assert-can-access-resource.helpers';
+import { assertIsOwner } from 'src/common/helpers/assert-is-owner.helpers';
 
 @Injectable()
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
   async create(createUserDto: CreateUserDto) {
+    const { addresses, ...rest } = createUserDto as any;
     return this.prisma.user.create({
       data: {
-        ...createUserDto,
-        profile: createUserDto.profile
-          ? {
-              create: createUserDto.profile,
-            }
-          : undefined,
+        ...rest,
+        ...(addresses && {
+          addresses: {
+            create: Array.isArray(addresses) ? addresses : [addresses],
+          },
+        }),
       },
     });
   }
 
   async findAll() {
     const data = await this.prisma.user.findMany({
-      select: { id: true, email: true, password: false, profile: true },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        avatar: true,
+        password: false,
+      },
     });
 
     return data;
@@ -35,8 +48,11 @@ export class UserService {
       select: {
         id: true,
         email: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        avatar: true,
         password: false,
-        profile: true,
       },
     });
   }
@@ -51,13 +67,11 @@ export class UserService {
       select: {
         id: true,
         email: true,
-        profile: {
-          select: {
-            firstName: true,
-            lastName: true,
-            avatar: true,
-          },
-        },
+        firstName: true,
+        lastName: true,
+        phone: true,
+        avatar: true,
+        addresses: true,
       },
     });
 
@@ -69,11 +83,8 @@ export class UserService {
   }
 
   async findOne(id: string, requesterId: string, role: string) {
-    if (id !== requesterId && role !== 'ADMIN') {
-      throw new ForbiddenException(
-        'You do not have permission to view this profile',
-      );
-    }
+    assertCanAccessResource(id, requesterId, role, { action: 'view' });
+
     const user = await this.prisma.user.findUnique({
       where: {
         id,
@@ -81,8 +92,11 @@ export class UserService {
       select: {
         id: true,
         email: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        avatar: true,
         password: false,
-        profile: true,
       },
     });
 
@@ -94,45 +108,39 @@ export class UserService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto, requesterId: string) {
-    if (id !== requesterId) {
-      throw new ForbiddenException(
-        'You do not have permission to update this profile',
-      );
-    }
+    assertIsOwner(id, requesterId);
 
     const user = await this.prisma.user.findUnique({
-      where: {
-        id,
-      },
-      include: {
-        profile: true,
-      },
+      where: { id },
     });
 
     if (!user) {
       return null;
     }
 
+    const { addresses, ...rest } = updateUserDto as any;
+
+    if (addresses) {
+      const addressArray = Array.isArray(addresses) ? addresses : [addresses];
+      checkDuplicateAddresses(addressArray);
+    }
+
     return this.prisma.user.update({
       where: { id },
       data: {
-        ...updateUserDto,
-        profile: updateUserDto.profile
-          ? {
-              update: updateUserDto.profile,
-            }
-          : undefined,
+        ...rest,
+        ...(addresses && {
+          addresses: {
+            upsert: buildUpsertData(addresses),
+          },
+        }),
         updatedAt: new Date(),
       },
     });
   }
 
   async remove(id: string, requesterId: string) {
-    if (id !== requesterId) {
-      throw new ForbiddenException(
-        'You do not have permission to delete this profile',
-      );
-    }
+    assertIsOwner(id, requesterId);
 
     return this.prisma.user.delete({
       where: { id },

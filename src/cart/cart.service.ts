@@ -1,21 +1,23 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AddCartItemDto } from './dto/cart.dto';
+import { assertIsOwner } from 'src/common/helpers/assert-is-owner.helpers';
 
 @Injectable()
 export class CartService {
   constructor(private prismaService: PrismaService) {}
 
   async getCartItemsByUserId(userId: string, requesterId: string) {
-    if (!userId || userId !== requesterId) {
-      throw new ForbiddenException(
-        'You do not have permission to access this cart.',
-      );
+    if (!userId) {
+      throw new BadRequestException('User ID is required');
     }
+
+    assertIsOwner(userId, requesterId, 'access');
 
     const cart = await this.prismaService.cart.findUnique({
       where: { userId },

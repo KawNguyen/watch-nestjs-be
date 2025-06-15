@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateMovementDto, UpdateMovementDto } from './dto/movement.dto';
-import { generateSlug } from 'src/utils/slug.util';
+import { generateSlug } from 'src/utils/slug.utils';
 
 @Injectable()
 export class MovementService {

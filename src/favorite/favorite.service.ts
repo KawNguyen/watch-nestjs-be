@@ -1,12 +1,12 @@
 import {
-  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
-  NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { AddFavoriteDto, RemoveFavoriteDto } from './dto/favorite.dto';
+import { AddFavoriteDto } from './dto/favorite.dto';
+import { assertIsOwner } from 'src/common/helpers/assert-is-owner.helpers';
+import { validateUserAndWatch } from 'src/common/helpers/validate-user-and-watch.helper.helpers';
 
 @Injectable()
 export class FavoriteService {
@@ -17,11 +17,7 @@ export class FavoriteService {
       throw new ForbiddenException('User ID is required');
     }
 
-    if (userId !== requesterId) {
-      throw new ForbiddenException(
-        'You do not have permission to get all favorites this profile',
-      );
-    }
+    assertIsOwner(userId, requesterId, 'access');
 
     return this.prismaService.favorite.findMany({
       where: { userId },
@@ -76,7 +72,7 @@ export class FavoriteService {
   async addFavorite(addFavoriteDto: AddFavoriteDto, requesterId: string) {
     const { userId, watchId } = addFavoriteDto;
 
-    await this.validateUserAndWatch(userId, watchId);
+    await validateUserAndWatch(this.prismaService, userId, watchId);
 
     const existingFavorite = await this.prismaService.favorite.findUnique({
       where: {
@@ -129,23 +125,5 @@ export class FavoriteService {
         userId,
       },
     });
-  }
-
-  private async validateUserAndWatch(
-    userId: string,
-    watchId: string,
-  ): Promise<void> {
-    const [user, watch] = await Promise.all([
-      this.prismaService.user.findUnique({ where: { id: userId } }),
-      this.prismaService.watch.findUnique({ where: { id: watchId } }),
-    ]);
-
-    if (!user) {
-      throw new BadRequestException('User not found');
-    }
-
-    if (!watch) {
-      throw new BadRequestException('Watch not found');
-    }
   }
 }

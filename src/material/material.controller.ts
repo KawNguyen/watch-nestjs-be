@@ -13,7 +13,7 @@ import { Public } from 'src/auth/decorators/public.decorators';
 import { CreateMaterialDto, UpdateMaterialDto } from './dto/material.dto';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enum';
-import { formatResponse } from 'src/common/helpers/response.helper';
+import { formatResponse } from 'src/common/helpers/response.helpers';
 
 @ApiTags('Material')
 @Controller('material')

@@ -12,7 +12,7 @@ import {
 import { CartService } from './cart.service';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth/jwt-auth.guard';
-import { formatResponse } from 'src/common/helpers/response.helper';
+import { formatResponse } from 'src/common/helpers/response.helpers';
 import {
   AddCartItemDto,
   RemoveCartItemsDto,
@@ -25,11 +25,14 @@ export class CartController {
   constructor(private readonly cartService: CartService) {}
 
   @ApiOperation({ summary: 'Get cart item by userId' })
-  @Get()
+  @Get(':userId')
   @UseGuards(JwtAuthGuard)
-  async getCartItemByUserId(@Req() req: Request) {
-    const userId = (req as any).user.id;
-    const data = await this.cartService.getCartItemsByUserId(userId, userId);
+  async getCartItemByUserId(@Param() userId: string, @Req() req: Request) {
+    const requesterId = (req as any).user.id;
+    const data = await this.cartService.getCartItemsByUserId(
+      userId,
+      requesterId,
+    );
     return formatResponse(data, 'Fetch cart item successfully');
   }
 

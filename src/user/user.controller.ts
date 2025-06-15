@@ -14,6 +14,7 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enum';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth/jwt-auth.guard';
+import { formatResponse } from 'src/common/helpers/response.helpers';
 
 @ApiTags('User')
 @Controller('user')
@@ -24,42 +25,57 @@ export class UserController {
   @Roles(Role.ADMIN)
   @Get()
   @UseGuards(JwtAuthGuard)
-  findAll() {
-    return this.userService.findAll();
+  async findAll() {
+    const data = await this.userService.findAll();
+    return formatResponse(data, 'Fetch all users successfully');
   }
 
   @ApiOperation({ summary: 'Get user was login' })
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  findMe(@Req() req) {
+  async findMe(@Req() req) {
     const userId = req.user.id;
-    return this.userService.findMe(userId);
+    const data = await this.userService.findMe(userId);
+    return formatResponse(data, 'Fetch your profile successfully');
   }
 
   @ApiOperation({ summary: 'Get user by id' })
   @Get(':userId')
   @UseGuards(JwtAuthGuard)
-  findOne(@Param('userId') userId: string, @Req() req: Request) {
+  async findOne(@Param('userId') userId: string, @Req() req: Request) {
     const requesterId = (req as any).user.id;
     const requesterRole = (req as any).user.role;
-    return this.userService.findOne(userId, requesterId, requesterRole);
+    const data = await this.userService.findOne(
+      userId,
+      requesterId,
+      requesterRole,
+    );
+    return formatResponse(data, 'Fetch user by ID successfully');
   }
 
   @ApiOperation({ summary: 'Update user' })
   @Patch('update/:userId')
-  update(
+  @UseGuards(JwtAuthGuard)
+  async update(
     @Param('userId') userId: string,
     @Body() updateUserDto: UpdateUserDto,
     @Req() req: Request,
   ) {
     const requesterId = (req as any).user.id;
-    return this.userService.update(userId, updateUserDto, requesterId);
+    const data = await this.userService.update(
+      userId,
+      updateUserDto,
+      requesterId,
+    );
+    return formatResponse(data, 'Update user successfully');
   }
 
   @ApiOperation({ summary: 'Delete user' })
   @Delete('delete/:userId')
-  remove(@Param('userId') id: string, @Req() req: Request) {
+  @UseGuards(JwtAuthGuard)
+  async remove(@Param('userId') id: string, @Req() req: Request) {
     const requesterId = (req as any).user.id;
-    return this.userService.remove(id, requesterId);
+    const data = await this.userService.remove(id, requesterId);
+    return formatResponse(data, 'Delete user successfully')
   }
 }

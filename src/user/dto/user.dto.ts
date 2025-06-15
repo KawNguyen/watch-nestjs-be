@@ -6,49 +6,33 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class AddressDto {
+  @ApiProperty({ example: '123 Nguyễn Trãi' })
   @IsString()
   @IsNotEmpty()
   street: string;
 
+  @ApiProperty({ example: 'Quận 1' })
   @IsString()
   @IsNotEmpty()
   district: string;
 
+  @ApiProperty({ example: 'Phường Bến Thành' })
   @IsString()
   @IsNotEmpty()
   ward: string;
 
+  @ApiProperty({ example: 'TP. Hồ Chí Minh' })
   @IsString()
   @IsNotEmpty()
   city: string;
 
+  @ApiProperty({ example: 'Việt Nam' })
   @IsString()
   @IsNotEmpty()
   country: string;
-}
-
-export class UserProfileDto {
-  @IsString()
-  @IsOptional()
-  avatar?: string;
-
-  @IsString()
-  @IsNotEmpty()
-  firstName: string;
-
-  @IsString()
-  @IsNotEmpty()
-  lastName: string;
-
-  @IsString()
-  @IsOptional()
-  phoneNumber?: string;
-
-  @IsString()
-  @IsOptional()
-  bio?: string;
 }
 
 export class CreateUserDto {
@@ -60,27 +44,56 @@ export class CreateUserDto {
   @IsNotEmpty()
   password: string;
 
-  @ValidateNested()
-  @Type(() => UserProfileDto)
-  profile?: UserProfileDto;
+  @IsString()
+  @IsNotEmpty()
+  firstName: string;
+
+  @IsString()
+  @IsNotEmpty()
+  lastName: string;
+
+  @IsString()
+  @IsOptional()
+  avatar?: string;
+
+  @IsString()
+  @IsOptional()
+  phone?: string;
 
   @ValidateNested()
   @Type(() => AddressDto)
-  address?: AddressDto;
+  addresses?: AddressDto;
 }
 
 export class UpdateUserDto {
-  @IsEmail()
-  @IsOptional()
-  email?: string;
+  @ApiProperty({ example: 'newPassword123' })
+  @IsString()
+  @IsNotEmpty()
+  password: string;
 
-  @ValidateNested()
-  @IsOptional()
-  @Type(() => UserProfileDto)
-  profile?: UserProfileDto;
+  @ApiProperty({ example: 'Jane' })
+  @IsString()
+  @IsNotEmpty()
+  firstName: string;
 
+  @ApiProperty({ example: 'Smith' })
+  @IsString()
+  @IsNotEmpty()
+  lastName: string;
+
+  @ApiPropertyOptional({ example: 'https://example.com/new-avatar.jpg' })
+  @IsString()
+  @IsOptional()
+  avatar?: string;
+
+  @ApiPropertyOptional({ example: '0912345678' })
+  @IsString()
+  @IsOptional()
+  phone?: string;
+
+  @ApiPropertyOptional({ type: [AddressDto] })
   @ValidateNested()
   @IsOptional()
   @Type(() => AddressDto)
-  address?: AddressDto;
+  addresses?: AddressDto[];
 }

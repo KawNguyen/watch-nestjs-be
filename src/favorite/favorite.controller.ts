@@ -13,7 +13,7 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { FavoriteService } from './favorite.service';
 import { AddFavoriteDto, RemoveFavoriteDto } from './dto/favorite.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth/jwt-auth.guard';
-import { formatResponse } from 'src/common/helpers/response.helper';
+import { formatResponse } from 'src/common/helpers/response.helpers';
 
 @ApiTags('Favorite')
 @Controller('favorite')
@@ -21,16 +21,19 @@ export class FavoriteController {
   constructor(private readonly favoriteService: FavoriteService) {}
 
   @ApiOperation({ summary: 'Get all favorite by userId' })
-  @Get()
+  @Get(':userId')
   @UseGuards(JwtAuthGuard)
-  async getAllFavoriteByUserId(@Req() req: Request) {
-    const userId = (req as any).user.id;
-    const data = await this.favoriteService.getFavoriteME(userId, userId);
+  async getAllFavoriteByUserId(
+    @Param('userId') userId: string,
+    @Req() req: Request,
+  ) {
+    const requesterId = (req as any).user.id;
+    const data = await this.favoriteService.getFavoriteME(userId, requesterId);
     return formatResponse(data, 'Favorites fetched successfully');
   }
 
   @ApiOperation({ summary: 'Add favorite to your account' })
-  @Post()
+  @Post('/add')
   @UseGuards(JwtAuthGuard)
   async addFavorite(
     @Body() addFavoriteDto: AddFavoriteDto,

@@ -1,6 +1,6 @@
 import { IsString, IsEmail, IsNotEmpty, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { AddressDto, UserProfileDto } from '../../user/dto/user.dto';
+import { AddressDto } from '../../user/dto/user.dto';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class RegisterDto {
@@ -23,10 +23,6 @@ export class RegisterDto {
   @IsNotEmpty()
   @ApiProperty({ example: 'password' })
   password: string;
-
-  @ValidateNested()
-  @Type(() => UserProfileDto)
-  profile?: UserProfileDto;
 
   @ValidateNested()
   @Type(() => AddressDto)

@@ -14,6 +14,7 @@ import { WatchModule } from './watch/watch.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { FavoriteModule } from './favorite/favorite.module';
 import { CartModule } from './cart/cart.module';
+import { OrderModule } from './order/order.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { CartModule } from './cart/cart.module';
     WatchModule,
     FavoriteModule,
     CartModule,
+    OrderModule,
   ],
   providers: [
     {
@@ -44,4 +46,4 @@ import { CartModule } from './cart/cart.module';
     },
   ],
 })
-export class AppModule {}
+export class AppModule { }

@@ -8,7 +8,7 @@ import { CreateUserDto } from 'src/user/dto/user.dto';
 
 @Injectable()
 export class AuthService {
-  private transporter;
+  private transporter: nodemailer.Transporter;
 
   constructor(
     private prisma: PrismaService,
@@ -77,7 +77,7 @@ export class AuthService {
       where: { email },
     });
     if (existingUser) {
-      throw new UnauthorizedException('Email này đã được đăng ký');
+      throw new UnauthorizedException('Email was signed');
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -86,12 +86,8 @@ export class AuthService {
 
     const user = await this.prisma.user.create({
       data: {
-        profile: {
-          create: {
-            firstName,
-            lastName,
-          },
-        },
+        firstName,
+        lastName,
         email,
         password: hashedPassword,
         otp,
@@ -175,15 +171,7 @@ export class AuthService {
   async loginGoogle(email: string) {
     const user = await this.prisma.user.findUnique({
       where: { email },
-      include: {
-        profile: {
-          select: {
-            firstName: true,
-            lastName: true,
-            avatar: true,
-          },
-        },
-      },
+      include: {},
     });
 
     if (!user) {

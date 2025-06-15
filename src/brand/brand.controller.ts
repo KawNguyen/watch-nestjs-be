@@ -17,7 +17,7 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enum';
 import { File as MulterFile } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { formatResponse } from 'src/common/helpers/response.helper';
+import { formatResponse } from 'src/common/helpers/response.helpers';
 
 @ApiTags('Brand')
 @Controller('brand')

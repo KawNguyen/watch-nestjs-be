@@ -90,7 +90,9 @@ export class AuthController {
 
     res.cookie('accessToken', response.accessToken, {
       httpOnly: true,
-      secure: this.configService.get('NODE_ENV') === 'production',
+      // secure: this.configService.get('NODE_ENV') === 'production',
+      secure: true,
+
       sameSite: 'None',
       maxAge: 3600000 * 24,
     });
@@ -139,7 +141,8 @@ export class AuthController {
 
     res.cookie('accessToken', response.accessToken, {
       httpOnly: true,
-      secure: this.configService.get('NODE_ENV') === 'production',
+      // secure: this.configService.get('NODE_ENV') === 'production',
+      secure: true,
       sameSite: 'None',
       maxAge: 3600000,
     });
