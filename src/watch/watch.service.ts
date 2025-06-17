@@ -129,9 +129,9 @@ export class WatchService {
     };
   }
 
-  async getWatchById(id: string) {
+  async getWatchBySlug(slug: string) {
     return this.prismaService.watch.findUnique({
-      where: { id },
+      where: { slug },
     });
   }
 

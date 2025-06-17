@@ -15,6 +15,9 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { FavoriteModule } from './favorite/favorite.module';
 import { CartModule } from './cart/cart.module';
 import { OrderModule } from './order/order.module';
+import { StockEntryModule } from './stock-entry/stock-entry.module';
+import { InventoryModule } from './inventory/inventory.module';
+import { ReviewModule } from './review/review.module';
 
 @Module({
   imports: [
@@ -34,6 +37,9 @@ import { OrderModule } from './order/order.module';
     FavoriteModule,
     CartModule,
     OrderModule,
+    StockEntryModule,
+    InventoryModule,
+    ReviewModule,
   ],
   providers: [
     {
@@ -46,4 +52,4 @@ import { OrderModule } from './order/order.module';
     },
   ],
 })
-export class AppModule { }
+export class AppModule {}

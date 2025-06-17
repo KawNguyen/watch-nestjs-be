@@ -52,18 +52,18 @@ export class WatchController {
     const data = await this.watchService.getWatches(query);
 
     return formatResponse(data.data, 'Watches fetched successfully', {
-      totalItems: data.total,
-      page: data.page,
       limit: data.limit,
+      page: data.page,
+      totalItems: data.total,
       totalPages: data.totalPages,
     });
   }
 
   @ApiOperation({ summary: 'Get watch by ID' })
   @Public()
-  @Get(':watchId')
-  async getWatchById(@Param('watchId') watchId: string) {
-    const data = await this.watchService.getWatchById(watchId);
+  @Get(':slug')
+  async getWatchById(@Param('slug') slug: string) {
+    const data = await this.watchService.getWatchBySlug(slug);
     return formatResponse(data, 'Watch fetched successfully');
   }
 

@@ -5,24 +5,11 @@ import { checkDuplicateAddresses } from './utils/address.utils';
 import { buildUpsertData } from './helper/address.helpers';
 import { assertCanAccessResource } from 'src/common/helpers/assert-can-access-resource.helpers';
 import { assertIsOwner } from 'src/common/helpers/assert-is-owner.helpers';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
   constructor(private prisma: PrismaService) {}
-
-  async create(createUserDto: CreateUserDto) {
-    const { addresses, ...rest } = createUserDto as any;
-    return this.prisma.user.create({
-      data: {
-        ...rest,
-        ...(addresses && {
-          addresses: {
-            create: Array.isArray(addresses) ? addresses : [addresses],
-          },
-        }),
-      },
-    });
-  }
 
   async findAll() {
     const data = await this.prisma.user.findMany({
@@ -38,6 +25,20 @@ export class UserService {
     });
 
     return data;
+  }
+
+  async create(createUserDto: CreateUserDto) {
+    const { addresses, ...rest } = createUserDto as any;
+    return this.prisma.user.create({
+      data: {
+        ...rest,
+        ...(addresses && {
+          addresses: {
+            create: Array.isArray(addresses) ? addresses : [addresses],
+          },
+        }),
+      },
+    });
   }
 
   async findByEmail(email: string) {
@@ -118,8 +119,9 @@ export class UserService {
       return null;
     }
 
-    const { addresses, ...rest } = updateUserDto as any;
+    const { addresses, ...rest } = updateUserDto;
 
+    const hashedPassword = await bcrypt.hash(updateUserDto.password, 10);
     if (addresses) {
       const addressArray = Array.isArray(addresses) ? addresses : [addresses];
       checkDuplicateAddresses(addressArray);
@@ -129,6 +131,7 @@ export class UserService {
       where: { id },
       data: {
         ...rest,
+        password: hashedPassword,
         ...(addresses && {
           addresses: {
             upsert: buildUpsertData(addresses),

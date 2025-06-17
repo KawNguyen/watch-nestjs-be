@@ -137,6 +137,7 @@ model Watch {
   brand           Brand        @relation(fields: [brandId], references: [id])
   material        Material     @relation(fields: [materialId], references: [id])
   movement        Movement     @relation(fields: [movementId], references: [id])
+  inventory       Inventory?
 }
 
 model Favorite {
@@ -244,6 +245,15 @@ model OrderItem {
   watch     Watch    @relation(fields: [watchId], references: [id])
 }
 
+model Inventory {
+  id        String   @id @default(uuid())
+  watchId   String   @unique
+  quantity  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  watch     Watch    @relation(fields: [watchId], references: [id])
+}
+
 model Review {
   id        String   @id @default(uuid())
   userId    String
@@ -278,7 +288,7 @@ model Coupon {
 }
 
 model Advertisement {
-  adsId     String   @id @default(uuid())
+  id        String   @id @default(uuid())
   title     String
   content   String?
   imageUrl  String?

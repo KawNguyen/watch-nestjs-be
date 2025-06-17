@@ -8,31 +8,26 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import {
   CancelOrderDto,
   CreateOrderDto,
+  GetOrdersDto,
   UpdateOrderStatusDto,
 } from './dto/order.dto';
 import { assertIsOwner } from 'src/common/helpers/assert-is-owner.helpers';
-import { OrderStatus } from '@prisma/client';
 
 @Injectable()
 export class OrderService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getAllOrders(
-    page: number = 1,
-    limit: number = 10,
-    searchTerm?: string,
-    status?: OrderStatus,
-    userId?: string,
-  ) {
+  async getAllOrders(dto: GetOrdersDto) {
+    const { page = 1, limit = 10, keyword, status, userId } = dto;
     const skip = (page - 1) * limit;
 
     const whereClause: any = {};
 
-    if (searchTerm) {
+    if (keyword) {
       whereClause.user = {
         OR: [
-          { email: { contains: searchTerm, mode: 'insensitive' } },
-          { phone: { contains: searchTerm, mode: 'insensitive' } },
+          { email: { contains: keyword, mode: 'insensitive' } },
+          { phone: { contains: keyword, mode: 'insensitive' } },
         ],
       };
     }
@@ -152,8 +147,20 @@ export class OrderService {
       },
       include: {
         orderItems: true,
+        address: true,
       },
     });
+
+    for (const item of orderItemsData) {
+      await this.prismaService.inventory.update({
+        where: { watchId: item.watchId },
+        data: {
+          quantity: {
+            decrement: item.quantity,
+          },
+        },
+      });
+    }
 
     await this.prismaService.cartItem.deleteMany({
       where: {
@@ -199,6 +206,7 @@ export class OrderService {
       select: {
         userId: true,
         status: true,
+        orderItems: true,
       },
     });
 
@@ -216,12 +224,22 @@ export class OrderService {
       );
     }
 
-    return this.prismaService.order.update({
+    await this.prismaService.order.update({
       where: { id: orderId },
       data: {
         status: 'CANCELED',
         cancellationReason: cancelDto.reason,
       },
     });
+
+    for (const item of order.orderItems) {
+      await this.prismaService.inventory.update({
+        where: { watchId: item.watchId },
+        data: {
+          quantity: { increment: item.quantity },
+        },
+      });
+    }
+    return { message: 'Order cancelled and inventory updated' };
   }
 }

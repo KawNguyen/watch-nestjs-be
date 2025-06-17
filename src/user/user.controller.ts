@@ -76,6 +76,6 @@ export class UserController {
   async remove(@Param('userId') id: string, @Req() req: Request) {
     const requesterId = (req as any).user.id;
     const data = await this.userService.remove(id, requesterId);
-    return formatResponse(data, 'Delete user successfully')
+    return formatResponse(data, 'Delete user successfully');
   }
 }
