@@ -113,12 +113,12 @@ export class WatchController {
   })
   async createWatch(
     @Body() watchDto: CreateWatchDto,
-    @UploadedFiles() files: MulterFile[],
+    // @UploadedFiles() files: MulterFile[],
   ) {
-    console.log('Uploaded files:', files);
-    if (!files || files.length === 0) {
-      throw new Error('Files are required for watch creation');
-    }
+    // console.log('Uploaded files:', files);
+    // if (!files || files.length === 0) {
+    //   throw new Error('Files are required for watch creation');
+    // }
 
     // const posterFiles = files.filter((f) => f.fieldname === 'poster');
     // const bannerFiles = files.filter((f) => f.fieldname === 'banner');
