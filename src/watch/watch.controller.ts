@@ -98,16 +98,16 @@ export class WatchController {
           type: 'string',
           description: 'Detailed description of the watch',
         },
-        poster: {
-          type: 'string',
-          format: 'binary',
-          description: 'Poster image file',
-        },
-        banner: {
-          type: 'string',
-          format: 'binary',
-          description: 'Banner image file',
-        },
+        // poster: {
+        //   type: 'string',
+        //   format: 'binary',
+        //   description: 'Poster image file',
+        // },
+        // banner: {
+        //   type: 'string',
+        //   format: 'binary',
+        //   description: 'Banner image file',
+        // },
       },
     },
   })
@@ -120,13 +120,13 @@ export class WatchController {
       throw new Error('Files are required for watch creation');
     }
 
-    const posterFiles = files.filter((f) => f.fieldname === 'poster');
-    const bannerFiles = files.filter((f) => f.fieldname === 'banner');
+    // const posterFiles = files.filter((f) => f.fieldname === 'poster');
+    // const bannerFiles = files.filter((f) => f.fieldname === 'banner');
 
     const data = await this.watchService.createWatch(
       watchDto,
-      posterFiles,
-      bannerFiles,
+      // posterFiles,
+      // bannerFiles,
     );
     return formatResponse(data, 'Watch created successfully');
   }

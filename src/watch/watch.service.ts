@@ -137,8 +137,8 @@ export class WatchService {
 
   async createWatch(
     data: CreateWatchDto,
-    posterFiles: MulterFile[],
-    bannerFiles: MulterFile[],
+    // posterFiles: MulterFile[],
+    // bannerFiles: MulterFile[],
   ) {
     const existingWatch = await this.prismaService.watch.findFirst({
       where: { name: data.name },
@@ -152,36 +152,36 @@ export class WatchService {
 
     const slug = generateSlug(data.name);
 
-    const posterUrls = await Promise.all(
-      posterFiles.map(async (file) => {
-        const uploadResult = await this.cloudinaryService.uploadImageFromBuffer(
-          file.buffer,
-          file.originalname,
-        );
-        return uploadResult.secure_url;
-      }),
-    );
+    // const posterUrls = await Promise.all(
+    //   posterFiles.map(async (file) => {
+    //     const uploadResult = await this.cloudinaryService.uploadImageFromBuffer(
+    //       file.buffer,
+    //       file.originalname,
+    //     );
+    //     return uploadResult.secure_url;
+    //   }),
+    // );
 
-    const bannerUrls = await Promise.all(
-      bannerFiles.map(async (file) => {
-        const uploadResult = await this.cloudinaryService.uploadImageFromBuffer(
-          file.buffer,
-          file.originalname,
-        );
-        return uploadResult.secure_url;
-      }),
-    );
+    // const bannerUrls = await Promise.all(
+    //   bannerFiles.map(async (file) => {
+    //     const uploadResult = await this.cloudinaryService.uploadImageFromBuffer(
+    //       file.buffer,
+    //       file.originalname,
+    //     );
+    //     return uploadResult.secure_url;
+    //   }),
+    // );
 
     return this.prismaService.watch.create({
       data: {
         ...data,
         slug,
-        poster: {
-          create: posterUrls.map((url) => ({ url })),
-        },
-        banner: {
-          create: bannerUrls.map((url) => ({ url })),
-        },
+        // poster: {
+        //   create: posterUrls.map((url) => ({ url })),
+        // },
+        // banner: {
+        //   create: bannerUrls.map((url) => ({ url })),
+        // },
       },
     });
   }
