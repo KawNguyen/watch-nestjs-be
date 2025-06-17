@@ -18,6 +18,7 @@ import { OrderModule } from './order/order.module';
 import { StockEntryModule } from './stock-entry/stock-entry.module';
 import { InventoryModule } from './inventory/inventory.module';
 import { ReviewModule } from './review/review.module';
+import { CouponModule } from './coupon/coupon.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { ReviewModule } from './review/review.module';
     StockEntryModule,
     InventoryModule,
     ReviewModule,
+    CouponModule,
   ],
   providers: [
     {
