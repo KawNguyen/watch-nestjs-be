@@ -7,9 +7,10 @@ import {
   Delete,
   Req,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { UpdateUserDto } from './dto/user.dto';
+import { GetAllUserDto, UpdateUserDto } from './dto/user.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enum';
@@ -25,9 +26,14 @@ export class UserController {
   @Roles(Role.ADMIN)
   @Get()
   @UseGuards(JwtAuthGuard)
-  async findAll() {
-    const data = await this.userService.findAll();
-    return formatResponse(data, 'Fetch all users successfully');
+  async findAll(@Query() dto: GetAllUserDto) {
+    const data = await this.userService.findAll(dto);
+    return formatResponse(data.items, 'Fetch all users successfully', {
+      limit: data.limit,
+      page: data.page,
+      totalItems: data.totalItems,
+      totalPages: data.totalPages,
+    });
   }
 
   @ApiOperation({ summary: 'Get user was login' })

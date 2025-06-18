@@ -40,7 +40,7 @@ export class OrderService {
       whereClause.userId = userId;
     }
 
-    const [orders, totalItems] = await Promise.all([
+    const [items, totalItems] = await Promise.all([
       this.prismaService.order.findMany({
         where: whereClause,
         skip,
@@ -59,7 +59,7 @@ export class OrderService {
     ]);
 
     return {
-      data: orders,
+      items,
       page,
       limit,
       totalItems,

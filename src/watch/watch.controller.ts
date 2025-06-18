@@ -51,7 +51,7 @@ export class WatchController {
   async getWatches(@Query() query: GetWatchesDto) {
     const data = await this.watchService.getWatches(query);
 
-    return formatResponse(data.data, 'Watches fetched successfully', {
+    return formatResponse(data.items, 'Watches fetched successfully', {
       limit: data.limit,
       page: data.page,
       totalItems: data.total,

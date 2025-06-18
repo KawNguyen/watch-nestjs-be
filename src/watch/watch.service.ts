@@ -64,7 +64,7 @@ export class WatchService {
       }),
     };
 
-    const [data, total] = await this.prismaService.$transaction([
+    const [items, total] = await this.prismaService.$transaction([
       this.prismaService.watch.findMany({
         where,
         include: {
@@ -121,7 +121,7 @@ export class WatchService {
     ]);
 
     return {
-      data,
+      items,
       total,
       page,
       limit,

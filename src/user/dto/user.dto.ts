@@ -4,6 +4,7 @@ import {
   IsOptional,
   IsNotEmpty,
   ValidateNested,
+  IsNumber,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -96,4 +97,26 @@ export class UpdateUserDto {
   @IsOptional()
   @Type(() => AddressDto)
   addresses?: AddressDto[];
+}
+
+export class GetAllUserDto {
+  @ApiProperty({ description: 'Page', required: false })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  page?: number = 1;
+
+  @ApiProperty({ description: 'Limit', required: false })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  limit?: number = 10;
+
+  @ApiProperty({
+    description: 'Search keyword (e.g. firstName, lastName, email)',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  keyword?: string;
 }

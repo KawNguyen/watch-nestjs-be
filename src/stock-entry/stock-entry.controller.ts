@@ -29,7 +29,7 @@ export class StockEntryController {
   @UseGuards(JwtAuthGuard)
   async getAllStockEntries(@Query() query: GetAllStockEntriesDto) {
     const data = await this.stockEntryService.getAllStockEntries(query);
-    return formatResponse(data.data, 'Fetch all stock entries successfully', {
+    return formatResponse(data.items, 'Fetch all stock entries successfully', {
       limit: data.limit,
       page: data.page,
       totalItems: data.totalItems,

@@ -32,7 +32,7 @@ export class StockEntryService {
       whereClause.addedById = addedById;
     }
 
-    const [stockEntries, totalItems] = await Promise.all([
+    const [items, totalItems] = await Promise.all([
       this.prismaService.stockEntry.findMany({
         where: whereClause,
         skip,
@@ -57,7 +57,7 @@ export class StockEntryService {
     ]);
 
     return {
-      data: stockEntries,
+      items,
       page,
       limit,
       totalItems,

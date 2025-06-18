@@ -1,30 +1,56 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
-import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
+import { CreateUserDto, GetAllUserDto, UpdateUserDto } from './dto/user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { checkDuplicateAddresses } from './utils/address.utils';
 import { buildUpsertData } from './helper/address.helpers';
 import { assertCanAccessResource } from 'src/common/helpers/assert-can-access-resource.helpers';
 import { assertIsOwner } from 'src/common/helpers/assert-is-owner.helpers';
 import * as bcrypt from 'bcrypt';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll() {
-    const data = await this.prisma.user.findMany({
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        phone: true,
-        avatar: true,
-        password: false,
-      },
-    });
+  async findAll(dto: GetAllUserDto) {
+    const { page = 1, limit = 10, keyword } = dto;
 
-    return data;
+    const where: Prisma.UserWhereInput = keyword
+      ? {
+          OR: [
+            { firstName: { contains: keyword, mode: 'insensitive' } },
+            { lastName: { contains: keyword, mode: 'insensitive' } },
+            { email: { contains: keyword, mode: 'insensitive' } },
+          ],
+        }
+      : {};
+
+    const [items, totalItems] = await this.prisma.$transaction([
+      this.prisma.user.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          phone: true,
+          avatar: true,
+        },
+      }),
+      this.prisma.user.count({ where }),
+    ]);
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+      items,
+      totalItems,
+      totalPages,
+      page,
+      limit,
+    };
   }
 
   async create(createUserDto: CreateUserDto) {

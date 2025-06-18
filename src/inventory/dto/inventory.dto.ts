@@ -1,20 +1,21 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, IsString, Min } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class GetInventoryDto {
   @IsOptional()
   @IsString()
   keyword?: string;
 
+  @ApiProperty({ description: 'Page', required: false })
   @IsOptional()
   @Type(() => Number)
-  @IsInt()
-  @Min(1)
+  @IsNumber()
   page?: number = 1;
 
+  @ApiProperty({ description: 'Limit', required: false })
   @IsOptional()
   @Type(() => Number)
-  @IsInt()
-  @Min(1)
+  @IsNumber()
   limit?: number = 10;
 }

@@ -33,7 +33,7 @@ export class OrderController {
   @UseGuards(JwtAuthGuard)
   async getAllOrders(@Query() query: GetOrdersDto) {
     const data = await this.orderService.getAllOrders(query);
-    return formatResponse(data.data, 'Fetched orders successfully', {
+    return formatResponse(data.items, 'Fetched orders successfully', {
       limit: data.limit,
       page: data.page,
       totalItems: data.totalItems,
