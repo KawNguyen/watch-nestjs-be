@@ -8,51 +8,67 @@ import {
   IsInt,
   MaxLength,
   Min,
+  IsArray,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { WatchGender } from '@prisma/client';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class GetWatchesDto {
+  @ApiPropertyOptional({ enum: WatchGender, description: 'Filter by gender' })
   @IsOptional()
   @IsEnum(WatchGender)
   gender?: WatchGender;
 
+  @ApiPropertyOptional({ description: 'Brand ID or name (optional)' })
   @IsOptional()
   @IsString()
-  brandSlug?: string;
+  brand?: string;
 
+  @ApiPropertyOptional({ description: 'Material ID or name (optional)' })
   @IsOptional()
   @IsString()
-  materialSlug?: string;
+  material?: string;
 
+  @ApiPropertyOptional({ description: 'Band material ID or name (optional)' })
   @IsOptional()
   @IsString()
-  bandMaterialSlug?: string;
+  bandMaterial?: string;
 
+  @ApiPropertyOptional({ description: 'Movement ID or name (optional)' })
   @IsOptional()
   @IsString()
-  movementSlug?: string;
+  movement?: string;
 
+  @ApiPropertyOptional({ type: Number, description: 'Minimum price filter' })
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
   minPrice?: number;
 
+  @ApiPropertyOptional({ type: Number, description: 'Maximum price filter' })
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
   maxPrice?: number;
 
+  @ApiPropertyOptional({ description: 'Keyword search by name/description' })
   @IsOptional()
   @IsString()
   keyword?: string;
 
+  @ApiPropertyOptional({ type: Number, default: 1, description: 'Page number' })
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
   @Min(1)
   page?: number = 1;
 
+  @ApiPropertyOptional({
+    type: Number,
+    default: 12,
+    description: 'Items per page',
+  })
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
@@ -61,66 +77,78 @@ export class GetWatchesDto {
 }
 
 export class CreateWatchDto {
+  @ApiProperty({ maxLength: 100 })
   @IsString()
   @MaxLength(100)
   name: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   description?: string;
 
+  @ApiPropertyOptional({ enum: WatchGender, default: WatchGender.UNISEX })
   @IsOptional()
   @IsEnum(WatchGender)
-  gender?: WatchGender = WatchGender.UNISEX;
+  gender?: WatchGender;
 
+  @ApiProperty()
   @IsUUID()
   brandId: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsUUID()
   materialId: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsUUID()
   bandMaterialId: string;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsUUID()
   movementId: string;
 
+  @ApiPropertyOptional({ type: Number })
   @IsOptional()
   @Type(() => Number)
   @IsNumber({}, { message: 'diameter must be a valid number' })
   diameter?: number;
 
+  @ApiPropertyOptional({ type: Number })
   @IsOptional()
   @Type(() => Number)
   @IsInt({ message: 'waterResistance must be an integer number' })
   waterResistance?: number;
 
+  @ApiPropertyOptional({ type: Number, default: 24 })
   @IsOptional()
   @Type(() => Number)
   @IsInt({ message: 'warranty must be an integer number' })
-  warranty?: number = 24;
+  warranty?: number;
 
+  @ApiPropertyOptional()
   @IsOptional()
   @IsUrl()
   videoUrl?: string;
 
+  @ApiProperty({ type: Number })
   @Type(() => Number)
   @IsNumber({}, { message: 'price must be a valid number' })
   price: number;
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  @IsArray()
+  @IsUrl({}, { each: true })
+  posterUrls?: string[];
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsUrl()
+  bannerUrl?: string;
 }
 
-export class UpdateWatchDto extends CreateWatchDto {
-  @IsUUID()
-  id: string;
-
-  @IsOptional()
-  @IsString()
-  poster?: string;
-
-  @IsOptional()
-  @IsString()
-  banner?: string;
-}
+export class UpdateWatchDto extends CreateWatchDto {}

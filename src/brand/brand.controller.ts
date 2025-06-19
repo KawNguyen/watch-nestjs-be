@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -18,6 +19,7 @@ import { Role } from 'src/auth/enums/role.enum';
 import { File as MulterFile } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { formatResponse } from 'src/common/helpers/response.helpers';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth/jwt-auth.guard';
 
 @ApiTags('Brand')
 @Controller('brand')
@@ -42,37 +44,21 @@ export class BrandController {
   @ApiOperation({ summary: 'Create a new brand' })
   @Roles(Role.ADMIN)
   @Post('create')
-  @UseInterceptors(FileInterceptor('file'))
-  async createBrand(
-    @Body() createBrandDto: CreateBrandDto,
-    @UploadedFile() file: MulterFile,
-  ) {
-    if (!file) {
-      throw new Error('File is required for brand creation');
-    }
-    console.log('file', file);
-    return this.brandService.createBrand(
-      createBrandDto,
-      file.buffer,
-      file.originalname,
-    );
+  @UseGuards(JwtAuthGuard)
+  async createBrand(@Body() createBrandDto: CreateBrandDto) {
+    const data = await this.brandService.createBrand(createBrandDto);
+    return formatResponse(data, 'Create brand successfully');
   }
 
   @ApiOperation({ summary: 'Update brand by ID' })
   @Roles(Role.ADMIN)
   @Patch('update/:brandId')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseGuards(JwtAuthGuard)
   async updateBrand(
     @Param('brandId') brandId: string,
     @Body() updateBrandDto: UpdateBrandDto,
-    @UploadedFile() file?: MulterFile,
   ) {
-    const data = this.brandService.updateBrand(
-      brandId,
-      updateBrandDto,
-      file.buffer,
-      file.originalname,
-    );
+    const data = this.brandService.updateBrand(brandId, updateBrandDto);
     return formatResponse(data, 'Brand updated successfully');
   }
 

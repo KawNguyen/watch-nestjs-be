@@ -28,6 +28,7 @@ async function bootstrap() {
         'http://localhost:3001',
         'https://3000-firebase-watch-admin-nextjs-1749693865609.cluster-xpmcxs2fjnhg6xvn446ubtgpio.cloudworkstations.dev',
         'https://68451ecd6ef22a731ba564fb.movestax.app',
+        'https://watch-nextjs.vercel.app',
       ];
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);

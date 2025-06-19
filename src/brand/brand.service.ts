@@ -4,17 +4,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { CreateBrandDto, UpdateBrandDto } from './dto/brand.dto';
 import { generateSlug } from 'src/utils/slug.utils';
 import { extractPublicIdFromUrl } from 'src/utils/extract-public-id.utils';
 
 @Injectable()
 export class BrandService {
-  constructor(
-    private prismaService: PrismaService,
-    private cloudinaryService: CloudinaryService,
-  ) {}
+  constructor(private prismaService: PrismaService) {}
 
   async getAllBrands() {
     return this.prismaService.brand.findMany({
@@ -34,11 +30,7 @@ export class BrandService {
     return brand;
   }
 
-  async createBrand(
-    createBrandDto: CreateBrandDto,
-    fileBuffer: Buffer,
-    fileName: string,
-  ) {
+  async createBrand(createBrandDto: CreateBrandDto) {
     const existingBrand = await this.prismaService.brand.findUnique({
       where: { name: createBrandDto.name },
     });
@@ -47,34 +39,16 @@ export class BrandService {
       throw new BadRequestException('Brand with this name already exists');
     }
 
-    const uploadResult = await this.cloudinaryService.uploadImageFromBuffer(
-      fileBuffer,
-      fileName,
-    );
-    const logoUrl = uploadResult.secure_url;
-
     const slug = generateSlug(createBrandDto.name);
     return this.prismaService.brand.create({
       data: {
         ...createBrandDto,
         slug,
-        logo: logoUrl,
       },
     });
   }
 
-  async updateBrand(
-    id: string,
-    updateBrandDto: UpdateBrandDto,
-    fileBuffer?: Buffer,
-    fileName?: string,
-  ) {
-    console.log(
-      'Received file buffer and name for update',
-      fileBuffer,
-      fileName,
-    );
-
+  async updateBrand(id: string, updateBrandDto: UpdateBrandDto) {
     const existingBrand = await this.prismaService.brand.findUnique({
       where: { id },
     });
@@ -83,24 +57,14 @@ export class BrandService {
       throw new NotFoundException('Brand not found');
     }
 
-    let logoUrl = existingBrand.logo;
-
-    if (fileBuffer && fileName) {
-      if (existingBrand.logo) {
-        const publicId = extractPublicIdFromUrl(existingBrand.logo);
-        await this.cloudinaryService.deleteImage(publicId);
-      }
-
-      const uploadResult = await this.cloudinaryService.uploadImageFromBuffer(
-        fileBuffer,
-        fileName,
-      );
-      logoUrl = uploadResult.secure_url;
-    }
-
     const slug = updateBrandDto.name
       ? generateSlug(updateBrandDto.name)
       : existingBrand.slug;
+
+    const logoUrl =
+      updateBrandDto.logo && updateBrandDto.logo.trim() !== ''
+        ? updateBrandDto.logo
+        : existingBrand.logo;
 
     return this.prismaService.brand.update({
       where: { id },
@@ -119,11 +83,6 @@ export class BrandService {
 
     if (!brand) {
       throw new NotFoundException('Brand not found');
-    }
-
-    if (brand.logo) {
-      const publicId = extractPublicIdFromUrl(brand.logo);
-      await this.cloudinaryService.deleteImage(publicId);
     }
 
     await this.prismaService.brand.delete({
