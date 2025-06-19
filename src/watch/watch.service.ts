@@ -128,6 +128,10 @@ export class WatchService {
     return this.prismaService.watch.findUnique({
       where: { slug },
       include: {
+        brand: true,
+        bandMaterial: true,
+        material: true,
+        movement: true,
         banner: {
           select: {
             url: true,
