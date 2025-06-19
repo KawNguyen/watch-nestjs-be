@@ -11,7 +11,6 @@ import { MovementModule } from './movement/movement.module';
 import { RolesGuard } from './auth/guards/roles/roles.guard';
 import { MaterialModule } from './material/material.module';
 import { WatchModule } from './watch/watch.module';
-import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { FavoriteModule } from './favorite/favorite.module';
 import { CartModule } from './cart/cart.module';
 import { OrderModule } from './order/order.module';
@@ -34,7 +33,6 @@ import { AdvertisementModule } from './advertisement/advertisement.module';
     BandMaterialModule,
     MovementModule,
     WatchModule,
-    CloudinaryModule,
     WatchModule,
     FavoriteModule,
     CartModule,
