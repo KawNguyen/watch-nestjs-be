@@ -6,9 +6,7 @@ import {
   Param,
   Patch,
   Post,
-  UploadedFile,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { BrandService } from './brand.service';
@@ -16,8 +14,6 @@ import { CreateBrandDto, UpdateBrandDto } from './dto/brand.dto';
 import { Public } from 'src/auth/decorators/public.decorators';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enum';
-import { File as MulterFile } from 'multer';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { formatResponse } from 'src/common/helpers/response.helpers';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth/jwt-auth.guard';
 

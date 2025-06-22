@@ -1,10 +1,8 @@
-import { File as MulterFile } from 'multer';
 import { generateSlug } from 'src/utils/slug.utils';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateWatchDto, GetWatchesDto, UpdateWatchDto } from './dto/watch.dto';
 import { Prisma } from '@prisma/client';
-import { extractPublicIdFromUrl } from 'src/utils/extract-public-id.utils';
 
 @Injectable()
 export class WatchService {

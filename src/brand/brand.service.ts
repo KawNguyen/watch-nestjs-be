@@ -6,7 +6,6 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateBrandDto, UpdateBrandDto } from './dto/brand.dto';
 import { generateSlug } from 'src/utils/slug.utils';
-import { extractPublicIdFromUrl } from 'src/utils/extract-public-id.utils';
 
 @Injectable()
 export class BrandService {
