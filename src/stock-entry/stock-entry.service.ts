@@ -44,7 +44,7 @@ export class StockEntryService {
           stockItems: {
             include: {
               watch: {
-                select: { id: true, name: true, poster: true },
+                select: { id: true, name: true, images: true },
               },
             },
           },

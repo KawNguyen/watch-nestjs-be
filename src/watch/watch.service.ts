@@ -3,6 +3,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateWatchDto, GetWatchesDto, UpdateWatchDto } from './dto/watch.dto';
 import { Prisma } from '@prisma/client';
+import { extractPublicIdFromUrl } from 'src/utils/extract-public-id.utils';
 
 @Injectable()
 export class WatchService {
@@ -93,14 +94,9 @@ export class WatchService {
               slug: true,
             },
           },
-          banner: {
+          images: {
             select: {
-              url: true,
-            },
-          },
-          poster: {
-            select: {
-              url: true,
+              absolute_url: true,
             },
           },
         },
@@ -130,14 +126,9 @@ export class WatchService {
         bandMaterial: true,
         material: true,
         movement: true,
-        banner: {
+        images: {
           select: {
-            url: true,
-          },
-        },
-        poster: {
-          select: {
-            url: true,
+            absolute_url: true,
           },
         },
       },
@@ -157,7 +148,7 @@ export class WatchService {
 
     const slug = generateSlug(data.name);
 
-    const { posterUrls = [], bannerUrl, ...watchData } = data;
+    const { images = [], ...watchData } = data;
 
     const createdWatch = await this.prismaService.watch.create({
       data: {
@@ -166,28 +157,19 @@ export class WatchService {
       },
     });
 
-    if (posterUrls.length > 0) {
-      await this.prismaService.poster.createMany({
-        data: posterUrls.map((url) => ({
+    if (images.length > 0) {
+      await this.prismaService.watchImages.createMany({
+        data: images.map((image) => ({
           watchId: createdWatch.id,
-          url,
+          absolute_url: image.absolute_url,
+          public_id: image.public_id,
         })),
-      });
-    }
-
-    if (bannerUrl) {
-      await this.prismaService.banner.create({
-        data: {
-          watchId: createdWatch.id,
-          url: bannerUrl,
-        },
       });
     }
 
     return {
       ...createdWatch,
-      posters: posterUrls,
-      banner: bannerUrl,
+      images,
     };
   }
 
@@ -195,8 +177,7 @@ export class WatchService {
     const existingWatch = await this.prismaService.watch.findUnique({
       where: { id },
       include: {
-        poster: true,
-        banner: true,
+        images: true,
       },
     });
 
@@ -206,33 +187,17 @@ export class WatchService {
 
     const slug = generateSlug(data.name || existingWatch.name);
 
-    if (data.posterUrls && data.posterUrls.length > 0) {
-      await this.prismaService.poster.deleteMany({
-        where: { watchId: id },
-      });
-
-      await this.prismaService.poster.createMany({
-        data: data.posterUrls.map((url) => ({
+    if (data.images && data.images.length > 0) {
+      await this.prismaService.watchImages.createMany({
+        data: data.images.map((image) => ({
           watchId: id,
-          url,
+          absolute_url: image.absolute_url,
+          public_id: image.public_id,
         })),
       });
     }
 
-    if (data.bannerUrl) {
-      await this.prismaService.banner.deleteMany({
-        where: { watchId: id },
-      });
-
-      await this.prismaService.banner.create({
-        data: {
-          watchId: id,
-          url: data.bannerUrl,
-        },
-      });
-    }
-
-    const { posterUrls, bannerUrl, ...restData } = data;
+    const { images, ...restData } = data;
 
     return this.prismaService.watch.update({
       where: { id },
@@ -247,8 +212,7 @@ export class WatchService {
     const existingWatch = await this.prismaService.watch.findUnique({
       where: { id },
       include: {
-        poster: true,
-        banner: true,
+        images: true,
       },
     });
 

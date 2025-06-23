@@ -20,11 +20,6 @@ import {
   ApiOperation,
   ApiResponse,
 } from '@nestjs/swagger';
-import { ApiProperty } from '@nestjs/swagger';
-import {
-  ImageUrlResponseDto,
-  MultipleImageUrlsResponseDto,
-} from './dto/cloudinary.dto';
 
 @Controller('cloudinary')
 export class CloudinaryController {
@@ -61,16 +56,11 @@ export class CloudinaryController {
       },
     },
   })
-  @ApiResponse({
-    status: 200,
-    description: 'Successful upload',
-    type: MultipleImageUrlsResponseDto,
-  })
   async uploadFiles(
     @UploadedFiles() files: Express.Multer.File[],
-  ): Promise<{ imageUrls: string[] }> {
-    const imageUrls = await this.cloudinaryService.uploadImages(files);
-    return { imageUrls };
+  ): Promise<{ data: { public_id: string; secure_url: string }[] }> {
+    const data = await this.cloudinaryService.uploadImages(files);
+    return { data };
   }
 
   @Post('upload-single')
@@ -101,16 +91,11 @@ export class CloudinaryController {
       },
     },
   })
-  @ApiResponse({
-    status: 200,
-    description: 'Successful upload',
-    type: ImageUrlResponseDto,
-  })
   async uploadFile(
     @UploadedFile() file: Express.Multer.File,
-  ): Promise<{ imageUrl: string }> {
-    const imageUrl = await this.cloudinaryService.uploadImage(file);
-    return { imageUrl };
+  ): Promise<{ data: { public_id: string; secure_url: string } }> {
+    const data = await this.cloudinaryService.uploadImage(file);
+    return { data };
   }
 
   @Delete('delete/:publicId')

@@ -109,34 +109,33 @@ model Movement {
 }
 
 model Watch {
-  slug            String?      @unique
-  code            String       @unique @default(dbgenerated("concat('W', upper(\"substring\"(replace(((gen_random_uuid())::character varying)::text, '-'::text, ''::text), 1, 9)))"))
-  name            String       @db.VarChar(100)
+  slug            String?       @unique
+  code            String        @unique @default(dbgenerated("concat('W', upper(\"substring\"(replace(((gen_random_uuid())::character varying)::text, '-'::text, ''::text), 1, 9)))"))
+  name            String        @db.VarChar(100)
   description     String?
-  gender          WatchGender  @default(UNISEX)
+  gender          WatchGender   @default(UNISEX)
   brandId         String
   materialId      String
   bandMaterialId  String
   movementId      String
   diameter        Float?
   waterResistance Int?
-  warranty        Int          @default(24)
+  warranty        Int           @default(24)
   videoUrl        String?
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-  id              String       @id @default(uuid())
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  id              String        @id @default(uuid())
   price           Float
-  banner          Banner[]
   cartItems       CartItem[]
   favorites       Favorite[]
   orderItems      OrderItem[]
-  poster          Poster[]
+  images          WatchImages[]
   reviews         Review[]
   stockItems      StockItem[]
-  bandMaterial    BandMaterial @relation(fields: [bandMaterialId], references: [id])
-  brand           Brand        @relation(fields: [brandId], references: [id])
-  material        Material     @relation(fields: [materialId], references: [id])
-  movement        Movement     @relation(fields: [movementId], references: [id])
+  bandMaterial    BandMaterial  @relation(fields: [bandMaterialId], references: [id])
+  brand           Brand         @relation(fields: [brandId], references: [id])
+  material        Material      @relation(fields: [materialId], references: [id])
+  movement        Movement      @relation(fields: [movementId], references: [id])
   inventory       Inventory?
 }
 
@@ -154,22 +153,14 @@ model Favorite {
   @@index([watchId])
 }
 
-model Poster {
-  id        String   @id @default(uuid())
-  watchId   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  url       String
-  watch     Watch    @relation(fields: [watchId], references: [id])
-}
-
-model Banner {
-  id        String   @id @default(uuid())
-  watchId   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  url       String
-  watch     Watch    @relation(fields: [watchId], references: [id])
+model WatchImages {
+  id           String   @id @default(uuid())
+  public_id    String   @unique
+  watchId      String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  absolute_url String
+  watch        Watch    @relation(fields: [watchId], references: [id])
 }
 
 model Cart {

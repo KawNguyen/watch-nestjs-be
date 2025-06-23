@@ -9,22 +9,32 @@ export class CloudinaryService {
     configureCloudinary(this.configService);
   }
 
-  async uploadImage(file: Express.Multer.File): Promise<string> {
+  async uploadImage(
+    file: Express.Multer.File,
+  ): Promise<{ public_id: string; secure_url: string }> {
     try {
       const result = await v2.uploader.upload(file.path);
-      return result.secure_url;
+      return {
+        public_id: result.public_id,
+        secure_url: result.secure_url,
+      };
     } catch (error) {
       console.error('Cloudinary upload error:', error);
       throw error;
     }
   }
 
-  async uploadImages(files: Express.Multer.File[]): Promise<string[]> {
+  async uploadImages(
+    files: Express.Multer.File[],
+  ): Promise<{ public_id: string; secure_url: string }[]> {
     try {
       const results = await Promise.all(
         files.map((file) => v2.uploader.upload(file.path)),
       );
-      return results.map((result) => result.secure_url);
+      return results.map((result) => ({
+        public_id: result.public_id,
+        secure_url: result.secure_url,
+      }));
     } catch (error) {
       console.error('Cloudinary multiple upload error:', error);
       throw error;

@@ -58,9 +58,10 @@ export class FavoriteService {
                 slug: true,
               },
             },
-            banner: {
+            images: {
               select: {
-                url: true,
+                absolute_url: true,
+                public_id: true,
               },
             },
           },

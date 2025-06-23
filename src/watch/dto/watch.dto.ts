@@ -14,6 +14,18 @@ import { Type } from 'class-transformer';
 import { WatchGender } from '@prisma/client';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
+export class WatchImages {
+  @ApiProperty({ type: [String], description: 'Array of image URLs' })
+  @IsArray()
+  @IsUrl({}, { each: true })
+  absolute_url: string;
+
+  @ApiProperty({ type: [String], description: 'Array of image public IDs' })
+  @IsArray()
+  @IsString({ each: true })
+  public_id: string;
+}
+
 export class GetWatchesDto {
   @ApiPropertyOptional({ enum: WatchGender, description: 'Filter by gender' })
   @IsOptional()
@@ -139,16 +151,11 @@ export class CreateWatchDto {
   @IsNumber({}, { message: 'price must be a valid number' })
   price: number;
 
-  @ApiPropertyOptional({ type: [String] })
+  @ApiPropertyOptional({ type: [WatchImages] })
   @IsOptional()
   @IsArray()
   @IsUrl({}, { each: true })
-  posterUrls?: string[];
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsUrl()
-  bannerUrl?: string;
+  images?: WatchImages[];
 }
 
 export class UpdateWatchDto extends CreateWatchDto {}
