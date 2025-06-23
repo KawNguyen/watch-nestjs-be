@@ -154,7 +154,6 @@ export class CreateWatchDto {
   @ApiPropertyOptional({ type: [WatchImages] })
   @IsOptional()
   @IsArray()
-  @IsUrl({}, { each: true })
   images?: WatchImages[];
 }
 
