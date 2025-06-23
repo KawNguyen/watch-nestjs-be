@@ -2,28 +2,30 @@ import {
   Controller,
   Post,
   UploadedFiles,
+  UploadedFile,
   UseInterceptors,
   Param,
   Delete,
-  UploadedFile,
   UseGuards,
   Query,
 } from '@nestjs/common';
-import { CloudinaryService } from './cloudinary.service';
 import { diskStorage } from 'multer';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { CloudinaryService } from './cloudinary.service';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enum';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth/jwt-auth.guard';
 import {
-  ApiBody,
-  ApiConsumes,
   ApiOperation,
+  ApiConsumes,
+  ApiBody,
   ApiQuery,
   ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
 
 @Controller('cloudinary')
+@ApiTags('Cloudinary')
 export class CloudinaryController {
   constructor(private readonly cloudinaryService: CloudinaryService) {}
 
@@ -58,6 +60,8 @@ export class CloudinaryController {
       },
     },
   })
+  @ApiQuery({ name: 'width', required: false, type: Number })
+  @ApiQuery({ name: 'height', required: false, type: Number })
   async uploadFiles(
     @UploadedFiles() files: Express.Multer.File[],
     @Query('width') width?: string,
@@ -102,6 +106,8 @@ export class CloudinaryController {
       },
     },
   })
+  @ApiQuery({ name: 'width', required: false, type: Number })
+  @ApiQuery({ name: 'height', required: false, type: Number })
   async uploadFile(
     @UploadedFile() file: Express.Multer.File,
     @Query('width') width?: string,
@@ -109,6 +115,7 @@ export class CloudinaryController {
   ): Promise<{ data: { public_id: string; secure_url: string } }> {
     const widthNum = width ? parseInt(width) : undefined;
     const heightNum = height ? parseInt(height) : undefined;
+
     const data = await this.cloudinaryService.uploadImage(
       file,
       widthNum,
