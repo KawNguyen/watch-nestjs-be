@@ -154,23 +154,21 @@ export class WatchService {
       data: {
         ...watchData,
         slug,
+        images: {
+          createMany: {
+            data: images.map((image) => ({
+              absolute_url: image.absolute_url,
+              public_id: image.public_id,
+            })),
+          },
+        },
+      },
+      include: {
+        images: true,
       },
     });
 
-    if (images.length > 0) {
-      await this.prismaService.watchImages.createMany({
-        data: images.map((image) => ({
-          watchId: createdWatch.id,
-          absolute_url: image.absolute_url,
-          public_id: image.public_id,
-        })),
-      });
-    }
-
-    return {
-      ...createdWatch,
-      images,
-    };
+    return createdWatch;
   }
 
   async updateWatch(id: string, data: UpdateWatchDto) {

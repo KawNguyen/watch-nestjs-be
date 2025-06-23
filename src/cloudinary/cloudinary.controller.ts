@@ -7,6 +7,7 @@ import {
   Delete,
   UploadedFile,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { CloudinaryService } from './cloudinary.service';
 import { diskStorage } from 'multer';
@@ -18,6 +19,7 @@ import {
   ApiBody,
   ApiConsumes,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
 } from '@nestjs/swagger';
 
@@ -58,8 +60,17 @@ export class CloudinaryController {
   })
   async uploadFiles(
     @UploadedFiles() files: Express.Multer.File[],
+    @Query('width') width?: string,
+    @Query('height') height?: string,
   ): Promise<{ data: { public_id: string; secure_url: string }[] }> {
-    const data = await this.cloudinaryService.uploadImages(files);
+    const widthNum = width ? parseInt(width) : undefined;
+    const heightNum = height ? parseInt(height) : undefined;
+
+    const data = await this.cloudinaryService.uploadImages(
+      files,
+      widthNum,
+      heightNum,
+    );
     return { data };
   }
 
@@ -93,8 +104,16 @@ export class CloudinaryController {
   })
   async uploadFile(
     @UploadedFile() file: Express.Multer.File,
+    @Query('width') width?: string,
+    @Query('height') height?: string,
   ): Promise<{ data: { public_id: string; secure_url: string } }> {
-    const data = await this.cloudinaryService.uploadImage(file);
+    const widthNum = width ? parseInt(width) : undefined;
+    const heightNum = height ? parseInt(height) : undefined;
+    const data = await this.cloudinaryService.uploadImage(
+      file,
+      widthNum,
+      heightNum,
+    );
     return { data };
   }
 

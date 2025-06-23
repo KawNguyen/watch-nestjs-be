@@ -15,14 +15,12 @@ import { WatchGender } from '@prisma/client';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class WatchImages {
-  @ApiProperty({ type: [String], description: 'Array of image URLs' })
-  @IsArray()
-  @IsUrl({}, { each: true })
+  @ApiProperty({ description: 'Array of image URLs' })
+  @IsString()
   absolute_url: string;
 
-  @ApiProperty({ type: [String], description: 'Array of image public IDs' })
-  @IsArray()
-  @IsString({ each: true })
+  @ApiProperty({ description: 'Array of image public IDs' })
+  @IsString()
   public_id: string;
 }
 

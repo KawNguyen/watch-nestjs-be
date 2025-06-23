@@ -11,9 +11,17 @@ export class CloudinaryService {
 
   async uploadImage(
     file: Express.Multer.File,
+    width?: number,
+    height?: number,
   ): Promise<{ public_id: string; secure_url: string }> {
     try {
-      const result = await v2.uploader.upload(file.path);
+      const transformationOptions =
+        width && height
+          ? { transformation: [{ width, height, crop: 'limit' }] }
+          : {};
+
+      const result = await v2.uploader.upload(file.path, transformationOptions);
+
       return {
         public_id: result.public_id,
         secure_url: result.secure_url,
@@ -26,11 +34,20 @@ export class CloudinaryService {
 
   async uploadImages(
     files: Express.Multer.File[],
+    width?: number,
+    height?: number,
   ): Promise<{ public_id: string; secure_url: string }[]> {
     try {
       const results = await Promise.all(
-        files.map((file) => v2.uploader.upload(file.path)),
+        files.map((file) =>
+          v2.uploader.upload(file.path, {
+            ...(width && height
+              ? { transformation: [{ width, height, crop: 'limit' }] }
+              : {}),
+          }),
+        ),
       );
+
       return results.map((result) => ({
         public_id: result.public_id,
         secure_url: result.secure_url,
