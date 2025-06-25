@@ -8,6 +8,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { UserGender } from '@prisma/client';
 
 export class AddressDto {
   @ApiProperty({ example: '123 Nguyễn Trãi' })
@@ -67,11 +68,6 @@ export class CreateUserDto {
 }
 
 export class UpdateUserDto {
-  @ApiProperty({ example: 'newPassword123' })
-  @IsString()
-  @IsNotEmpty()
-  password: string;
-
   @ApiProperty({ example: 'Jane' })
   @IsString()
   @IsNotEmpty()
@@ -82,23 +78,42 @@ export class UpdateUserDto {
   @IsNotEmpty()
   lastName: string;
 
-  @ApiPropertyOptional({ example: 'https://example.com/new-avatar.jpg' })
+  @ApiPropertyOptional({ example: 'Gender' })
   @IsString()
   @IsOptional()
-  avatar?: string;
+  gender?: UserGender;
 
   @ApiPropertyOptional({ example: '0912345678' })
   @IsString()
   @IsOptional()
   phone?: string;
 
-  @ApiPropertyOptional({ type: [AddressDto] })
-  @ValidateNested()
-  @IsOptional()
-  @Type(() => AddressDto)
-  addresses?: AddressDto[];
+  // @ApiPropertyOptional({ type: [AddressDto] })
+  // @ValidateNested()
+  // @IsOptional()
+  // @Type(() => AddressDto)
+  // addresses?: AddressDto[];
 }
 
+export class ChangePasswordDto {
+  @ApiProperty({ example: 'currentPassword123' })
+  @IsString()
+  @IsNotEmpty()
+  currentPassword: string;
+
+  @ApiProperty({ example: 'newPassword123' })
+  @IsString()
+  @IsNotEmpty()
+  newPassword: string;
+}
+
+export class ChangeAvatarDto {
+  @ApiPropertyOptional({ example: 'https://example.com/new-avatar.jpg' })
+  @IsString()
+  @IsOptional()
+  avatar?: string;
+}
+  
 export class GetAllUserDto {
   @ApiProperty({ description: 'Page', required: false })
   @IsOptional()

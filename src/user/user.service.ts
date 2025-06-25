@@ -1,5 +1,10 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
-import { CreateUserDto, GetAllUserDto, UpdateUserDto } from './dto/user.dto';
+import {
+  ChangePasswordDto,
+  CreateUserDto,
+  GetAllUserDto,
+  UpdateUserDto,
+} from './dto/user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { checkDuplicateAddresses } from './utils/address.utils';
 import { buildUpsertData } from './helper/address.helpers';
@@ -96,6 +101,7 @@ export class UserService {
         email: true,
         firstName: true,
         lastName: true,
+        gender: true,
         phone: true,
         avatar: true,
         addresses: true,
@@ -121,9 +127,9 @@ export class UserService {
         email: true,
         firstName: true,
         lastName: true,
+        gender: true,
         phone: true,
         avatar: true,
-        password: false,
       },
     });
 
@@ -145,24 +151,82 @@ export class UserService {
       return null;
     }
 
-    const { addresses, ...rest } = updateUserDto;
-
-    const hashedPassword = await bcrypt.hash(updateUserDto.password, 10);
-    if (addresses) {
-      const addressArray = Array.isArray(addresses) ? addresses : [addresses];
-      checkDuplicateAddresses(addressArray);
-    }
+    const { ...rest } = updateUserDto;
 
     return this.prisma.user.update({
       where: { id },
       data: {
         ...rest,
+        updatedAt: new Date(),
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        gender: true,
+        phone: true,
+      },
+    });
+  }
+
+  async changePassword(
+    id: string,
+    dto: ChangePasswordDto,
+    requesterId: string,
+  ) {
+    assertIsOwner(id, requesterId);
+
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (!user) {
+      return null;
+    }
+
+    const isMatch = await bcrypt.compare(dto.currentPassword, user.password);
+    if (!isMatch) {
+      return null;
+    }
+
+    if (dto.newPassword === dto.currentPassword) {
+      throw new ForbiddenException(
+        'New password must be different from current password',
+      );
+    }
+
+    if (dto.newPassword.length < 6) {
+      throw new ForbiddenException(
+        'New password must be at least 6 characters',
+      );
+    }
+
+    const hashedPassword = await bcrypt.hash(dto.newPassword, 10);
+    return this.prisma.user.update({
+      where: { id },
+      data: {
         password: hashedPassword,
-        ...(addresses && {
-          addresses: {
-            upsert: buildUpsertData(addresses),
-          },
-        }),
+        updatedAt: new Date(),
+      },
+    });
+  }
+
+  async changeAvatar(id: string, avatar: string, requesterId: string) {
+    assertIsOwner(id, requesterId);
+
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (!user) {
+      return null;
+    }
+
+    return this.prisma.user.update({
+      where: { id },
+      data: {
+        avatar,
         updatedAt: new Date(),
       },
     });

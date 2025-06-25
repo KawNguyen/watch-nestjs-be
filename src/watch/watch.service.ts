@@ -146,6 +146,10 @@ export class WatchService {
       );
     }
 
+    if (!data.images || data.images.length === 0) {
+      throw new BadRequestException('At least one image is required');
+    }
+
     const slug = generateSlug(data.name);
 
     const { images = [], ...watchData } = data;
@@ -195,6 +199,22 @@ export class WatchService {
       });
     }
 
+    const existingImages = existingWatch.images.map((img) => img.public_id);
+    const newImages = data.images
+      ? data.images.map((img) => img.public_id)
+      : [];
+    const imagesToDelete = existingImages.filter(
+      (img) => !newImages.includes(img),
+    );
+    if (imagesToDelete.length > 0) {
+      await this.prismaService.watchImages.deleteMany({
+        where: {
+          watchId: id,
+          public_id: { in: imagesToDelete },
+        },
+      });
+    }
+
     const { images, ...restData } = data;
 
     return this.prismaService.watch.update({
@@ -217,6 +237,10 @@ export class WatchService {
     if (!existingWatch) {
       throw new BadRequestException(`Watch with ID "${id}" does not exist`);
     }
+
+    await this.prismaService.watchImages.deleteMany({
+      where: { watchId: id },
+    });
 
     return this.prismaService.watch.delete({
       where: { id },

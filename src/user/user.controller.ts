@@ -10,7 +10,11 @@ import {
   Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { GetAllUserDto, UpdateUserDto } from './dto/user.dto';
+import {
+  ChangePasswordDto,
+  GetAllUserDto,
+  UpdateUserDto,
+} from './dto/user.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enum';
@@ -60,20 +64,37 @@ export class UserController {
   }
 
   @ApiOperation({ summary: 'Update user' })
-  @Patch('update/:userId')
+  @Patch('update/:id')
   @UseGuards(JwtAuthGuard)
   async update(
-    @Param('userId') userId: string,
+    @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
     @Req() req: Request,
   ) {
     const requesterId = (req as any).user.id;
     const data = await this.userService.update(
-      userId,
+      id,
       updateUserDto,
       requesterId,
     );
     return formatResponse(data, 'Update user successfully');
+  }
+
+  @ApiOperation({ summary: 'Change password' })
+  @Patch('change-password/:userId')
+  @UseGuards(JwtAuthGuard)
+  async changePassword(
+    @Param('userId') userId: string,
+    @Body() changePasswordDto: ChangePasswordDto,
+    @Req() req: Request,
+  ) {
+    const requesterId = (req as any).user.id;
+    const data = await this.userService.changePassword(
+      userId,
+      changePasswordDto,
+      requesterId,
+    );
+    return formatResponse(data, 'Change password successfully');
   }
 
   @ApiOperation({ summary: 'Delete user' })

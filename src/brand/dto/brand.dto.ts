@@ -1,6 +1,18 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
+export class BrandImageDto {
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({ example: 'Link image' })
+  absolute_url: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({ example: 'Link image' })
+  public_id: string;
+}
+
 export class CreateBrandDto {
   @IsString()
   @IsNotEmpty()
@@ -14,8 +26,8 @@ export class CreateBrandDto {
 
   @IsString()
   @IsOptional()
-  @ApiProperty({ example: 'Link logo' })
-  logo: string;
+  @ApiProperty({ example: 'Link image' })
+  image: BrandImageDto;
 }
 
 export class UpdateBrandDto extends PartialType(CreateBrandDto) {}

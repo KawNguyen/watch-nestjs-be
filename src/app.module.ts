@@ -20,6 +20,7 @@ import { ReviewModule } from './review/review.module';
 import { CouponModule } from './coupon/coupon.module';
 import { AdvertisementModule } from './advertisement/advertisement.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { AddressModule } from './address/address.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     CouponModule,
     AdvertisementModule,
     CloudinaryModule,
+    AddressModule,
   ],
   providers: [
     {

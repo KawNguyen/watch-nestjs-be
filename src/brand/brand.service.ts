@@ -32,16 +32,28 @@ export class BrandService {
   async createBrand(createBrandDto: CreateBrandDto) {
     const existingBrand = await this.prismaService.brand.findUnique({
       where: { name: createBrandDto.name },
+      include: { image: true },
     });
 
     if (existingBrand) {
       throw new BadRequestException('Brand with this name already exists');
     }
 
+    if (!createBrandDto.image || !createBrandDto.image.absolute_url) {
+      throw new BadRequestException('Image URL is required');
+    }
+
     const slug = generateSlug(createBrandDto.name);
+
     return this.prismaService.brand.create({
       data: {
         ...createBrandDto,
+        image: {
+          create: {
+            absolute_url: createBrandDto.image.absolute_url,
+            public_id: createBrandDto.image.public_id,
+          },
+        },
         slug,
       },
     });
@@ -50,6 +62,7 @@ export class BrandService {
   async updateBrand(id: string, updateBrandDto: UpdateBrandDto) {
     const existingBrand = await this.prismaService.brand.findUnique({
       where: { id },
+      include: { image: true },
     });
 
     if (!existingBrand) {
@@ -60,17 +73,36 @@ export class BrandService {
       ? generateSlug(updateBrandDto.name)
       : existingBrand.slug;
 
-    const logoUrl =
-      updateBrandDto.logo && updateBrandDto.logo.trim() !== ''
-        ? updateBrandDto.logo
-        : existingBrand.logo;
+    const imageUrl = updateBrandDto.image
+      ? updateBrandDto.image.absolute_url
+      : existingBrand.image?.absolute_url;
+
+    if (updateBrandDto.name) {
+      const brandWithSameName = await this.prismaService.brand.findFirst({
+        where: { name: updateBrandDto.name },
+      });
+
+      if (brandWithSameName && brandWithSameName.id !== id) {
+        throw new BadRequestException('Brand with this name already exists');
+      }
+    }
+
+    if (!imageUrl) {
+      throw new BadRequestException('Image URL is required');
+    }
 
     return this.prismaService.brand.update({
       where: { id },
       data: {
         ...updateBrandDto,
         slug,
-        logo: logoUrl,
+        image: {
+          update: {
+            absolute_url: imageUrl,
+            public_id:
+              updateBrandDto.image?.public_id || existingBrand.image?.public_id,
+          },
+        },
       },
     });
   }
@@ -84,10 +116,12 @@ export class BrandService {
       throw new NotFoundException('Brand not found');
     }
 
-    await this.prismaService.brand.delete({
-      where: { id },
+    await this.prismaService.brandImage.deleteMany({
+      where: { brandId: id },
     });
 
-    return { message: 'Brand deleted successfully' };
+    return await this.prismaService.brand.delete({
+      where: { id },
+    });
   }
 }

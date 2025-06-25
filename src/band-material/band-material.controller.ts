@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { BandMaterialService } from './band-material.service';
@@ -17,6 +18,7 @@ import {
 import { Role } from 'src/auth/enums/role.enum';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { formatResponse } from 'src/common/helpers/response.helpers';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth/jwt-auth.guard';
 
 @ApiTags('Band Material')
 @Controller('band-material')
@@ -39,8 +41,9 @@ export class BandMaterialController {
   }
 
   @ApiOperation({ summary: 'Update band materials by ID' })
-  @Roles(Role.ADMIN)
   @Post('create')
+  @Roles(Role.ADMIN)
+  @UseGuards(JwtAuthGuard)
   async createBandMaterialDto(
     @Body() createBandMaterialDto: CreateBandMaterialDto,
   ) {
@@ -51,10 +54,11 @@ export class BandMaterialController {
   }
 
   @ApiOperation({ summary: 'Update band materials by ID' })
+  @Patch('update/:id')
   @Roles(Role.ADMIN)
-  @Patch('update/:bandMaterialId')
+  @UseGuards(JwtAuthGuard)
   async updateBandMaterialById(
-    @Param('bandMaterialId')
+    @Param('id')
     bandMaterialId: string,
     @Body()
     updateBandMaterialDto: UpdateBandMaterialDto,
@@ -67,12 +71,11 @@ export class BandMaterialController {
   }
 
   @ApiOperation({ summary: 'Delete band materials by ID' })
+  @Delete('delete/:id')
   @Roles(Role.ADMIN)
-  @Delete('delete/:bandMaterialId')
-  async deleteBandMaterialById(
-    @Param('brandMaterialId') bandMaterialId: string,
-  ) {
-    const data = await this.bandMaterial.deleteBandMaterial(bandMaterialId);
+  @UseGuards(JwtAuthGuard)
+  async deleteBandMaterialById(@Param('id') id: string) {
+    const data = await this.bandMaterial.deleteBandMaterial(id);
     return formatResponse(data, 'Band material deleted successfully');
   }
 }
