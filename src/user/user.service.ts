@@ -1,21 +1,24 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import {
+  ChangeAvatarDto,
   ChangePasswordDto,
   CreateUserDto,
   GetAllUserDto,
   UpdateUserDto,
 } from './dto/user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { checkDuplicateAddresses } from './utils/address.utils';
-import { buildUpsertData } from './helper/address.helpers';
 import { assertCanAccessResource } from 'src/common/helpers/assert-can-access-resource.helpers';
 import { assertIsOwner } from 'src/common/helpers/assert-is-owner.helpers';
 import * as bcrypt from 'bcrypt';
 import { Prisma } from '@prisma/client';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
 
   async findAll(dto: GetAllUserDto) {
     const { page = 1, limit = 10, keyword } = dto;
@@ -59,10 +62,13 @@ export class UserService {
   }
 
   async create(createUserDto: CreateUserDto) {
-    const { addresses, ...rest } = createUserDto as any;
+    const { addresses, ...rest } = createUserDto;
     return this.prisma.user.create({
       data: {
         ...rest,
+        ...(rest.avatar && {
+          avatar: JSON.parse(JSON.stringify(rest.avatar)),
+        }),
         ...(addresses && {
           addresses: {
             create: Array.isArray(addresses) ? addresses : [addresses],
@@ -212,21 +218,40 @@ export class UserService {
     });
   }
 
-  async changeAvatar(id: string, avatar: string, requesterId: string) {
+  async changeAvatar(id: string, dto: ChangeAvatarDto, requesterId: string) {
     assertIsOwner(id, requesterId);
 
     const user = await this.prisma.user.findUnique({
       where: { id },
+      select: { avatar: true },
     });
 
-    if (!user) {
-      return null;
+    if (!user) return null;
+
+    const currentAvatar = user.avatar;
+
+    if (
+      currentAvatar &&
+      typeof currentAvatar === 'object' &&
+      'public_id' in currentAvatar &&
+      typeof currentAvatar.public_id === 'string' &&
+      currentAvatar.public_id.trim() !== ''
+    ) {
+      try {
+        await this.cloudinaryService.deleteImage(currentAvatar.public_id);
+      } catch (error) {
+        console.error('Cloudinary delete error:', error);
+      }
     }
 
+    // Cập nhật ảnh mới
     return this.prisma.user.update({
       where: { id },
       data: {
-        avatar,
+        avatar: {
+          absolute_url: dto.avatar.absolute_url,
+          public_id: dto.avatar.public_id || null,
+        },
         updatedAt: new Date(),
       },
     });

@@ -11,9 +11,9 @@ export class AuthService {
   private transporter: nodemailer.Transporter;
 
   constructor(
-    private prisma: PrismaService,
-    private jwtService: JwtService,
-    private userService: UserService,
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService,
+    private readonly userService: UserService,
   ) {
     this.transporter = nodemailer.createTransport({
       service: 'gmail',

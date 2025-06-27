@@ -12,11 +12,6 @@ export class AddFavoriteDto {
   @ApiProperty({ example: '123asd' })
   @IsString()
   @IsUUID()
-  userId: string;
-
-  @ApiProperty({ example: '123asd' })
-  @IsString()
-  @IsUUID()
   watchId: string;
 }
 

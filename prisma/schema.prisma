@@ -27,7 +27,7 @@ model User {
   gender       UserGender?
   firstName    String        @default("")
   lastName     String        @default("")
-  avatar       String?
+  avatar       Json?
   otp          String?
   otpExpiry    DateTime?
   createdAt    DateTime      @default(now())

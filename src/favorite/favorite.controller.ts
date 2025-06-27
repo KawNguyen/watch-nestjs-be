@@ -21,14 +21,11 @@ export class FavoriteController {
   constructor(private readonly favoriteService: FavoriteService) {}
 
   @ApiOperation({ summary: 'Get all favorite by userId' })
-  @Get(':userId')
+  @Get('me')
   @UseGuards(JwtAuthGuard)
-  async getAllFavoriteByUserId(
-    @Param('userId') userId: string,
-    @Req() req: Request,
-  ) {
+  async getAllFavoriteByUserId(@Req() req: Request) {
     const requesterId = (req as any).user.id;
-    const data = await this.favoriteService.getFavoriteME(userId, requesterId);
+    const data = await this.favoriteService.getFavoriteME(requesterId);
     return formatResponse(data, 'Favorites fetched successfully');
   }
 
@@ -39,8 +36,11 @@ export class FavoriteController {
     @Body() addFavoriteDto: AddFavoriteDto,
     @Req() req: Request,
   ) {
-    const userId = (req as any).user.id;
-    const data = await this.favoriteService.addFavorite(addFavoriteDto, userId);
+    const requesterId = (req as any).user.id;
+    const data = await this.favoriteService.addFavorite(
+      addFavoriteDto,
+      requesterId,
+    );
     return formatResponse(data, 'Add favorite successfully');
   }
 
@@ -48,9 +48,9 @@ export class FavoriteController {
   @Delete('remove')
   @UseGuards(JwtAuthGuard)
   async remove(@Req() req: Request, @Body() body: RemoveFavoriteDto) {
-    const userId = (req as any).user.id;
+    const requesterId = (req as any).user.id;
     const result = await this.favoriteService.removeFavorites(
-      userId,
+      requesterId,
       body.favoriteIds,
     );
     return formatResponse(result, 'Removed favorite(s) successfully');

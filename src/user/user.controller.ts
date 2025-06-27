@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import {
+  ChangeAvatarDto,
   ChangePasswordDto,
   GetAllUserDto,
   UpdateUserDto,
@@ -72,11 +73,7 @@ export class UserController {
     @Req() req: Request,
   ) {
     const requesterId = (req as any).user.id;
-    const data = await this.userService.update(
-      id,
-      updateUserDto,
-      requesterId,
-    );
+    const data = await this.userService.update(id, updateUserDto, requesterId);
     return formatResponse(data, 'Update user successfully');
   }
 
@@ -95,6 +92,23 @@ export class UserController {
       requesterId,
     );
     return formatResponse(data, 'Change password successfully');
+  }
+
+  @ApiOperation({ summary: 'Change Avatar' })
+  @Patch('change-avatar/:userId')
+  @UseGuards(JwtAuthGuard)
+  async changeAvatar(
+    @Param('userId') userId: string,
+    @Body() changeAvatarDto: ChangeAvatarDto,
+    @Req() req: Request,
+  ) {
+    const requesterId = (req as any).user.id;
+    const data = await this.userService.changeAvatar(
+      userId,
+      changeAvatarDto,
+      requesterId,
+    );
+    return formatResponse(data, 'Change avatar successfully');
   }
 
   @ApiOperation({ summary: 'Delete user' })

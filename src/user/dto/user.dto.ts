@@ -10,6 +10,16 @@ import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserGender } from '@prisma/client';
 
+export class AvatarDto {
+  @ApiProperty({ example: 'https://example.com/avatar.jpg ' })
+  @IsString()
+  absolute_url: string;
+
+  @ApiProperty({ example: 'user/abc123_avatar' })
+  @IsString()
+  public_id: string;
+}
+
 export class AddressDto {
   @ApiProperty({ example: '123 Nguyễn Trãi' })
   @IsString()
@@ -54,9 +64,9 @@ export class CreateUserDto {
   @IsNotEmpty()
   lastName: string;
 
-  @IsString()
+  @ApiPropertyOptional({ type: AvatarDto })
   @IsOptional()
-  avatar?: string;
+  avatar?: AvatarDto;
 
   @IsString()
   @IsOptional()
@@ -108,12 +118,13 @@ export class ChangePasswordDto {
 }
 
 export class ChangeAvatarDto {
-  @ApiPropertyOptional({ example: 'https://example.com/new-avatar.jpg' })
-  @IsString()
+  @ApiPropertyOptional({
+    type: AvatarDto,
+  })
   @IsOptional()
-  avatar?: string;
+  avatar: AvatarDto;
 }
-  
+
 export class GetAllUserDto {
   @ApiProperty({ description: 'Page', required: false })
   @IsOptional()

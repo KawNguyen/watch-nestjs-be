@@ -5,24 +5,19 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AddFavoriteDto } from './dto/favorite.dto';
-import { assertIsOwner } from 'src/common/helpers/assert-is-owner.helpers';
-import { validateUserAndWatch } from 'src/common/helpers/validate-user-and-watch.helper.helpers';
 
 @Injectable()
 export class FavoriteService {
   constructor(private prismaService: PrismaService) {}
 
-  async getFavoriteME(userId: string, requesterId: string) {
+  async getFavoriteME(userId: string) {
     if (!userId) {
       throw new ForbiddenException('User ID is required');
     }
 
-    assertIsOwner(userId, requesterId, 'access');
-
-    return this.prismaService.favorite.findMany({
+    const favorites = await this.prismaService.favorite.findMany({
       where: { userId },
       select: {
-        userId: true,
         watch: {
           select: {
             id: true,
@@ -68,17 +63,38 @@ export class FavoriteService {
         },
       },
     });
+
+    return favorites.map((fav) => {
+      const watch = fav.watch;
+      return {
+        id: watch.id,
+        name: watch.name,
+        slug: watch.slug,
+        description: watch.description,
+        price: watch.price,
+        brand: watch.brand || 'Unknown',
+        movement: watch.movement || 'Unknown',
+        material: watch.material || 'Unknown',
+        bandMaterial: watch.bandMaterial || 'Unknown',
+        images: watch.images.map((img) => ({
+          absolute_url: img.absolute_url,
+          public_id: img.public_id,
+        })),
+      };
+    });
   }
 
   async addFavorite(addFavoriteDto: AddFavoriteDto, requesterId: string) {
-    const { userId, watchId } = addFavoriteDto;
+    const { watchId } = addFavoriteDto;
 
-    await validateUserAndWatch(this.prismaService, userId, watchId);
+    if (!watchId) {
+      throw new ForbiddenException('Watch ID is required');
+    }
 
     const existingFavorite = await this.prismaService.favorite.findUnique({
       where: {
         userId_watchId: {
-          userId,
+          userId: requesterId,
           watchId,
         },
       },
@@ -88,15 +104,9 @@ export class FavoriteService {
       throw new ConflictException('Favorite already exist');
     }
 
-    if (userId !== requesterId) {
-      throw new ForbiddenException(
-        'You do not have permission to add favorite this profile',
-      );
-    }
-
     const favorite = await this.prismaService.favorite.create({
       data: {
-        userId,
+        userId: requesterId,
         watchId,
       },
     });

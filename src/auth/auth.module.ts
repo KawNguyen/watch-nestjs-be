@@ -10,10 +10,12 @@ import { ConfigModule } from '@nestjs/config';
 import googleAuthConfig from './config/google-auth.config';
 import { UserService } from 'src/user/user.service';
 import jwtConfig from './config/jwt.config';
+import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
 
 @Module({
   imports: [
     PassportModule,
+    CloudinaryModule,
     JwtModule.registerAsync(jwtConfig.asProvider()),
     ConfigModule.forFeature(jwtConfig),
     ConfigModule.forFeature(googleAuthConfig),
