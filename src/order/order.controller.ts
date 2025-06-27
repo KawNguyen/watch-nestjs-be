@@ -10,7 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth/jwt-auth.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enum';
@@ -40,23 +40,19 @@ export class OrderController {
       totalPages: data.totalPages,
     });
   }
-
-  @ApiOperation({ summary: 'Get orders by user ID' })
-  @Get(':userId')
+  
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiOperation({ summary: 'Get orders of account' })
+  @Get('me')
   @UseGuards(JwtAuthGuard)
-  async getOrdersByUserId(
-    @Param('userId') userId: string,
+  async getOrdersMe(
     @Req() req: Request,
-    @Query('page') page: number = 1,
-    @Query('limit') limit: number = 10,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
   ) {
     const requesterId = (req as any).user.id;
-    const data = await this.orderService.getOrdersByUserId(
-      userId,
-      requesterId,
-      page,
-      limit,
-    );
+    const data = await this.orderService.getOrdersMe(requesterId, page, limit);
     return formatResponse(data.data, 'Fetch orders by user Id successfully', {
       limit: data.limit,
       page: data.page,

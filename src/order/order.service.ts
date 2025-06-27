@@ -11,7 +11,6 @@ import {
   GetOrdersDto,
   UpdateOrderStatusDto,
 } from './dto/order.dto';
-import { assertIsOwner } from 'src/common/helpers/assert-is-owner.helpers';
 
 @Injectable()
 export class OrderService {
@@ -67,18 +66,12 @@ export class OrderService {
     };
   }
 
-  async getOrdersByUserId(
-    userId: string,
-    requesterId: string,
-    page: number = 1,
-    limit: number = 10,
-  ) {
-    assertIsOwner(userId, requesterId);
+  async getOrdersMe(requesterId: string, page: number = 1, limit: number = 10) {
     const skip = (page - 1) * limit;
 
     const [orders, totalItems] = await Promise.all([
       this.prismaService.order.findMany({
-        where: { userId },
+        where: { userId: requesterId },
         skip,
         take: limit,
         include: {
@@ -89,7 +82,7 @@ export class OrderService {
         orderBy: { createdAt: 'desc' },
       }),
       this.prismaService.order.count({
-        where: { userId },
+        where: { userId: requesterId },
       }),
     ]);
 
