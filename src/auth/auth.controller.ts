@@ -147,6 +147,6 @@ export class AuthController {
       maxAge: 3600000,
     });
 
-    res.redirect(`http://localhost:3001`);
+    res.redirect(`${this.configService.get('FRONTEND_URL')}`);
   }
 }
