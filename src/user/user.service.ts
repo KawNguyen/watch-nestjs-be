@@ -110,7 +110,18 @@ export class UserService {
         gender: true,
         phone: true,
         avatar: true,
-        addresses: true,
+        addresses: {
+          select: {
+            id: true,
+            street: true,
+            district: true,
+            ward: true,
+            city: true,
+            country: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
       },
     });
 

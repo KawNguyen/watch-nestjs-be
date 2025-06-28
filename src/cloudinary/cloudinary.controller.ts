@@ -23,6 +23,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { formatResponse } from 'src/common/helpers/response.helpers';
 
 @Controller('cloudinary')
 @ApiTags('Cloudinary')
@@ -66,7 +67,7 @@ export class CloudinaryController {
     @UploadedFiles() files: Express.Multer.File[],
     @Query('width') width?: string,
     @Query('height') height?: string,
-  ): Promise<{ data: { public_id: string; secure_url: string }[] }> {
+  ) {
     const widthNum = width ? parseInt(width) : undefined;
     const heightNum = height ? parseInt(height) : undefined;
 
@@ -75,7 +76,7 @@ export class CloudinaryController {
       widthNum,
       heightNum,
     );
-    return { data };
+    return formatResponse(data, 'Images uploaded successfully');
   }
 
   @Post('upload-single')
@@ -112,7 +113,7 @@ export class CloudinaryController {
     @UploadedFile() file: Express.Multer.File,
     @Query('width') width?: string,
     @Query('height') height?: string,
-  ): Promise<{ data: { public_id: string; secure_url: string } }> {
+  ) {
     const widthNum = width ? parseInt(width) : undefined;
     const heightNum = height ? parseInt(height) : undefined;
 
@@ -121,7 +122,7 @@ export class CloudinaryController {
       widthNum,
       heightNum,
     );
-    return { data };
+    return formatResponse(data, 'Image uploaded successfully');
   }
 
   @Delete('delete/:publicId')
@@ -129,7 +130,8 @@ export class CloudinaryController {
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Delete an image' })
   @ApiResponse({ status: 200, description: 'Successful deletion' })
-  async deleteImage(@Param('publicId') publicId: string): Promise<void> {
-    await this.cloudinaryService.deleteImage(publicId);
+  async deleteImage(@Param('publicId') publicId: string) {
+    const data = await this.cloudinaryService.deleteImage(publicId);
+    return formatResponse(data, 'Image deleted successfully');
   }
 }
