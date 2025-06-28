@@ -8,7 +8,7 @@ export class InventoryService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async findAll(dto: GetInventoryDto) {
-    const { keyword, page = 1, limit = 10 } = dto;
+    const { keyword, page = 1, limit = 12 } = dto;
     const whereClause: Prisma.InventoryWhereInput = keyword
       ? {
           OR: [

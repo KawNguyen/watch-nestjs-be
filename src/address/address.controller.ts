@@ -48,7 +48,7 @@ export class AddressController {
   @ApiProperty({
     description: 'Remove an existing address for a user',
   })
-  @Delete('remove')
+  @Delete('delete')
   @UseGuards(JwtAuthGuard)
   async removeAddress(
     @Query('userId') userId: string,

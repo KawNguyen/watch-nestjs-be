@@ -14,7 +14,7 @@ export class StockEntryService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async getAllStockEntries(dto: GetAllStockEntriesDto) {
-    const { page = 1, limit = 10, keyword, addedById } = dto;
+    const { page = 1, limit = 12, keyword, addedById } = dto;
     const skip = (page - 1) * limit;
 
     const whereClause: any = {};

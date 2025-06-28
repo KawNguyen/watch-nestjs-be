@@ -14,6 +14,14 @@ export class BrandService {
   async getAllBrands() {
     return this.prismaService.brand.findMany({
       orderBy: { createdAt: 'desc' },
+      include: {
+        image: {
+          select: {
+            absolute_url: true,
+            public_id: true,
+          },
+        },
+      },
     });
   }
 

@@ -6,11 +6,12 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
 import { CartService } from './cart.service';
-import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth/jwt-auth.guard';
 import { formatResponse } from 'src/common/helpers/response.helpers';
 import {
@@ -25,15 +26,27 @@ export class CartController {
   constructor(private readonly cartService: CartService) {}
 
   @ApiOperation({ summary: 'Get cart item by userId' })
-  @Get(':userId')
+  @Get('me-cart')
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
   @UseGuards(JwtAuthGuard)
-  async getCartItemByUserId(@Param() userId: string, @Req() req: Request) {
+  async getCartItemByUserId(
+    @Req() req: Request,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 12,
+  ) {
     const requesterId = (req as any).user.id;
-    const data = await this.cartService.getCartItemsByUserId(
-      userId,
+    const data = await this.cartService.getCartItemsMe(
       requesterId,
+      page,
+      limit,
     );
-    return formatResponse(data, 'Fetch cart item successfully');
+    return formatResponse(data.items, 'Fetch cart item successfully', {
+      limit: data.limit,
+      page: data.page,
+      totalItems: data.totalItems,
+      totalPages: data.totalPages,
+    });
   }
 
   @ApiOperation({ summary: 'Add cart item' })
@@ -64,7 +77,7 @@ export class CartController {
 
   @ApiOperation({ summary: 'Remove one or multiple cart items' })
   @ApiBody({ type: RemoveCartItemsDto })
-  @Delete('remove')
+  @Delete('delete')
   @UseGuards(JwtAuthGuard)
   async removeCartItems(@Req() req: Request, @Body() dto: RemoveCartItemsDto) {
     const userId = (req as any).user.id;

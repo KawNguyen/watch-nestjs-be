@@ -5,11 +5,12 @@ import {
   Get,
   Param,
   Post,
+  Query,
   Req,
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { FavoriteService } from './favorite.service';
 import { AddFavoriteDto, RemoveFavoriteDto } from './dto/favorite.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth/jwt-auth.guard';
@@ -21,16 +22,26 @@ export class FavoriteController {
   constructor(private readonly favoriteService: FavoriteService) {}
 
   @ApiOperation({ summary: 'Get all favorite by userId' })
-  @Get('me')
+  @Get('me-favorite')
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
   @UseGuards(JwtAuthGuard)
-  async getAllFavoriteByUserId(@Req() req: Request) {
+  async getAllFavoriteByUserId(
+    @Req() req: Request,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 12,
+  ) {
     const requesterId = (req as any).user.id;
-    const data = await this.favoriteService.getFavoriteME(requesterId);
+    const data = await this.favoriteService.getFavoriteME(
+      requesterId,
+      page,
+      limit,
+    );
     return formatResponse(data, 'Favorites fetched successfully');
   }
 
   @ApiOperation({ summary: 'Add favorite to your account' })
-  @Post('/add')
+  @Post('add')
   @UseGuards(JwtAuthGuard)
   async addFavorite(
     @Body() addFavoriteDto: AddFavoriteDto,
@@ -45,11 +56,11 @@ export class FavoriteController {
   }
 
   @ApiOperation({ summary: 'Remove favorite(s)' })
-  @Delete('remove')
+  @Post('delete')
   @UseGuards(JwtAuthGuard)
-  async remove(@Req() req: Request, @Body() body: RemoveFavoriteDto) {
+  async delete(@Req() req: Request, @Body() body: RemoveFavoriteDto) {
     const requesterId = (req as any).user.id;
-    const result = await this.favoriteService.removeFavorites(
+    const result = await this.favoriteService.deleteFavoriteItems(
       requesterId,
       body.favoriteIds,
     );

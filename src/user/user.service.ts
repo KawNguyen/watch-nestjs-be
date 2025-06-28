@@ -21,7 +21,7 @@ export class UserService {
   ) {}
 
   async findAll(dto: GetAllUserDto) {
-    const { page = 1, limit = 10, keyword } = dto;
+    const { page = 1, limit = 12, keyword } = dto;
 
     const where: Prisma.UserWhereInput = keyword
       ? {

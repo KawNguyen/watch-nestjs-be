@@ -10,78 +10,94 @@ import { AddFavoriteDto } from './dto/favorite.dto';
 export class FavoriteService {
   constructor(private prismaService: PrismaService) {}
 
-  async getFavoriteME(userId: string) {
+  async getFavoriteME(userId: string, page: number = 1, limit: number = 12) {
     if (!userId) {
       throw new ForbiddenException('User ID is required');
     }
 
-    const favorites = await this.prismaService.favorite.findMany({
-      where: { userId },
-      select: {
-        watch: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            description: true,
-            price: true,
-            brand: {
-              select: {
-                id: true,
-                name: true,
-                slug: true,
+    const skip = (page - 1) * limit;
+
+    const [favorites, total] = await this.prismaService.$transaction([
+      this.prismaService.favorite.findMany({
+        where: { userId },
+        select: {
+          id: true,
+          watch: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              description: true,
+              price: true,
+              brand: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                },
               },
-            },
-            movement: {
-              select: {
-                id: true,
-                name: true,
-                slug: true,
+              movement: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                },
               },
-            },
-            material: {
-              select: {
-                id: true,
-                name: true,
-                slug: true,
+              material: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                },
               },
-            },
-            bandMaterial: {
-              select: {
-                id: true,
-                name: true,
-                slug: true,
+              bandMaterial: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                },
               },
-            },
-            images: {
-              select: {
-                absolute_url: true,
-                public_id: true,
+              images: {
+                select: {
+                  absolute_url: true,
+                  public_id: true,
+                },
               },
             },
           },
         },
-      },
-    });
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prismaService.favorite.count({ where: { userId } }),
+    ]);
 
-    return favorites.map((fav) => {
-      const watch = fav.watch;
-      return {
-        id: watch.id,
-        name: watch.name,
-        slug: watch.slug,
-        description: watch.description,
-        price: watch.price,
-        brand: watch.brand || 'Unknown',
-        movement: watch.movement || 'Unknown',
-        material: watch.material || 'Unknown',
-        bandMaterial: watch.bandMaterial || 'Unknown',
-        images: watch.images.map((img) => ({
-          absolute_url: img.absolute_url,
-          public_id: img.public_id,
-        })),
-      };
-    });
+    return {
+      items: favorites.map((fav) => {
+        const watch = fav.watch;
+        return {
+          id: fav.id,
+          watchId: watch.id,
+          name: watch.name,
+          slug: watch.slug,
+          description: watch.description,
+          price: watch.price,
+          brand: watch.brand || 'Unknown',
+          movement: watch.movement || 'Unknown',
+          material: watch.material || 'Unknown',
+          bandMaterial: watch.bandMaterial || 'Unknown',
+          images: watch.images.map((img) => ({
+            absolute_url: img.absolute_url,
+            public_id: img.public_id,
+          })),
+        };
+      }),
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   async addFavorite(addFavoriteDto: AddFavoriteDto, requesterId: string) {
@@ -114,27 +130,31 @@ export class FavoriteService {
     return favorite;
   }
 
-  async removeFavorites(userId: string, favoriteIds: string[]) {
+  async deleteFavoriteItems(userId: string, favoriteIds: string[]) {
     if (!favoriteIds || favoriteIds.length === 0) {
       throw new ForbiddenException('No favorite IDs provided');
     }
 
-    const favorites = await this.prismaService.favorite.findMany({
+    const existingFavorites = await this.prismaService.favorite.findMany({
       where: {
-        id: { in: favoriteIds },
+        id: {
+          in: favoriteIds,
+        },
       },
     });
 
-    const invalidItems = favorites.filter((f) => f.userId !== userId);
+    const invalidItems = existingFavorites.filter((f) => f.userId !== userId);
     if (invalidItems.length > 0) {
       throw new ForbiddenException('Some favorite items do not belong to you');
     }
 
-    return this.prismaService.favorite.deleteMany({
+    const result = await this.prismaService.favorite.deleteMany({
       where: {
         id: { in: favoriteIds },
         userId,
       },
     });
+
+    return result;
   }
 }

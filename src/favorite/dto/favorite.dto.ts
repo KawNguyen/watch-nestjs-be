@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsString,
   IsUUID,
@@ -6,6 +7,8 @@ import {
   IsOptional,
   IsArray,
   ArrayNotEmpty,
+  IsInt,
+  Min,
 } from 'class-validator';
 
 export class AddFavoriteDto {
@@ -51,3 +54,5 @@ export class FavoriteResponseDto {
   @IsOptional()
   watch?: any;
 }
+
+

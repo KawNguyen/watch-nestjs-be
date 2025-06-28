@@ -6,33 +6,90 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AddCartItemDto } from './dto/cart.dto';
-import { assertIsOwner } from 'src/common/helpers/assert-is-owner.helpers';
 
 @Injectable()
 export class CartService {
   constructor(private prismaService: PrismaService) {}
 
-  async getCartItemsByUserId(userId: string, requesterId: string) {
-    if (!userId) {
+  async getCartItemsMe(
+    requesterId: string,
+    page: number = 1,
+    limit: number = 12,
+  ) {
+    if (!requesterId) {
       throw new BadRequestException('User ID is required');
     }
 
-    assertIsOwner(userId, requesterId, 'access');
-
     const cart = await this.prismaService.cart.findUnique({
-      where: { userId },
+      where: { userId: requesterId },
     });
 
     if (!cart) {
       throw new NotFoundException('Cart not found for this user.');
     }
 
-    return this.prismaService.cartItem.findMany({
-      where: { cartId: cart.id },
-      include: {
-        watch: true,
-      },
-    });
+    const skip = (page - 1) * limit;
+
+    const [items, total] = await this.prismaService.$transaction([
+      this.prismaService.cartItem.findMany({
+        where: { cartId: cart.id },
+        select: {
+          watch: {
+            include: {
+              brand: true,
+              movement: true,
+              material: true,
+              bandMaterial: true,
+              images: true,
+            },
+          },
+        },
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prismaService.cartItem.count({
+        where: { cartId: cart.id },
+      }),
+    ]);
+
+    return {
+      items: items.map((item: any) => ({
+        id: item.watch.id,
+        name: item.watch.name,
+        slug: item.watch.slug,
+        description: item.watch.description,
+        price: item.watch.price,
+        brand: {
+          id: item.watch.brand.id,
+          name: item.watch.brand.name,
+          slug: item.watch.brand.slug,
+        },
+        movement: {
+          id: item.watch.movement.id,
+          name: item.watch.movement.name,
+          slug: item.watch.movement.slug,
+        },
+        material: {
+          id: item.watch.material.id,
+          name: item.watch.material.name,
+          slug: item.watch.material.slug,
+        },
+        bandMaterial: {
+          id: item.watch.bandMaterial.id,
+          name: item.watch.bandMaterial.name,
+          slug: item.watch.bandMaterial.slug,
+        },
+        images: item.watch.images.map((img: any) => ({
+          absolute_url: img.absolute_url,
+          public_id: img.public_id,
+        })),
+      })),
+      totalItems: total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   async addToCart(userId: string, addCartItemDto: AddCartItemDto) {

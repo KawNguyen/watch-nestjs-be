@@ -17,7 +17,7 @@ export class OrderService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async getAllOrders(dto: GetOrdersDto) {
-    const { page = 1, limit = 10, keyword, status, userId } = dto;
+    const { page = 1, limit = 12, keyword, status, userId } = dto;
     const skip = (page - 1) * limit;
 
     const whereClause: any = {};
