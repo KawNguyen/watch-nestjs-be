@@ -31,7 +31,6 @@ export class CloudinaryController {
   constructor(private readonly cloudinaryService: CloudinaryService) {}
 
   @Post('upload')
-  @Roles(Role.ADMIN)
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FilesInterceptor('files', 10, {
@@ -80,7 +79,6 @@ export class CloudinaryController {
   }
 
   @Post('upload-single')
-  @Roles(Role.ADMIN)
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FileInterceptor('file', {
