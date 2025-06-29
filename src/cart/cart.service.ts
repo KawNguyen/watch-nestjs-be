@@ -54,37 +54,7 @@ export class CartService {
     ]);
 
     return {
-      items: items.map((item: any) => ({
-        id: item.watch.id,
-        name: item.watch.name,
-        slug: item.watch.slug,
-        description: item.watch.description,
-        price: item.watch.price,
-        brand: {
-          id: item.watch.brand.id,
-          name: item.watch.brand.name,
-          slug: item.watch.brand.slug,
-        },
-        movement: {
-          id: item.watch.movement.id,
-          name: item.watch.movement.name,
-          slug: item.watch.movement.slug,
-        },
-        material: {
-          id: item.watch.material.id,
-          name: item.watch.material.name,
-          slug: item.watch.material.slug,
-        },
-        bandMaterial: {
-          id: item.watch.bandMaterial.id,
-          name: item.watch.bandMaterial.name,
-          slug: item.watch.bandMaterial.slug,
-        },
-        images: item.watch.images.map((img: any) => ({
-          absolute_url: img.absolute_url,
-          public_id: img.public_id,
-        })),
-      })),
+      items,
       totalItems: total,
       page,
       limit,

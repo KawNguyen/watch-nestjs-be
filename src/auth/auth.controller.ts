@@ -15,6 +15,7 @@ import { RegisterDto, LoginDto, VerifyOtpDto } from './dto/auth.dto';
 import { GoogleAuthGuard } from './guards/google-auth/google-auth.guard';
 import { ConfigService } from '@nestjs/config';
 import { Public } from './decorators/public.decorators';
+import { formatResponse } from 'src/common/helpers/response.helpers';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -105,13 +106,21 @@ export class AuthController {
   @ApiOperation({ summary: 'User login' })
   @ApiResponse({ status: 200, description: 'Login successful' })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
-  async login(@Res() res, @Body() loginDto: LoginDto) {
+  async login(@Body() loginDto: LoginDto, @Res() res) {
     const response = await this.authService.login(
       loginDto.email,
       loginDto.password,
     );
 
-    res.status(202).json({ message: response.message });
+    res.cookie('accessToken', response.accessToken, {
+      httpOnly: true,
+      // secure: this.configService.get('NODE_ENV') === 'production',
+      secure: true,
+      sameSite: 'None',
+      maxAge: 3600000 * 24,
+    });
+
+    res.status(200).json({ message: response.message });
   }
 
   @Post('logout')

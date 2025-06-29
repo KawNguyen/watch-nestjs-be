@@ -143,20 +143,22 @@ export class AuthService {
       throw new UnauthorizedException('Email or password is incorrect');
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpiry = new Date(Date.now() + 3 * 60 * 1000);
+    const accessToken = await this.generateToken(user.id, email, user.role);
 
-    await this.prisma.user.update({
-      where: { email },
+    await this.prisma.session.create({
       data: {
-        otp,
-        otpExpiry,
+        token: accessToken,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        user: {
+          connect: { id: user.id },
+        },
       },
     });
 
-    await this.sendOtpEmail(email, otp);
-
-    return { message: 'Please check your mail for OTP' };
+    return {
+      accessToken,
+      message: 'Login successfully',
+    };
   }
 
   private async sendOtpEmail(email: string, otp: string) {

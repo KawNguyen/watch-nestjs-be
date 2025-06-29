@@ -255,7 +255,6 @@ export class UserService {
       }
     }
 
-    // Cập nhật ảnh mới
     return this.prisma.user.update({
       where: { id },
       data: {
@@ -264,6 +263,13 @@ export class UserService {
           public_id: dto.avatar.public_id || null,
         },
         updatedAt: new Date(),
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        avatar: true,
       },
     });
   }

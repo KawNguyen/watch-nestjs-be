@@ -37,7 +37,12 @@ export class FavoriteController {
       page,
       limit,
     );
-    return formatResponse(data, 'Favorites fetched successfully');
+    return formatResponse(data.favorites, 'Favorites fetched successfully', {
+      limit: data.limit,
+      page: data.page,
+      totalItems: data.totalItems,
+      totalPages: data.totalPages,
+    });
   }
 
   @ApiOperation({ summary: 'Add favorite to your account' })

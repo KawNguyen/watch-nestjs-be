@@ -74,28 +74,10 @@ export class FavoriteService {
     ]);
 
     return {
-      items: favorites.map((fav) => {
-        const watch = fav.watch;
-        return {
-          id: fav.id,
-          watchId: watch.id,
-          name: watch.name,
-          slug: watch.slug,
-          description: watch.description,
-          price: watch.price,
-          brand: watch.brand || 'Unknown',
-          movement: watch.movement || 'Unknown',
-          material: watch.material || 'Unknown',
-          bandMaterial: watch.bandMaterial || 'Unknown',
-          images: watch.images.map((img) => ({
-            absolute_url: img.absolute_url,
-            public_id: img.public_id,
-          })),
-        };
-      }),
-      total,
+      favorites: favorites.map((fav) => fav.watch),
       page,
       limit,
+      totalItems: total,
       totalPages: Math.ceil(total / limit),
     };
   }
