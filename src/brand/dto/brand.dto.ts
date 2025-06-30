@@ -17,12 +17,10 @@ export class GetBrandsDto {
 
 export class BrandImageDto {
   @IsString()
-  @IsNotEmpty()
-  @ApiProperty({ example: 'Link image' })
+  @ApiProperty({ example: 'absolute_url image' })
   absolute_url: string;
 
   @IsString()
-  @IsNotEmpty()
   @ApiProperty({ example: 'public_id image' })
   public_id: string;
 }
@@ -43,4 +41,18 @@ export class CreateBrandDto {
   image: BrandImageDto;
 }
 
-export class UpdateBrandDto extends PartialType(CreateBrandDto) {}
+export class UpdateBrandDto {
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({ example: 'Rolex' })
+  name: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({ example: 'Switzerland' })
+  country: string;
+
+  @IsOptional()
+  @ApiPropertyOptional({ type: BrandImageDto })
+  image: BrandImageDto;
+}

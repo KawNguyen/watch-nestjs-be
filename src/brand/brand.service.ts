@@ -73,6 +73,9 @@ export class BrandService {
       include: { image: true },
     });
 
+    console.log(updateBrandDto);
+    
+
     if (!existingBrand) {
       throw new NotFoundException('Brand not found');
     }
@@ -81,22 +84,23 @@ export class BrandService {
       ? generateSlug(updateBrandDto.name)
       : existingBrand.slug;
 
-    const imageUrl = updateBrandDto.image
-      ? updateBrandDto.image.absolute_url
-      : existingBrand.image?.absolute_url;
-
     if (updateBrandDto.name) {
       const brandWithSameName = await this.prismaService.brand.findFirst({
-        where: { name: updateBrandDto.name },
+        where: { name: updateBrandDto.name, NOT: { id } },
       });
-
-      if (brandWithSameName && brandWithSameName.id !== id) {
+      if (brandWithSameName) {
         throw new BadRequestException('Brand with this name already exists');
       }
     }
 
-    if (!imageUrl) {
-      throw new BadRequestException('Image URL is required');
+    let imageUrl = existingBrand.image?.absolute_url;
+    let publicId = existingBrand.image?.public_id;
+
+    if (updateBrandDto.image) {
+      if (updateBrandDto.image.absolute_url) {
+        imageUrl = updateBrandDto.image.absolute_url;
+        publicId = updateBrandDto.image.public_id || publicId;
+      }
     }
 
     return this.prismaService.brand.update({
@@ -105,10 +109,15 @@ export class BrandService {
         ...updateBrandDto,
         slug,
         image: {
-          update: {
-            absolute_url: imageUrl,
-            public_id:
-              updateBrandDto.image?.public_id || existingBrand.image?.public_id,
+          upsert: {
+            create: {
+              absolute_url: imageUrl!,
+              public_id: publicId!,
+            },
+            update: {
+              absolute_url: imageUrl,
+              public_id: publicId,
+            },
           },
         },
       },

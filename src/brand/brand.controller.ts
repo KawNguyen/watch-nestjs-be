@@ -61,8 +61,9 @@ export class BrandController {
   @ApiOperation({ summary: 'Delete brand by ID' })
   @Roles(Role.ADMIN)
   @Delete('delete/:brandId')
+  @UseGuards(JwtAuthGuard)
   async deleteBrand(@Param('brandId') brandId: string) {
-    const data = await this.brandService.getBrandById(brandId);
+    const data = await this.brandService.deleteBrand(brandId);
     return formatResponse(data, 'Brand deleted successfully');
   }
 }
