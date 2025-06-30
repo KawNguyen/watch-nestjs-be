@@ -1,26 +1,27 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
-import { UserModule } from './user/user.module';
-import { BrandModule } from './brand/brand.module';
+import { UserModule } from './modules/user/user.module';
 import { APP_GUARD } from '@nestjs/core';
-import { JwtAuthGuard } from './auth/guards/jwt-auth/jwt-auth.guard';
-import { BandMaterialModule } from './band-material/band-material.module';
-import { MovementModule } from './movement/movement.module';
-import { RolesGuard } from './auth/guards/roles/roles.guard';
-import { MaterialModule } from './material/material.module';
+import { MovementModule } from './modules/movement/movement.module';
+import { MaterialModule } from './modules/material/material.module';
 import { WatchModule } from './watch/watch.module';
-import { FavoriteModule } from './favorite/favorite.module';
-import { CartModule } from './cart/cart.module';
-import { OrderModule } from './order/order.module';
-import { StockEntryModule } from './stock-entry/stock-entry.module';
-import { InventoryModule } from './inventory/inventory.module';
-import { ReviewModule } from './review/review.module';
-import { CouponModule } from './coupon/coupon.module';
-import { AdvertisementModule } from './advertisement/advertisement.module';
-import { CloudinaryModule } from './cloudinary/cloudinary.module';
-import { AddressModule } from './address/address.module';
+import { FavoriteModule } from './modules/favorite/favorite.module';
+import { OrderModule } from './modules/order/order.module';
+import { StockEntryModule } from './modules/stock-entry/stock-entry.module';
+import { InventoryModule } from './modules/inventory/inventory.module';
+import { ReviewModule } from './modules/review/review.module';
+import { CouponModule } from './modules/coupon/coupon.module';
+import { PaymentsModule } from './modules/payments/payments.module';
+import { AddressModule } from './modules/address/address.module';
+import { AdvertisementModule } from './modules/advertisement/advertisement.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { JwtAuthGuard } from './modules/auth/guards/jwt-auth/jwt-auth.guard';
+import { RolesGuard } from './modules/auth/guards/roles/roles.guard';
+import { BandMaterialModule } from './modules/band-material/band-material.module';
+import { BrandModule } from './modules/brand/brand.module';
+import { CartModule } from './modules/cart/cart.module';
+import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { AddressModule } from './address/address.module';
     AdvertisementModule,
     CloudinaryModule,
     AddressModule,
+    PaymentsModule,
   ],
   providers: [
     {

@@ -10,11 +10,13 @@ import {
 } from '@nestjs/common';
 import { WatchService } from './watch.service';
 import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { Public } from 'src/auth/decorators/public.decorators';
+
 import { CreateWatchDto, GetWatchesDto, UpdateWatchDto } from './dto/watch.dto';
-import { Roles } from 'src/auth/decorators/roles.decorator';
-import { Role } from 'src/auth/enums/role.enum';
+
+import { Roles } from 'src/modules/auth/decorators/roles.decorator';
+import { Role } from 'src/modules/auth/enums/role.enum';
 import { formatResponse } from 'src/common/helpers/response.helpers';
+import { Public } from 'src/modules/auth/decorators/public.decorators';
 
 @ApiTags('Watch')
 @Controller('watch')
