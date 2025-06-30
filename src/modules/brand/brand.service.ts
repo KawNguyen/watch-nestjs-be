@@ -74,7 +74,6 @@ export class BrandService {
     });
 
     console.log(updateBrandDto);
-    
 
     if (!existingBrand) {
       throw new NotFoundException('Brand not found');
@@ -93,31 +92,15 @@ export class BrandService {
       }
     }
 
-    let imageUrl = existingBrand.image?.absolute_url;
-    let publicId = existingBrand.image?.public_id;
-
-    if (updateBrandDto.image) {
-      if (updateBrandDto.image.absolute_url) {
-        imageUrl = updateBrandDto.image.absolute_url;
-        publicId = updateBrandDto.image.public_id || publicId;
-      }
-    }
-
     return this.prismaService.brand.update({
       where: { id },
       data: {
         ...updateBrandDto,
         slug,
         image: {
-          upsert: {
-            create: {
-              absolute_url: imageUrl!,
-              public_id: publicId!,
-            },
-            update: {
-              absolute_url: imageUrl,
-              public_id: publicId,
-            },
+          update: {
+            absolute_url: updateBrandDto.image?.absolute_url,
+            public_id: updateBrandDto.image?.public_id,
           },
         },
       },

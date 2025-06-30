@@ -55,7 +55,7 @@ export class BrandController {
     @Param('brandId') brandId: string,
     @Body() updateBrandDto: UpdateBrandDto,
   ) {
-    const data = this.brandService.updateBrand(brandId, updateBrandDto);
+    const data = await this.brandService.updateBrand(brandId, updateBrandDto);
     return formatResponse(data, 'Brand updated successfully');
   }
 
