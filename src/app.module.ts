@@ -5,7 +5,6 @@ import { UserModule } from './modules/user/user.module';
 import { APP_GUARD } from '@nestjs/core';
 import { MovementModule } from './modules/movement/movement.module';
 import { MaterialModule } from './modules/material/material.module';
-import { WatchModule } from './watch/watch.module';
 import { FavoriteModule } from './modules/favorite/favorite.module';
 import { OrderModule } from './modules/order/order.module';
 import { StockEntryModule } from './modules/stock-entry/stock-entry.module';
@@ -22,6 +21,7 @@ import { BandMaterialModule } from './modules/band-material/band-material.module
 import { BrandModule } from './modules/brand/brand.module';
 import { CartModule } from './modules/cart/cart.module';
 import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
+import { WatchModule } from './modules/watch/watch.module';
 
 @Module({
   imports: [
@@ -35,7 +35,6 @@ import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
     MaterialModule,
     BandMaterialModule,
     MovementModule,
-    WatchModule,
     WatchModule,
     FavoriteModule,
     CartModule,

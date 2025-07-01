@@ -228,9 +228,6 @@ export class WatchService {
   async deleteWatch(id: string) {
     const existingWatch = await this.prismaService.watch.findUnique({
       where: { id },
-      include: {
-        images: true,
-      },
     });
 
     if (!existingWatch) {
@@ -240,6 +237,10 @@ export class WatchService {
     await this.prismaService.watchImages.deleteMany({
       where: { watchId: id },
     });
+
+    // await this.prismaService.favorite.deleteMany({
+    //   where: { watchId: id },
+    // });
 
     return this.prismaService.watch.delete({
       where: { id },

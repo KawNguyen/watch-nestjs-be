@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { WatchService } from './watch.service';
 import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
@@ -17,6 +18,7 @@ import { Roles } from 'src/modules/auth/decorators/roles.decorator';
 import { Role } from 'src/modules/auth/enums/role.enum';
 import { formatResponse } from 'src/common/helpers/response.helpers';
 import { Public } from 'src/modules/auth/decorators/public.decorators';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth/jwt-auth.guard';
 
 @ApiTags('Watch')
 @Controller('watch')
@@ -53,6 +55,7 @@ export class WatchController {
   @ApiOperation({ summary: 'Create a new watch' })
   @Post('create')
   @Roles(Role.ADMIN)
+  @UseGuards(JwtAuthGuard)
   async createWatch(@Body() watchDto: CreateWatchDto) {
     const data = await this.watchService.createWatch(watchDto);
     return formatResponse(data, 'Watch created successfully');
@@ -61,6 +64,7 @@ export class WatchController {
   @ApiOperation({ summary: 'Update a watch' })
   @Patch('update/:watchId')
   @Roles(Role.ADMIN)
+  @UseGuards(JwtAuthGuard)
   async updateWatch(
     @Param('watchId') watchId: string,
     @Body() watchDto: UpdateWatchDto,
@@ -72,6 +76,7 @@ export class WatchController {
   @ApiOperation({ summary: 'Delete a watch' })
   @Delete('delete/:watchId')
   @Roles(Role.ADMIN)
+  @UseGuards(JwtAuthGuard)
   async deleteWatch(@Param('watchId') watchId: string) {
     const data = await this.watchService.deleteWatch(watchId);
     return formatResponse(data, 'Watch deleted successfully');

@@ -4,7 +4,7 @@ import {
   Delete,
   Patch,
   Post,
-  Query,
+  Param,
   UseGuards,
 } from '@nestjs/common';
 import { AddressService } from './address.service';
@@ -12,7 +12,6 @@ import { ApiProperty, ApiTags } from '@nestjs/swagger';
 import { CreateAddressDto, UpdateAddressDto } from './dto/address.dto';
 import { formatResponse } from 'src/common/helpers/response.helpers';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth/jwt-auth.guard';
-
 
 @ApiTags('Address')
 @Controller('address')
@@ -22,10 +21,10 @@ export class AddressController {
   @ApiProperty({
     description: 'Add a new address for a user',
   })
-  @Post('add')
+  @Post('users/:userId/add')
   @UseGuards(JwtAuthGuard)
   async addAddress(
-    @Query('userId') userId: string,
+    @Param('userId') userId: string,
     @Body() dto: CreateAddressDto,
   ) {
     const data = await this.addressService.addAddress(userId, dto);
@@ -35,11 +34,11 @@ export class AddressController {
   @ApiProperty({
     description: 'Update an existing address for a user',
   })
-  @Patch('update')
+  @Patch('users/:userId/update/:id')
   @UseGuards(JwtAuthGuard)
   async updateAddress(
-    @Query('userId') userId: string,
-    @Query('id') id: string,
+    @Param('userId') userId: string,
+    @Param('id') id: string,
     @Body() dto: UpdateAddressDto,
   ) {
     const data = await this.addressService.updateAddress(userId, id, dto);
@@ -49,11 +48,11 @@ export class AddressController {
   @ApiProperty({
     description: 'Remove an existing address for a user',
   })
-  @Delete('delete')
+  @Delete('users/:userId/delete/:id')
   @UseGuards(JwtAuthGuard)
   async removeAddress(
-    @Query('userId') userId: string,
-    @Query('id') id: string,
+    @Param('userId') userId: string,
+    @Param('id') id: string,
   ) {
     const data = await this.addressService.removeAddress(userId, id);
     return formatResponse(data, 'Address removed successfully');
