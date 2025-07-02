@@ -1,6 +1,8 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -8,13 +10,37 @@ import {
   CreateStockEntryDto,
   GetAllStockEntriesDto,
 } from './dto/stock-entry.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class StockEntryService {
+  private readonly logger = new Logger(StockEntryService.name, {
+    timestamp: true,
+  });
+
   constructor(private readonly prismaService: PrismaService) {}
 
+  async updateInventoryQuantities(
+    tx: Prisma.TransactionClient,
+    stockItems: any,
+  ) {
+    for (const stockItem of stockItems) {
+      const { watchId, quantity } = stockItem;
+      await tx.watchInventory.upsert({
+        where: { watchId },
+        create: {
+          watchId,
+          quantity,
+        },
+        update: {
+          quantity,
+        },
+      });
+    }
+  }
+
   async getAllStockEntries(dto: GetAllStockEntriesDto) {
-    const { page = 1, limit = 12, keyword, addedById } = dto;
+    const { page = 1, limit = 12, keyword, createdBy } = dto;
     const skip = (page - 1) * limit;
 
     const whereClause: any = {};
@@ -28,8 +54,8 @@ export class StockEntryService {
       };
     }
 
-    if (addedById) {
-      whereClause.addedById = addedById;
+    if (createdBy) {
+      whereClause.createdBy = createdBy;
     }
 
     const [items, totalItems] = await Promise.all([
@@ -38,7 +64,7 @@ export class StockEntryService {
         skip,
         take: limit,
         include: {
-          addedBy: {
+          user: {
             select: { id: true, email: true, firstName: true },
           },
           stockItems: {
@@ -69,112 +95,70 @@ export class StockEntryService {
     const data = await this.prismaService.stockEntry.findUnique({
       where: { id },
       include: {
-        addedBy: true,
+        user: true,
         stockItems: true,
       },
     });
     return data;
   }
 
-  async createStockEntry(createStockEntryDto: CreateStockEntryDto) {
-    const { addedById, stockItems } = createStockEntryDto;
+  async createStockEntryV2(createStockEntry: CreateStockEntryDto) {
+    const { createdBy, notes, stockItems } = createStockEntry;
+    const result = await this.prismaService.$transaction(async (tx) => {
+      try {
+        const user = await this.prismaService.user.findUnique({
+          where: { id: createdBy },
+        });
 
-    const user = await this.prismaService.user.findUnique({
-      where: { id: addedById },
-    });
+        if (!user) {
+          throw new NotFoundException('User not found');
+        }
 
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
+        const watchIds = stockItems.map((item) => item.watchId);
 
-    const watchIds = stockItems.map((item) => item.watchId);
-    const watches = await this.prismaService.watch.findMany({
-      where: { id: { in: watchIds } },
-    });
+        const existingWatches = await tx.watch.findMany({
+          where: { id: { in: watchIds } },
+          select: { id: true },
+        });
 
-    if (watches.length !== watchIds.length) {
-      throw new BadRequestException('One or more watches do not exist');
-    }
+        const existingIds = new Set(existingWatches.map((w) => w.id));
+        const invalidIds = watchIds.filter((id) => !existingIds.has(id));
 
-    const totalPrice = stockItems.reduce(
-      (sum, item) => sum + item.quantity * item.price,
-      0,
-    );
+        if (invalidIds.length > 0) {
+          throw new BadRequestException(
+            `Invalid watchId(s): ${invalidIds.join(', ')}`,
+          );
+        }
 
-    const result = await this.prismaService.$transaction(async (prisma) => {
-      const stockEntry = await prisma.stockEntry.create({
-        data: {
-          addedById,
-          totalPrice,
-        },
-      });
+        const totalPrice = stockItems.reduce(
+          (acc, cur) => acc + cur.costPrice,
+          0,
+        );
 
-      const stockItemsData = stockItems.map((item) => ({
-        stockEntryId: stockEntry.id,
-        watchId: item.watchId,
-        quantity: item.quantity,
-        price: item.price,
-      }));
-
-      await prisma.stockItem.createMany({
-        data: stockItemsData,
-      });
-
-      await Promise.all(
-        stockItems.map(async (item) => {
-          const existingInventory = await prisma.inventory.findUnique({
-            where: { watchId: item.watchId },
-          });
-
-          if (existingInventory) {
-            await prisma.inventory.update({
-              where: { watchId: item.watchId },
-              data: {
-                quantity: {
-                  increment: item.quantity,
-                },
-              },
-            });
-          } else {
-            await prisma.inventory.create({
-              data: {
-                watchId: item.watchId,
-                quantity: item.quantity,
-              },
-            });
-          }
-        }),
-      );
-
-      return await prisma.stockEntry.findUnique({
-        where: { id: stockEntry.id },
-        include: {
-          addedBy: {
-            select: {
-              id: true,
-              email: true,
-              firstName: true,
-              lastName: true,
-            },
-          },
-          stockItems: {
-            include: {
-              watch: {
-                select: {
-                  id: true,
-                  name: true,
-                  code: true,
-                  brand: {
-                    select: {
-                      name: true,
-                    },
-                  },
-                },
+        const stockEntry = await tx.stockEntry.create({
+          data: {
+            createdBy,
+            totalPrice,
+            notes,
+            stockItems: {
+              createMany: {
+                data: stockItems.map((item) => ({
+                  watchId: item.watchId,
+                  quantity: item.quantity,
+                  costPrice: item.costPrice,
+                })),
               },
             },
           },
-        },
-      });
+        });
+
+        await this.updateInventoryQuantities(tx, stockItems);
+
+        return stockEntry;
+      } catch (error) {
+        this.logger.error(error.message);
+        throw error;
+      }
     });
 
     return result;

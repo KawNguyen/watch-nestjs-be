@@ -145,7 +145,7 @@ export class OrderService {
     });
 
     for (const item of orderItemsData) {
-      await this.prismaService.inventory.update({
+      await this.prismaService.watchInventory.update({
         where: { watchId: item.watchId },
         data: {
           quantity: {
@@ -226,7 +226,7 @@ export class OrderService {
     });
 
     for (const item of order.orderItems) {
-      await this.prismaService.inventory.update({
+      await this.prismaService.watchInventory.update({
         where: { watchId: item.watchId },
         data: {
           quantity: { increment: item.quantity },

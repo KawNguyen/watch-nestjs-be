@@ -165,6 +165,11 @@ export class WatchService {
             })),
           },
         },
+        inventory: {
+          create: {
+            quantity: 0,
+          },
+        },
       },
       include: {
         images: true,
@@ -189,7 +194,7 @@ export class WatchService {
     const slug = generateSlug(data.name || existingWatch.name);
 
     if (data.images && data.images.length > 0) {
-      await this.prismaService.watchImages.createMany({
+      await this.prismaService.watchImage.createMany({
         data: data.images.map((image) => ({
           watchId: id,
           absolute_url: image.absolute_url,
@@ -206,7 +211,7 @@ export class WatchService {
       (img) => !newImages.includes(img),
     );
     if (imagesToDelete.length > 0) {
-      await this.prismaService.watchImages.deleteMany({
+      await this.prismaService.watchImage.deleteMany({
         where: {
           watchId: id,
           public_id: { in: imagesToDelete },
@@ -234,7 +239,7 @@ export class WatchService {
       throw new BadRequestException(`Watch with ID "${id}" does not exist`);
     }
 
-    await this.prismaService.watchImages.deleteMany({
+    await this.prismaService.watchImage.deleteMany({
       where: { watchId: id },
     });
 

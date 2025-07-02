@@ -71,11 +71,11 @@ export class StockEntryController {
   }
 
   @ApiOperation({ summary: 'Add Stock' })
-  @Post('add')
+  @Post('add-stock')
   @Roles(Role.ADMIN)
   @UseGuards(JwtAuthGuard)
-  async addStock(@Body() dto: CreateStockEntryDto) {
-    const data = await this.stockEntryService.createStockEntry(dto);
+  async addStockEntry(@Body() dto: CreateStockEntryDto) {
+    const data = await this.stockEntryService.createStockEntryV2(dto);
     return formatResponse(data, 'Add stock successfully');
   }
 }
