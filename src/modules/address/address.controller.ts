@@ -34,7 +34,7 @@ export class AddressController {
   @ApiProperty({
     description: 'Add a new address for a user',
   })
-  @Post('users/:userId/add')
+  @Post('user/:userId/add')
   @UseGuards(JwtAuthGuard)
   async addAddress(
     @Param('userId') userId: string,
@@ -47,7 +47,7 @@ export class AddressController {
   @ApiProperty({
     description: 'Update an existing address for a user',
   })
-  @Patch('users/:userId/update/:id')
+  @Patch('user/:userId/update/:id')
   @UseGuards(JwtAuthGuard)
   async updateAddress(
     @Param('userId') userId: string,
@@ -61,7 +61,7 @@ export class AddressController {
   @ApiProperty({
     description: 'Remove an existing address for a user',
   })
-  @Delete('users/:userId/delete/:id')
+  @Delete('user/:userId/delete/:id')
   @UseGuards(JwtAuthGuard)
   async removeAddress(
     @Param('userId') userId: string,

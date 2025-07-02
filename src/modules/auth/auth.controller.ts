@@ -15,7 +15,6 @@ import { RegisterDto, LoginDto, VerifyOtpDto } from './dto/auth.dto';
 import { GoogleAuthGuard } from './guards/google-auth/google-auth.guard';
 import { ConfigService } from '@nestjs/config';
 import { Public } from './decorators/public.decorators';
-import { formatResponse } from 'src/common/helpers/response.helpers';
 
 @ApiTags('Authentication')
 @Controller('auth')
