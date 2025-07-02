@@ -27,7 +27,7 @@ export class CartController {
   constructor(private readonly cartService: CartService) {}
 
   @ApiOperation({ summary: 'Get cart item by userId' })
-  @Get('me-cart')
+  @Get('my-cart')
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @UseGuards(JwtAuthGuard)

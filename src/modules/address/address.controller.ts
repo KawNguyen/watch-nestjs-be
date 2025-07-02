@@ -6,6 +6,8 @@ import {
   Post,
   Param,
   UseGuards,
+  Get,
+  Req,
 } from '@nestjs/common';
 import { AddressService } from './address.service';
 import { ApiProperty, ApiTags } from '@nestjs/swagger';
@@ -17,6 +19,17 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth/jwt-auth.guard';
 @Controller('address')
 export class AddressController {
   constructor(private readonly addressService: AddressService) {}
+
+  @ApiProperty({
+    description: 'Get all addresses by userId',
+  })
+  @Get('my-address')
+  @UseGuards(JwtAuthGuard)
+  async getAllAddressByUserId(@Req() req: Request) {
+    const requesterId = (req as any).user.id;
+    const data = await this.addressService.getAllAddressByUserId(requesterId);
+    return formatResponse(data, 'Fetch all addresses by userId successfully');
+  }
 
   @ApiProperty({
     description: 'Add a new address for a user',

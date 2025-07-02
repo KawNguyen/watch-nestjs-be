@@ -23,7 +23,7 @@ export class FavoriteController {
   constructor(private readonly favoriteService: FavoriteService) {}
 
   @ApiOperation({ summary: 'Get all favorite by userId' })
-  @Get('me-favorite')
+  @Get('my-favorite')
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @UseGuards(JwtAuthGuard)

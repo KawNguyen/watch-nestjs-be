@@ -6,6 +6,21 @@ import { CreateAddressDto } from './dto/address.dto';
 export class AddressService {
   constructor(private readonly prismaService: PrismaService) {}
 
+  async getAllAddressByUserId(userId: string) {
+    const data = await this.prismaService.address.findMany({
+      where: { userId },
+      select: {
+        id: true,
+        street: true,
+        district: true,
+        ward: true,
+        city: true,
+        country: true,
+      },
+    });
+    return data;
+  }
+
   async addAddress(userId: string, dto: CreateAddressDto) {
     const existingAddress = await this.prismaService.address.findFirst({
       where: {

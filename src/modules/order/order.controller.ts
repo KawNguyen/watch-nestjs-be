@@ -45,7 +45,7 @@ export class OrderController {
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiOperation({ summary: 'Get orders of account' })
-  @Get('me')
+  @Get('my-order')
   @UseGuards(JwtAuthGuard)
   async getOrdersMe(
     @Req() req: Request,
