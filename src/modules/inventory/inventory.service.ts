@@ -9,7 +9,7 @@ export class InventoryService {
 
   async findAll(dto: GetInventoryDto) {
     const { keyword, page = 1, limit = 12 } = dto;
-    const whereClause: Prisma.InventoryWhereInput = keyword
+    const whereClause: Prisma.WatchInventoryWhereInput = keyword
       ? {
           OR: [
             {
@@ -35,8 +35,8 @@ export class InventoryService {
       : {};
 
     const [totalItems, items] = await this.prismaService.$transaction([
-      this.prismaService.inventory.count({ where: whereClause }),
-      this.prismaService.inventory.findMany({
+      this.prismaService.watchInventory.count({ where: whereClause }),
+      this.prismaService.watchInventory.findMany({
         where: whereClause,
         include: {
           watch: {

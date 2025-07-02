@@ -16,3 +16,15 @@ export const formatResponse = (
     ...(meta && { meta }),
   };
 };
+
+export const formatErrorResponse = (
+  message = 'Something went wrong',
+  statusCode = 400,
+) => {
+  return {
+    status: 'error',
+    message,
+    statusCode,
+    data: null,
+  };
+};

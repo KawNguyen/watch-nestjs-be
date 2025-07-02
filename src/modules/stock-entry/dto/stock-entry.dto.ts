@@ -29,14 +29,18 @@ export class CreateStockItemDto {
   @IsNotEmpty()
   @IsNumber()
   @Min(0)
-  price: number;
+  costPrice: number;
 }
 
 export class CreateStockEntryDto {
   @ApiProperty({ description: 'ID of the user adding the stock entry' })
   @IsNotEmpty()
   @IsString()
-  addedById: string;
+  createdBy: string;
+
+  @ApiProperty({ description: 'Notes of the stock entry' })
+  @IsString()
+  notes: string;
 
   @ApiProperty({
     description: 'List of stock items being added',
@@ -81,5 +85,5 @@ export class GetAllStockEntriesDto {
   })
   @IsOptional()
   @IsString()
-  addedById?: string;
+  createdBy?: string;
 }
