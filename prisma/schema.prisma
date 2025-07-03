@@ -20,14 +20,14 @@ model Session {
 }
 
 model User {
-  id           String        @id @default(uuid())
-  email        String        @unique
+  id           String         @id @default(uuid())
+  email        String         @unique
   password     String
-  role         UserRole      @default(CUSTOMER)
+  role         UserRole       @default(CUSTOMER)
   phone        String?
   gender       UserGender?
-  firstName    String        @default("")
-  lastName     String        @default("")
+  firstName    String         @default("")
+  lastName     String         @default("")
   avatar       Json?
   otp          String?
   otpExpiry    DateTime?
@@ -40,10 +40,11 @@ model User {
   sessions     Session[]
   addresses    Address[]
   // stockEntries StockEntry[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
   deletedAt    DateTime?
   StockEntry   StockEntry[]
+  Notification Notification[]
 }
 
 model Address {
@@ -171,14 +172,14 @@ model WatchImage {
 }
 
 model WatchInventory {
-  id                String @id @default(uuid())
-  quantity          Int    @default(0)
-  lowStockThreshold Int    @default(5) // Threshold for low stock alerts
-  watchId   String    @unique
-  watch     Watch     @relation(fields: [watchId], references: [id], onDelete: Cascade)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  id                String    @id @default(uuid())
+  quantity          Int       @default(0)
+  lowStockThreshold Int       @default(5) // Threshold for low stock alerts
+  watchId           String    @unique
+  watch             Watch     @relation(fields: [watchId], references: [id], onDelete: Cascade)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime?
 
   @@map("watch_inventories")
 }
@@ -246,23 +247,24 @@ model StockItem {
 }
 
 model Order {
-  id                 String        @id @default(uuid())
+  id                 String         @id @default(uuid())
   totalPrice         Float
-  status             OrderStatus   @default(PENDING)
+  status             OrderStatus    @default(PENDING)
   orginalPrice       Float
-  paymentMethod      PaymentMethod @default(COD)
+  paymentMethod      PaymentMethod  @default(COD)
   shippingNotes      String?
   cancellationReason String?
   orderItems         OrderItem[]
   userId             String
-  user               User          @relation(fields: [userId], references: [id])
+  user               User           @relation(fields: [userId], references: [id])
   addressId          String?
-  address            Address?      @relation(fields: [addressId], references: [id])
+  address            Address?       @relation(fields: [addressId], references: [id])
   couponId           String?
-  coupon             Coupon?       @relation(fields: [couponId], references: [id])
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
+  coupon             Coupon?        @relation(fields: [couponId], references: [id])
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
   deletedAt          DateTime?
+  Notification       Notification[]
 }
 
 model OrderItem {
@@ -336,6 +338,27 @@ model CouponUsage {
   user     User     @relation(fields: [userId], references: [id])
 
   @@unique([userId, couponId])
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id])
+  orderId   String?
+  order     Order?           @relation(fields: [orderId], references: [id])
+  message   String
+  type      NotificationType @default(ORDER_UPDATE)
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+}
+
+enum NotificationType {
+  ORDER_UPDATE
+  NEW_PRODUCT
+  PROMOTION
+  LOW_STOCK
+  ACCOUNT_UPDATE
 }
 
 enum UserRole {

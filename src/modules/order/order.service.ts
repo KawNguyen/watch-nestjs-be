@@ -11,10 +11,14 @@ import {
   GetOrdersDto,
   UpdateOrderStatusDto,
 } from './dto/order.dto';
+import { NotificationService } from 'src/notification/notification.service';
 
 @Injectable()
 export class OrderService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly notificationService: NotificationService,
+  ) {}
 
   async getAllOrders(dto: GetOrdersDto) {
     const { page = 1, limit = 12, keyword, status, userId } = dto;
@@ -66,7 +70,7 @@ export class OrderService {
     };
   }
 
-  async getOrdersMe(requesterId: string, page: number = 1, limit: number = 10) {
+  async getOrdersMe(requesterId: string, page = 1, limit = 10) {
     const skip = (page - 1) * limit;
 
     const [orders, totalItems] = await Promise.all([
@@ -111,19 +115,18 @@ export class OrderService {
       throw new BadRequestException('Cart is empty or not found');
     }
 
-    const orderItemsData = cart.cartItems.map((item) => {
-      return {
-        watchId: item.watchId,
-        quantity: item.quantity,
-        price: item.watch.price,
-      };
-    });
+    const orderItemsData = cart.cartItems.map((item) => ({
+      watchId: item.watchId,
+      quantity: item.quantity,
+      price: item.watch.price,
+    }));
 
-    const orginalPrice = orderItemsData.reduce((sum, item) => {
-      return sum + item.price * item.quantity;
-    }, 0);
+    const originalPrice = orderItemsData.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0,
+    );
 
-    const totalPrice = orginalPrice;
+    const totalPrice = originalPrice;
 
     const order = await this.prismaService.order.create({
       data: {
@@ -132,7 +135,7 @@ export class OrderService {
         couponId: dto.couponId,
         paymentMethod: dto.paymentMethod,
         shippingNotes: dto.shippingNotes,
-        orginalPrice,
+        orginalPrice: originalPrice,
         totalPrice,
         orderItems: {
           create: orderItemsData,
@@ -143,6 +146,12 @@ export class OrderService {
         address: true,
       },
     });
+
+    await this.notificationService.createOrderNotification(
+      userId,
+      order.id,
+      `Your order #${order.id} has been successfully created!`,
+    );
 
     for (const item of orderItemsData) {
       await this.prismaService.watchInventory.update({
@@ -185,6 +194,12 @@ export class OrderService {
       },
     });
 
+    await this.notificationService.createOrderNotification(
+      order.userId,
+      order.id,
+      `The status of your order #${order.id} has been updated to ${updateDto.status}.`,
+    );
+
     return updated;
   }
 
@@ -197,6 +212,7 @@ export class OrderService {
     const order = await this.prismaService.order.findUnique({
       where: { id: orderId },
       select: {
+        id: true,
         userId: true,
         status: true,
         orderItems: true,
@@ -225,6 +241,12 @@ export class OrderService {
       },
     });
 
+    await this.notificationService.createOrderNotification(
+      order.userId,
+      order.id,
+      `Your order #${order.id} has been cancelled for the following reason: ${cancelDto.reason}.`,
+    );
+
     for (const item of order.orderItems) {
       await this.prismaService.watchInventory.update({
         where: { watchId: item.watchId },
@@ -233,6 +255,7 @@ export class OrderService {
         },
       });
     }
+
     return { message: 'Order cancelled and inventory updated' };
   }
 }
