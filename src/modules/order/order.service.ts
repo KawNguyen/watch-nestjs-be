@@ -11,7 +11,7 @@ import {
   GetOrdersDto,
   UpdateOrderStatusDto,
 } from './dto/order.dto';
-import { NotificationService } from 'src/notification/notification.service';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class OrderService {
