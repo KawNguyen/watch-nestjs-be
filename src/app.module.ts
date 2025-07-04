@@ -22,7 +22,7 @@ import { BrandModule } from './modules/brand/brand.module';
 import { CartModule } from './modules/cart/cart.module';
 import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 import { WatchModule } from './modules/watch/watch.module';
-import { NotificationModule } from './notification/notification.module';
+import { NotificationModule } from './modules/notification/notification.module';
 
 @Module({
   imports: [
