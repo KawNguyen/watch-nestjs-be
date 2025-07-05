@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Param } from '@nestjs/common';
 import { NotificationService } from './notification.service';
-import { CreateNotificationDto } from './dto/create-notification.dto';
+import { CreateNotificationDto } from './dto/notification.dto';
 import { ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Notifications')
@@ -10,7 +10,7 @@ export class NotificationController {
 
   @Post('create')
   async create(@Body() createNotificationDto: CreateNotificationDto) {
-    const data = await this.notificationService.create(createNotificationDto);
+    return await this.notificationService.create(createNotificationDto);
   }
 
   @Get(':id/read')
