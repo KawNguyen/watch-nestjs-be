@@ -45,12 +45,11 @@ export class StockEntryService {
     const whereClause: any = {};
 
     if (keyword) {
-      whereClause.addedBy = {
-        OR: [
-          { email: { contains: keyword, mode: 'insensitive' } },
-          { name: { contains: keyword, mode: 'insensitive' } },
-        ],
-      };
+      whereClause.OR = [
+        { entryCode: { contains: keyword, mode: 'insensitive' } },
+        { user: { email: { contains: keyword, mode: 'insensitive' } } },
+        { user: { firstName: { contains: keyword, mode: 'insensitive' } } },
+      ];
     }
 
     if (createdBy) {
