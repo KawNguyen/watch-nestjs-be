@@ -37,7 +37,7 @@ export class CartController {
     @Query('limit') limit: number = 12,
   ) {
     const requesterId = (req as any).user.id;
-    const data = await this.cartService.getCartItemsMe(
+    const data = await this.cartService.getMyCartItems(
       requesterId,
       page,
       limit,

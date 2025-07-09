@@ -26,11 +26,6 @@ export class WatchController {
   constructor(private watchService: WatchService) {}
 
   @ApiOperation({ summary: 'Get all watches (with optional filters)' })
-  @ApiQuery({
-    name: 'gender',
-    required: false,
-    enum: ['MEN', 'WOMEN', 'UNISEX'],
-  })
   @Public()
   @Get()
   async getWatches(@Query() query: GetWatchesDto) {

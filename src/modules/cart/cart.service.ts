@@ -11,7 +11,7 @@ import { AddCartItemDto } from './dto/cart.dto';
 export class CartService {
   constructor(private prismaService: PrismaService) {}
 
-  async getCartItemsMe(
+  async getMyCartItems(
     requesterId: string,
     page: number = 1,
     limit: number = 12,
@@ -34,13 +34,50 @@ export class CartService {
       this.prismaService.cartItem.findMany({
         where: { cartId: cart.id },
         select: {
+          id: true,
+          quantity: true,
           watch: {
-            include: {
-              brand: true,
-              movement: true,
-              material: true,
-              bandMaterial: true,
-              images: true,
+            select: {
+              id: true,
+              name: true,
+              gender: true,
+              diameter: true,
+              waterResistance: true,
+              warranty: true,
+              price: true,
+              brand: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                },
+              },
+              movement: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                },
+              },
+              material: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                },
+              },
+              bandMaterial: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                },
+              },
+              images: {
+                select: {
+                  absolute_url: true,
+                },
+              },
             },
           },
         },

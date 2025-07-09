@@ -10,7 +10,7 @@ import {
   Min,
   IsArray,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { WatchGender } from '@prisma/client';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -25,30 +25,65 @@ export class WatchImages {
 }
 
 export class GetWatchesDto {
-  @ApiPropertyOptional({ enum: WatchGender, description: 'Filter by gender' })
+  @ApiPropertyOptional({
+    description: 'Filter by gender',
+    isArray: true,
+    enum: WatchGender,
+  })
   @IsOptional()
-  @IsEnum(WatchGender)
-  gender?: WatchGender;
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.split(',') : value,
+  )
+  @IsEnum(WatchGender, { each: true })
+  genders?: WatchGender[];
 
-  @ApiPropertyOptional({ description: 'Brand ID or name (optional)' })
+  @ApiPropertyOptional({
+    description: 'Filter by brand slugs',
+    isArray: true,
+    type: String,
+  })
   @IsOptional()
-  @IsString()
-  brand?: string;
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.split(',') : value,
+  )
+  @IsString({ each: true })
+  brands?: string[];
 
-  @ApiPropertyOptional({ description: 'Material ID or name (optional)' })
+  @ApiPropertyOptional({
+    description: 'Filter by material slugs',
+    isArray: true,
+    type: String,
+  })
   @IsOptional()
-  @IsString()
-  material?: string;
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.split(',') : value,
+  )
+  @IsString({ each: true })
+  materials?: string[];
 
-  @ApiPropertyOptional({ description: 'Band material ID or name (optional)' })
+  @ApiPropertyOptional({
+    description: 'Filter by band material slugs',
+    isArray: true,
+    type: String,
+  })
   @IsOptional()
-  @IsString()
-  bandMaterial?: string;
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.split(',') : value,
+  )
+  @IsString({ each: true })
+  bandMaterials?: string[];
 
-  @ApiPropertyOptional({ description: 'Movement ID or name (optional)' })
+  @ApiPropertyOptional({
+    description: 'Filter by movement slugs',
+    isArray: true,
+    type: String,
+  })
   @IsOptional()
-  @IsString()
-  movement?: string;
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.split(',') : value,
+  )
+  @IsString({ each: true })
+  movements?: string[];
 
   @ApiPropertyOptional({ type: Number, description: 'Minimum price filter' })
   @IsOptional()

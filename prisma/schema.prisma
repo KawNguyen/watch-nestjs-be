@@ -19,6 +19,17 @@ model Session {
   @@index([userId])
 }
 
+model PendingUser {
+  email     String   @id
+  password  String
+  firstName String
+  lastName  String
+  otp       String
+  otpExpiry DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model User {
   id           String         @id @default(uuid())
   email        String         @unique
@@ -39,7 +50,6 @@ model User {
   reviews      Review[]
   sessions     Session[]
   addresses    Address[]
-  // stockEntries StockEntry[]
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   deletedAt    DateTime?
@@ -344,14 +354,15 @@ model CouponUsage {
 model Notification {
   id        String           @id @default(uuid())
   userId    String
-  user      User             @relation(fields: [userId], references: [id])
   orderId   String?
-  order     Order?           @relation(fields: [orderId], references: [id])
   message   String
   type      NotificationType @default(ORDER_UPDATE)
   isRead    Boolean          @default(false)
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
+
+  order Order? @relation(fields: [orderId], references: [id])
+  user  User   @relation(fields: [userId], references: [id])
 }
 
 model Blog {
@@ -402,7 +413,8 @@ enum PaymentMethod {
 enum OrderStatus {
   PENDING
   PROCESSING
-  SHIPPED
+  SHIPPING
   DELIVERED
+  COMPLETED
   CANCELED
 }

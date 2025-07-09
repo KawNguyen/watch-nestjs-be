@@ -63,14 +63,7 @@ export class StockEntryService {
         take: limit,
         include: {
           user: {
-            select: { id: true, email: true, firstName: true },
-          },
-          stockItems: {
-            include: {
-              watch: {
-                select: { id: true, name: true, images: true },
-              },
-            },
+            select: { id: true, email: true, firstName: true, lastName: true },
           },
         },
         orderBy: { createdAt: 'desc' },
@@ -93,7 +86,9 @@ export class StockEntryService {
     const data = await this.prismaService.stockEntry.findUnique({
       where: { id },
       include: {
-        user: true,
+        user: {
+          select: { id: true, email: true, firstName: true, lastName: true },
+        },
         stockItems: true,
       },
     });

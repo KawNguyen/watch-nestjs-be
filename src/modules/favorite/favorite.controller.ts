@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  Param,
   Post,
   Query,
   Req,
@@ -62,7 +61,7 @@ export class FavoriteController {
   }
 
   @ApiOperation({ summary: 'Remove favorite(s)' })
-  @Post('delete')
+  @Delete('delete')
   @UseGuards(JwtAuthGuard)
   async delete(@Req() req: Request, @Body() body: RemoveFavoriteDto) {
     const requesterId = (req as any).user.id;

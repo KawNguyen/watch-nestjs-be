@@ -97,7 +97,7 @@ export class AuthController {
       maxAge: 3600000 * 24,
     });
 
-    res.status(200).json({ message: 'OTP verified successfully' });
+    res.status(200).json({ message: response.message });
   }
 
   @Public()
@@ -152,7 +152,7 @@ export class AuthController {
       // secure: this.configService.get('NODE_ENV') === 'production',
       secure: true,
       sameSite: 'None',
-      maxAge: 3600000,
+      maxAge: 3600000 * 24,
     });
 
     res.redirect(`${this.configService.get('FRONTEND_URL')}`);

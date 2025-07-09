@@ -10,49 +10,54 @@ export class WatchService {
 
   async getWatches(dto: GetWatchesDto) {
     const {
-      gender,
-      brand,
-      material,
-      bandMaterial,
-      movement,
+      genders,
+      brands,
+      materials,
+      bandMaterials,
+      movements,
       minPrice,
       maxPrice,
       keyword,
       page = 1,
+      limit = 12,
     } = dto;
 
-    const skip = (page - 1) * 12;
+    const skip = (page - 1) * limit;
 
     const where: Prisma.WatchWhereInput = {
-      gender: gender,
-      price: {
-        gte: minPrice,
-        lte: maxPrice,
-      },
+      ...(genders?.length && { gender: { in: genders } }),
+      ...(minPrice !== undefined || maxPrice !== undefined
+        ? {
+            price: {
+              ...(minPrice !== undefined && { gte: minPrice }),
+              ...(maxPrice !== undefined && { lte: maxPrice }),
+            },
+          }
+        : {}),
       ...(keyword && {
         OR: [
           { name: { contains: keyword, mode: 'insensitive' } },
           { description: { contains: keyword, mode: 'insensitive' } },
         ],
       }),
-      ...(brand && {
+      ...(brands?.length && {
         brand: {
-          slug: brand,
+          slug: { in: brands },
         },
       }),
-      ...(material && {
+      ...(materials?.length && {
         material: {
-          slug: material,
+          slug: { in: materials },
         },
       }),
-      ...(bandMaterial && {
+      ...(bandMaterials?.length && {
         bandMaterial: {
-          slug: bandMaterial,
+          slug: { in: bandMaterials },
         },
       }),
-      ...(movement && {
+      ...(movements?.length && {
         movement: {
-          slug: movement,
+          slug: { in: movements },
         },
       }),
     };
@@ -61,46 +66,24 @@ export class WatchService {
       this.prismaService.watch.findMany({
         where,
         include: {
-          // id: true,
-          // name: true,
-          // slug: true,
-          // price: true,
           brand: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-            },
+            select: { id: true, name: true, slug: true },
           },
           material: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-            },
+            select: { id: true, name: true, slug: true },
           },
           bandMaterial: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-            },
+            select: { id: true, name: true, slug: true },
           },
           movement: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-            },
+            select: { id: true, name: true, slug: true },
           },
           images: {
-            select: {
-              absolute_url: true,
-            },
+            select: { absolute_url: true },
           },
         },
         skip,
-        take: 12,
+        take: limit,
         orderBy: {
           createdAt: 'desc',
         },
@@ -112,8 +95,8 @@ export class WatchService {
       items,
       total,
       page,
-      limit: 12,
-      totalPages: Math.ceil(total / 12),
+      limit,
+      totalPages: Math.ceil(total / limit),
     };
   }
 

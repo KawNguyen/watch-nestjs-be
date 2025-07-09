@@ -229,11 +229,9 @@ export class UserService {
     });
   }
 
-  async changeAvatar(id: string, dto: ChangeAvatarDto, requesterId: string) {
-    assertIsOwner(id, requesterId);
-
+  async changeAvatar(dto: ChangeAvatarDto, requesterId: string) {
     const user = await this.prisma.user.findUnique({
-      where: { id },
+      where: { id: requesterId },
       select: { avatar: true },
     });
 
@@ -256,7 +254,7 @@ export class UserService {
     }
 
     return this.prisma.user.update({
-      where: { id },
+      where: { id: requesterId },
       data: {
         avatar: {
           absolute_url: dto.avatar.absolute_url,

@@ -49,8 +49,15 @@ export class OrderService {
         skip,
         take: limit,
         include: {
-          orderItems: { include: { watch: true } },
-          user: { select: { id: true, email: true, phone: true } },
+          user: {
+            select: {
+              id: true,
+              email: true,
+              phone: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
           address: true,
           coupon: true,
         },
@@ -126,51 +133,79 @@ export class OrderService {
       0,
     );
 
-    const totalPrice = originalPrice;
+    let totalPrice = originalPrice;
+    let discountAmount = 0;
 
-    const order = await this.prismaService.order.create({
-      data: {
-        userId,
-        addressId: dto.addressId,
-        couponId: dto.couponId,
-        paymentMethod: dto.paymentMethod,
-        shippingNotes: dto.shippingNotes,
-        orginalPrice: originalPrice,
-        totalPrice,
-        orderItems: {
-          create: orderItemsData,
-        },
-      },
-      include: {
-        orderItems: true,
-        address: true,
-      },
-    });
-
-    await this.notificationService.createOrderNotification(
-      userId,
-      order.id,
-      `Your order #${order.id} has been successfully created!`,
-    );
-
-    for (const item of orderItemsData) {
-      await this.prismaService.watchInventory.update({
-        where: { watchId: item.watchId },
-        data: {
-          quantity: {
-            decrement: item.quantity,
-          },
-        },
+    if (dto.couponId) {
+      const couponExists = await this.prismaService.coupon.findUnique({
+        where: { id: dto.couponId },
       });
+
+      if (!couponExists) {
+        throw new BadRequestException('Invalid coupon ID');
+      }
+
+      discountAmount = originalPrice * (couponExists.discountValue / 100);
+      totalPrice = originalPrice - discountAmount;
     }
 
-    await this.prismaService.cartItem.deleteMany({
-      where: {
-        cartId: cart.id,
+    const orderData: any = {
+      userId,
+      addressId: dto.addressId,
+      paymentMethod: dto.paymentMethod,
+      shippingNotes: dto.shippingNotes,
+      orginalPrice: originalPrice,
+      totalPrice,
+      orderItems: {
+        create: orderItemsData,
       },
-    });
+    };
 
-    return order;
+    if (dto.couponId) {
+      orderData.couponId = dto.couponId;
+    }
+
+    try {
+      const order = await this.prismaService.$transaction(async (tx) => {
+        const createdOrder = await tx.order.create({
+          data: orderData,
+          include: {
+            orderItems: true,
+            address: true,
+          },
+        });
+
+        await this.notificationService.createOrderNotification(
+          userId,
+          createdOrder.id,
+          `Your order #${createdOrder.id} has been successfully created!`,
+        );
+
+        for (const item of orderItemsData) {
+          await tx.watchInventory.update({
+            where: { watchId: item.watchId },
+            data: {
+              quantity: {
+                decrement: item.quantity,
+              },
+            },
+          });
+        }
+
+        await tx.cartItem.deleteMany({
+          where: {
+            cartId: cart.id,
+          },
+        });
+
+        return createdOrder;
+      });
+
+      return order;
+    } catch (error) {
+      console.error('Error creating order:', error);
+      throw new Error('Failed to create order');
+    }
   }
 
   async updateOrderStatus(orderId: string, updateDto: UpdateOrderStatusDto) {

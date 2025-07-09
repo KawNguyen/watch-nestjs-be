@@ -96,16 +96,14 @@ export class UserController {
   }
 
   @ApiOperation({ summary: 'Change Avatar' })
-  @Patch('change-avatar/:userId')
+  @Patch('change-avatar')
   @UseGuards(JwtAuthGuard)
   async changeAvatar(
-    @Param('userId') userId: string,
     @Body() changeAvatarDto: ChangeAvatarDto,
     @Req() req: Request,
   ) {
     const requesterId = (req as any).user.id;
     const data = await this.userService.changeAvatar(
-      userId,
       changeAvatarDto,
       requesterId,
     );

@@ -74,7 +74,7 @@ export class FavoriteService {
     ]);
 
     return {
-      favorites: favorites.map((fav) => fav.watch),
+      favorites,
       page,
       limit,
       totalItems: total,

@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import * as nodemailer from 'nodemailer';
@@ -77,18 +81,26 @@ export class AuthService {
       where: { email },
     });
     if (existingUser) {
-      throw new UnauthorizedException('Email was signed');
+      throw new BadRequestException('Email is already registered');
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const otpExpiry = new Date(Date.now() + 3 * 60 * 1000);
 
-    const user = await this.prisma.user.create({
-      data: {
+    await this.prisma.pendingUser.upsert({
+      where: { email },
+      update: {
         firstName,
         lastName,
+        password: hashedPassword,
+        otp,
+        otpExpiry,
+      },
+      create: {
         email,
+        firstName,
+        lastName,
         password: hashedPassword,
         otp,
         otpExpiry,
@@ -97,39 +109,41 @@ export class AuthService {
 
     await this.sendOtpEmail(email, otp);
 
-    return {
-      message: 'Please check your mail for OTP',
-      id: user.id,
-    };
+    return { message: 'OTP sent to your email' };
   }
 
   async verifyOtp(email: string, otp: string) {
-    const user = await this.prisma.user.findUnique({
+    const pendingUser = await this.prisma.pendingUser.findUnique({
       where: { email },
     });
 
     if (
-      !user ||
-      user.otp !== otp ||
-      !user.otpExpiry ||
-      new Date() > user.otpExpiry
+      !pendingUser ||
+      pendingUser.otp !== otp ||
+      new Date() > pendingUser.otpExpiry
     ) {
       throw new UnauthorizedException('OTP is invalid or has expired');
     }
 
-    await this.prisma.user.update({
-      where: { email },
-      data: { otp: null, otpExpiry: null },
+    const createdUser = await this.prisma.user.create({
+      data: {
+        email: pendingUser.email,
+        password: pendingUser.password,
+        firstName: pendingUser.firstName,
+        lastName: pendingUser.lastName,
+      },
     });
 
+    await this.prisma.pendingUser.delete({ where: { email } });
+
     const accessToken = await this.generateToken(
-      user.id,
-      user.email,
-      user.role,
+      createdUser.id,
+      createdUser.email,
+      createdUser.role,
     );
 
     return {
-      message: 'Login successfully',
+      message: 'Account created successfully',
       accessToken,
     };
   }
