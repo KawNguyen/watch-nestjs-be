@@ -107,7 +107,6 @@ export class UserService {
         email: true,
         firstName: true,
         lastName: true,
-        gender: true,
         phone: true,
         avatar: true,
         addresses: {
@@ -144,7 +143,6 @@ export class UserService {
         email: true,
         firstName: true,
         lastName: true,
-        gender: true,
         phone: true,
         avatar: true,
       },
@@ -181,7 +179,6 @@ export class UserService {
         email: true,
         firstName: true,
         lastName: true,
-        gender: true,
         phone: true,
       },
     });

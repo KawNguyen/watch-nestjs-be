@@ -36,7 +36,6 @@ model User {
   password     String
   role         UserRole       @default(CUSTOMER)
   phone        String?
-  gender       UserGender?
   firstName    String         @default("")
   lastName     String         @default("")
   avatar       Json?
@@ -266,11 +265,12 @@ model Order {
   shippingNotes      String?
   cancellationReason String?
   orderItems         OrderItem[]
-  userId             String
-  user               User           @relation(fields: [userId], references: [id])
+  userId             String?
+  user               User?          @relation(fields: [userId], references: [id])
   addressId          String?
   address            Address?       @relation(fields: [addressId], references: [id])
   couponId           String?
+  walkinInformation  Json?
   coupon             Coupon?        @relation(fields: [couponId], references: [id])
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
@@ -382,7 +382,9 @@ model Blog {
 }
 
 enum NotificationType {
+  ORDER_CREATE
   ORDER_UPDATE
+  ORDER_CANCELED
   NEW_PRODUCT
   PROMOTION
   LOW_STOCK
@@ -392,11 +394,6 @@ enum NotificationType {
 enum UserRole {
   ADMIN
   CUSTOMER
-}
-
-enum UserGender {
-  MALE
-  FEMALE
 }
 
 enum WatchGender {

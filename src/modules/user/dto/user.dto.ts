@@ -8,7 +8,6 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { UserGender } from '@prisma/client';
 
 export class AvatarDto {
   @ApiProperty({ example: 'https://example.com/avatar.jpg ' })
@@ -87,11 +86,6 @@ export class UpdateUserDto {
   @IsString()
   @IsNotEmpty()
   lastName: string;
-
-  @ApiPropertyOptional({ example: 'Gender' })
-  @IsString()
-  @IsOptional()
-  gender?: UserGender;
 
   @ApiPropertyOptional({ example: '0912345678' })
   @IsString()

@@ -95,13 +95,17 @@ export class OrderController {
     @Body() dto: CancelOrderDto,
   ) {
     const requesterId = (req as any).user.id;
-    const requesterRole = (req as any).user.role;
-    const data = await this.orderService.cancelOrder(
-      orderId,
-      requesterId,
-      requesterRole,
-      dto,
-    );
+    const data = await this.orderService.cancelOrder(orderId, requesterId, dto);
     return formatResponse(data.message);
+  }
+
+  @Patch('/admin/cancel/:orderId')
+  @Roles(Role.ADMIN)
+  @UseGuards(JwtAuthGuard)
+  async cancelOrderAsAdmin(
+    @Param('orderId') id: string,
+    @Body() cancelDto: CancelOrderDto,
+  ) {
+    return this.orderService.cancelOrderAsAdmin(id, cancelDto);
   }
 }

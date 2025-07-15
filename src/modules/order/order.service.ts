@@ -1,9 +1,9 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { assertCanAccessResource } from 'src/common/helpers/assert-can-access-resource.helpers';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   CancelOrderDto,
@@ -11,14 +11,12 @@ import {
   GetOrdersDto,
   UpdateOrderStatusDto,
 } from './dto/order.dto';
-import { NotificationService } from '../notification/notification.service';
+import { NotificationType } from '@prisma/client';
+import { Role } from '../auth/enums/role.enum';
 
 @Injectable()
 export class OrderService {
-  constructor(
-    private readonly prismaService: PrismaService,
-    private readonly notificationService: NotificationService,
-  ) {}
+  constructor(private readonly prismaService: PrismaService) {}
 
   async getAllOrders(dto: GetOrdersDto) {
     const { page = 1, limit = 12, keyword, status, userId } = dto;
@@ -58,6 +56,7 @@ export class OrderService {
               lastName: true,
             },
           },
+          orderItems: true,
           address: true,
           coupon: true,
         },
@@ -170,27 +169,21 @@ export class OrderService {
         const createdOrder = await tx.order.create({
           data: orderData,
           include: {
+            user: true,
             orderItems: true,
             address: true,
           },
         });
 
-        await this.notificationService.createOrderNotification(
-          userId,
-          createdOrder.id,
-          `Your order #${createdOrder.id} has been successfully created!`,
-        );
-
-        for (const item of orderItemsData) {
-          await tx.watchInventory.update({
-            where: { watchId: item.watchId },
-            data: {
-              quantity: {
-                decrement: item.quantity,
-              },
-            },
-          });
-        }
+        await tx.notification.create({
+          data: {
+            userId,
+            orderId: createdOrder.id,
+            message: `Your order #${createdOrder.id} has been successfully created!`,
+            type: NotificationType.ORDER_CREATE,
+            isRead: false,
+          },
+        });
 
         await tx.cartItem.deleteMany({
           where: {
@@ -211,37 +204,68 @@ export class OrderService {
   async updateOrderStatus(orderId: string, updateDto: UpdateOrderStatusDto) {
     const order = await this.prismaService.order.findUnique({
       where: { id: orderId },
+      include: {
+        orderItems: true,
+        user: true,
+      },
     });
 
     if (!order) {
       throw new NotFoundException('Order not found');
     }
 
-    const updated = await this.prismaService.order.update({
-      where: { id: orderId },
-      data: {
-        status: updateDto.status,
-      },
-      include: {
-        orderItems: true,
-        user: true,
-        address: true,
-      },
-    });
+    try {
+      const updated = await this.prismaService.$transaction(async (tx) => {
+        if (order.status === 'PENDING' && updateDto.status === 'PROCESSING') {
+          for (const item of order.orderItems) {
+            await tx.watchInventory.update({
+              where: { watchId: item.watchId },
+              data: {
+                quantity: {
+                  decrement: item.quantity,
+                },
+              },
+            });
+          }
+        }
 
-    await this.notificationService.createOrderNotification(
-      order.userId,
-      order.id,
-      `The status of your order #${order.id} has been updated to ${updateDto.status}.`,
-    );
+        const updatedOrder = await tx.order.update({
+          where: { id: orderId },
+          data: {
+            status: updateDto.status,
+          },
+          include: {
+            orderItems: true,
+            user: true,
+            address: true,
+          },
+        });
 
-    return updated;
+        if (order.userId) {
+          await tx.notification.create({
+            data: {
+              userId: order.userId,
+              orderId: order.id,
+              message: `Your order #${order.id} has been successfully created!`,
+              type: NotificationType.ORDER_CREATE,
+              isRead: false,
+            },
+          });
+        }
+
+        return updatedOrder;
+      });
+
+      return updated;
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      throw new Error('Failed to update order status');
+    }
   }
 
   async cancelOrder(
     orderId: string,
     requesterId: string,
-    requesterRole: string,
     cancelDto: CancelOrderDto,
   ) {
     const order = await this.prismaService.order.findUnique({
@@ -258,9 +282,11 @@ export class OrderService {
       throw new NotFoundException('Order not found');
     }
 
-    assertCanAccessResource(order.userId, requesterId, requesterRole, {
-      action: 'cancel',
-    });
+    if (order.userId !== requesterId) {
+      throw new ForbiddenException(
+        'You are not authorized to cancel this order',
+      );
+    }
 
     if (order.status !== 'PENDING') {
       throw new BadRequestException(
@@ -268,29 +294,102 @@ export class OrderService {
       );
     }
 
-    await this.prismaService.order.update({
+    try {
+      await this.prismaService.$transaction(async (tx) => {
+        await tx.order.update({
+          where: { id: orderId },
+          data: {
+            status: 'CANCELED',
+            cancellationReason: cancelDto.reason,
+          },
+        });
+
+        if (order.userId) {
+          await tx.notification.create({
+            data: {
+              userId: order.userId,
+              orderId: order.id,
+              message: `Your order #${order.id} has been cancelled for the following reason: ${cancelDto.reason}.`,
+              type: NotificationType.ORDER_CANCELED,
+              isRead: false,
+            },
+          });
+        }
+
+        for (const item of order.orderItems) {
+          await tx.watchInventory.update({
+            where: { watchId: item.watchId },
+            data: {
+              quantity: { increment: item.quantity },
+            },
+          });
+        }
+      });
+
+      return { message: 'Order cancelled and inventory updated' };
+    } catch (error) {
+      console.error('Error cancelling order:', error);
+      throw new Error('Failed to cancel order');
+    }
+  }
+
+  async cancelOrderAsAdmin(orderId: string, cancelDto: CancelOrderDto) {
+    const order = await this.prismaService.order.findUnique({
       where: { id: orderId },
-      data: {
-        status: 'CANCELED',
-        cancellationReason: cancelDto.reason,
+      select: {
+        id: true,
+        userId: true,
+        status: true,
+        orderItems: true,
       },
     });
 
-    await this.notificationService.createOrderNotification(
-      order.userId,
-      order.id,
-      `Your order #${order.id} has been cancelled for the following reason: ${cancelDto.reason}.`,
-    );
-
-    for (const item of order.orderItems) {
-      await this.prismaService.watchInventory.update({
-        where: { watchId: item.watchId },
-        data: {
-          quantity: { increment: item.quantity },
-        },
-      });
+    if (!order) {
+      throw new NotFoundException('Order not found');
     }
 
-    return { message: 'Order cancelled and inventory updated' };
+    if (order.status === 'CANCELED' || order.status === 'COMPLETED') {
+      throw new BadRequestException(
+        `Cannot cancel an order that is already ${order.status.toLowerCase()}`,
+      );
+    }
+
+    try {
+      await this.prismaService.$transaction(async (tx) => {
+        await tx.order.update({
+          where: { id: orderId },
+          data: {
+            status: 'CANCELED',
+            cancellationReason: cancelDto.reason,
+          },
+        });
+
+        if (order.userId) {
+          await tx.notification.create({
+            data: {
+              userId: order.userId,
+              orderId: order.id,
+              message: `Your order #${order.id} has been cancelled by admin. Reason: ${cancelDto.reason}`,
+              type: NotificationType.ORDER_CANCELED,
+              isRead: false,
+            },
+          });
+        }
+
+        for (const item of order.orderItems) {
+          await tx.watchInventory.update({
+            where: { watchId: item.watchId },
+            data: {
+              quantity: { increment: item.quantity },
+            },
+          });
+        }
+      });
+
+      return { message: 'Order cancelled by admin and inventory updated' };
+    } catch (error) {
+      console.error('Error cancelling order by admin:', error);
+      throw new Error('Failed to cancel order by admin');
+    }
   }
 }
