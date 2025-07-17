@@ -151,6 +151,10 @@ export class CancelOrderDto {
 }
 
 export class UpdateOrderStatusDto {
+  @ApiProperty({
+    description: 'New status of the order',
+    enum: OrderStatus,
+  })
   @IsEnum(OrderStatus)
   status: OrderStatus;
 }
