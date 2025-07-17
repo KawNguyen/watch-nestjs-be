@@ -3,6 +3,7 @@ import { OrderStatus, PaymentMethod } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  IsEmail,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -37,6 +38,40 @@ export class OrderItemDto {
   @IsNumber()
   @Min(0)
   price: number;
+}
+
+export class WalkinInformationDto {
+  @ApiProperty({ example: 'Lộc' })
+  @IsString()
+  firstName: string;
+
+  @ApiProperty({ example: 'Hải' })
+  @IsString()
+  lastName: string;
+
+  @ApiProperty({ example: 'tranhailoc7@gmail.com' })
+  @IsEmail()
+  email: string;
+
+  @ApiProperty({ example: '0938252473' })
+  @IsString()
+  phone: string;
+
+  @ApiProperty({ example: '2k Hưng Phú' })
+  @IsString()
+  street: string;
+
+  @ApiProperty({ example: 'Thành phố Hà Nội' })
+  @IsString()
+  provinceName: string;
+
+  @ApiProperty({ example: 'Quận Nam Từ Liêm' })
+  @IsString()
+  districtName: string;
+
+  @ApiProperty({ example: 'Phường Phú Đô' })
+  @IsString()
+  wardName: string;
 }
 
 export class CreateOrderDto {
@@ -74,6 +109,16 @@ export class CreateOrderDto {
   })
   @IsEnum(PaymentMethod)
   paymentMethod: PaymentMethod;
+
+  @ApiProperty({
+    description: 'Walk-in information in JSON format',
+    type: WalkinInformationDto,
+    required: false,
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => WalkinInformationDto)
+  walkinInformation?: WalkinInformationDto;
 
   @ApiProperty({
     description: 'Total price after discount',
@@ -137,4 +182,23 @@ export class GetOrdersDto {
   @IsOptional()
   @IsString()
   userId?: string;
+}
+
+export class GetOrdersUserDto {
+  @ApiProperty({ description: 'Page', required: false })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  page?: number = 1;
+
+  @ApiProperty({ description: 'Limit', required: false })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  limit?: number = 10;
+
+  @ApiProperty({ description: 'Status order', required: false })
+  @IsOptional()
+  @IsEnum(OrderStatus)
+  status?: OrderStatus;
 }

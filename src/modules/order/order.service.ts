@@ -9,6 +9,7 @@ import {
   CancelOrderDto,
   CreateOrderDto,
   GetOrdersDto,
+  GetOrdersUserDto,
   UpdateOrderStatusDto,
 } from './dto/order.dto';
 import { NotificationType } from '@prisma/client';
@@ -75,19 +76,15 @@ export class OrderService {
     };
   }
 
-  async getOrdersMe(
-    requesterId: string,
-    status?: string,
-    page = 1,
-    limit = 10,
-  ) {
+  async getOrdersMe(requesterId: string, dto: GetOrdersUserDto) {
+    const { status, page = 1, limit = 12 } = dto;
+
     const skip = (page - 1) * limit;
 
-    const whereClause: any = { userId: requesterId };
-
-    if (status) {
-      whereClause.status = status;
-    }
+    const whereClause = {
+      userId: requesterId,
+      ...(status && { status }),
+    };
 
     const [orders, totalItems] = await Promise.all([
       this.prismaService.order.findMany({
@@ -95,14 +92,20 @@ export class OrderService {
         skip,
         take: limit,
         include: {
-          orderItems: { include: { watch: true } },
+          orderItems: {
+            include: {
+              watch: true,
+            },
+          },
           address: true,
           coupon: true,
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: {
+          createdAt: 'desc',
+        },
       }),
       this.prismaService.order.count({
-        where: { userId: requesterId },
+        where: whereClause,
       }),
     ]);
 

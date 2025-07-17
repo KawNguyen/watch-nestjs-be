@@ -17,6 +17,7 @@ import {
   CancelOrderDto,
   CreateOrderDto,
   GetOrdersDto,
+  GetOrdersUserDto,
   UpdateOrderStatusDto,
 } from './dto/order.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -47,19 +48,9 @@ export class OrderController {
   @ApiOperation({ summary: 'Get orders of account' })
   @Get('my-order')
   @UseGuards(JwtAuthGuard)
-  async getOrdersMe(
-    @Req() req: Request,
-    @Query('status') status?: string,
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
-  ) {
+  async getOrdersMe(@Req() req: Request, @Query() query: GetOrdersUserDto) {
     const requesterId = (req as any).user.id;
-    const data = await this.orderService.getOrdersMe(
-      requesterId,
-      status,
-      page,
-      limit,
-    );
+    const data = await this.orderService.getOrdersMe(requesterId, query);
     return formatResponse(data.data, 'Fetch orders by user Id successfully', {
       limit: data.limit,
       page: data.page,
@@ -72,7 +63,9 @@ export class OrderController {
   @Post('create')
   @UseGuards(JwtAuthGuard)
   async createOrder(@Body() dto: CreateOrderDto, @Req() req: Request) {
-    const userId = (req as any).user.id;
+    const user = (req as any).user;
+    const userId = user?.id ?? null;
+
     const data = await this.orderService.createOrderFromCart(userId, dto);
     return formatResponse(data, 'Create order successfully');
   }
