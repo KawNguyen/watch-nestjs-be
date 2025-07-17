@@ -141,7 +141,7 @@ export class CreateOrderDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => OrderItemDto)
-  orderItems: OrderItemDto[];
+  orderItems?: OrderItemDto[];
 }
 
 export class CancelOrderDto {
@@ -182,6 +182,33 @@ export class GetOrdersDto {
   @IsOptional()
   @IsString()
   userId?: string;
+}
+
+export class AdminCreateOrderDto {
+  @ApiProperty({
+    description: 'Walk-in customer information',
+    type: WalkinInformationDto,
+  })
+  @ValidateNested()
+  @Type(() => WalkinInformationDto)
+  walkinInformation: WalkinInformationDto;
+
+  @ApiProperty({ enum: PaymentMethod })
+  @IsEnum(PaymentMethod)
+  paymentMethod: PaymentMethod;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  shippingNotes?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  couponId?: string;
+
+  @ApiProperty({ type: [OrderItemDto] })
+  @ValidateNested({ each: true })
+  @Type(() => OrderItemDto)
+  orderItems: OrderItemDto[];
 }
 
 export class GetOrdersUserDto {

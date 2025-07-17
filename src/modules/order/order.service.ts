@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
+  AdminCreateOrderDto,
   CancelOrderDto,
   CreateOrderDto,
   GetOrdersDto,
@@ -236,6 +237,57 @@ export class OrderService {
       console.error('Error creating order:', error);
       throw new Error('Failed to create order');
     }
+  }
+
+  async adminCreateWalkinOrder(dto: AdminCreateOrderDto) {
+    const {
+      walkinInformation,
+      paymentMethod,
+      shippingNotes,
+      couponId,
+      orderItems,
+    } = dto;
+
+    if (!orderItems.length) {
+      throw new BadRequestException('Order must contain at least one item');
+    }
+
+    const originalPrice = orderItems.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0,
+    );
+
+    let totalPrice = originalPrice;
+    let discountAmount = 0;
+
+    if (couponId) {
+      const coupon = await this.prismaService.coupon.findUnique({
+        where: { id: couponId },
+      });
+      if (!coupon) throw new BadRequestException('Invalid coupon');
+      discountAmount = originalPrice * (coupon.discountValue / 100);
+      totalPrice = originalPrice - discountAmount;
+    }
+
+    const order = await this.prismaService.order.create({
+      data: {
+        paymentMethod,
+        shippingNotes,
+        couponId,
+        walkinInformation: JSON.stringify(walkinInformation),
+        orginalPrice: originalPrice,
+        totalPrice,
+        orderItems: {
+          create: orderItems,
+        },
+      },
+      include: {
+        orderItems: true,
+        address: true,
+      },
+    });
+
+    return order;
   }
 
   async updateOrderStatus(orderId: string, updateDto: UpdateOrderStatusDto) {
