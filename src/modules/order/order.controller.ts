@@ -46,6 +46,14 @@ export class OrderController {
     });
   }
 
+  @ApiOperation({ summary: 'Get order by ID' })
+  @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  async getOrderById(@Param('id') id: string) {
+    const data = await this.orderService.getOrder(id);
+    return formatResponse(data, 'Fetched order successfully');
+  }
+
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiOperation({ summary: 'Get orders of account' })

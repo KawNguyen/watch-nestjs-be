@@ -77,6 +77,28 @@ export class OrderService {
     };
   }
 
+  async getOrder(id: string) {
+    const order = await this.prismaService.order.findUnique({
+      where: { id },
+      include: {
+        user: true,
+        orderItems: {
+          include: {
+            watch: true,
+          },
+        },
+        address: true,
+        coupon: true,
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    return order;
+  }
+
   async getOrdersMe(requesterId: string, dto: GetOrdersUserDto) {
     const { status, page = 1, limit = 12 } = dto;
 
