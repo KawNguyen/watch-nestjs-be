@@ -244,6 +244,8 @@ export class OrderService {
       walkinInformation,
       paymentMethod,
       shippingNotes,
+      originalPrice,
+      totalPrice,
       couponId,
       orderItems,
     } = dto;
@@ -252,22 +254,16 @@ export class OrderService {
       throw new BadRequestException('Order must contain at least one item');
     }
 
-    const originalPrice = orderItems.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0,
-    );
+    // let discountAmount = 0;
 
-    let totalPrice = originalPrice;
-    let discountAmount = 0;
-
-    if (couponId) {
-      const coupon = await this.prismaService.coupon.findUnique({
-        where: { id: couponId },
-      });
-      if (!coupon) throw new BadRequestException('Invalid coupon');
-      discountAmount = originalPrice * (coupon.discountValue / 100);
-      totalPrice = originalPrice - discountAmount;
-    }
+    // if (couponId) {
+    //   const coupon = await this.prismaService.coupon.findUnique({
+    //     where: { id: couponId },
+    //   });
+    //   if (!coupon) throw new BadRequestException('Invalid coupon');
+    //   discountAmount = originalPrice * (coupon.discountValue / 100);
+    //   totalPrice = originalPrice - discountAmount;
+    // }
 
     const order = await this.prismaService.order.create({
       data: {
@@ -275,7 +271,7 @@ export class OrderService {
         shippingNotes,
         couponId,
         walkinInformation: JSON.stringify(walkinInformation),
-        originalPrice: originalPrice,
+        originalPrice,
         totalPrice,
         orderItems: {
           create: orderItems,

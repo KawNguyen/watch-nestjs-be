@@ -201,6 +201,20 @@ export class AdminCreateOrderDto {
   @IsOptional()
   shippingNotes?: string;
 
+  @ApiProperty({
+    description: 'Total price after discount',
+    example: 999.99,
+  })
+  @IsNumber()
+  totalPrice: number;
+
+  @ApiProperty({
+    description: 'Original price before discount',
+    example: 1099.99,
+  })
+  @IsNumber()
+  originalPrice: number;
+
   @ApiProperty({ required: false })
   @IsOptional()
   couponId?: string;
