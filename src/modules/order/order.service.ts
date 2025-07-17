@@ -118,32 +118,54 @@ export class OrderService {
     };
   }
 
-  async createOrderFromCart(userId: string, dto: CreateOrderDto) {
-    const cart = await this.prismaService.cart.findUnique({
-      where: { userId },
-      include: {
-        cartItems: {
-          include: {
-            watch: true,
+  async createOrderFromCart(userId: string | null, dto: CreateOrderDto) {
+    let orderItemsData;
+    let originalPrice = 0;
+
+    if (userId) {
+      const cart = await this.prismaService.cart.findUnique({
+        where: { userId },
+        include: {
+          cartItems: {
+            include: {
+              watch: true,
+            },
           },
         },
-      },
-    });
+      });
 
-    if (!cart || cart.cartItems.length === 0) {
-      throw new BadRequestException('Cart is empty or not found');
+      if (!cart || cart.cartItems.length === 0) {
+        throw new BadRequestException('Cart is empty or not found');
+      }
+
+      orderItemsData = cart.cartItems.map((item) => ({
+        watchId: item.watchId,
+        quantity: item.quantity,
+        price: item.watch.price,
+      }));
+
+      originalPrice = orderItemsData.reduce(
+        (sum: number, item: any) => sum + item.price * item.quantity,
+        0,
+      );
+    } else {
+      if (!dto.walkinInformation || !dto.orderItems?.length) {
+        throw new BadRequestException(
+          'Missing walk-in information or order items',
+        );
+      }
+
+      orderItemsData = dto.orderItems.map((item) => ({
+        watchId: item.watchId,
+        quantity: item.quantity,
+        price: item.price,
+      }));
+
+      originalPrice = orderItemsData.reduce(
+        (sum: number, item: any) => sum + item.price * item.quantity,
+        0,
+      );
     }
-
-    const orderItemsData = cart.cartItems.map((item) => ({
-      watchId: item.watchId,
-      quantity: item.quantity,
-      price: item.watch.price,
-    }));
-
-    const originalPrice = orderItemsData.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0,
-    );
 
     let totalPrice = originalPrice;
     let discountAmount = 0;
@@ -166,16 +188,16 @@ export class OrderService {
       addressId: dto.addressId,
       paymentMethod: dto.paymentMethod,
       shippingNotes: dto.shippingNotes,
+      walkinInformation: dto.walkinInformation
+        ? JSON.stringify(dto.walkinInformation)
+        : null,
       orginalPrice: originalPrice,
       totalPrice,
       orderItems: {
         create: orderItemsData,
       },
+      ...(dto.couponId && { couponId: dto.couponId }),
     };
-
-    if (dto.couponId) {
-      orderData.couponId = dto.couponId;
-    }
 
     try {
       const order = await this.prismaService.$transaction(async (tx) => {
@@ -188,21 +210,23 @@ export class OrderService {
           },
         });
 
-        await tx.notification.create({
-          data: {
-            userId,
-            orderId: createdOrder.id,
-            message: `Your order #${createdOrder.id} has been successfully created!`,
-            type: NotificationType.ORDER_CREATE,
-            isRead: false,
-          },
-        });
+        if (userId) {
+          await tx.notification.create({
+            data: {
+              userId,
+              orderId: createdOrder.id,
+              message: `Your order #${createdOrder.id} has been successfully created!`,
+              type: NotificationType.ORDER_CREATE,
+              isRead: false,
+            },
+          });
 
-        await tx.cartItem.deleteMany({
-          where: {
-            cartId: cart.id,
-          },
-        });
+          await tx.cartItem.deleteMany({
+            where: {
+              cartId: (await tx.cart.findUnique({ where: { userId } }))?.id,
+            },
+          });
+        }
 
         return createdOrder;
       });
