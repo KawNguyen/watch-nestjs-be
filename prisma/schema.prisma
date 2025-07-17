@@ -260,7 +260,7 @@ model Order {
   id                 String         @id @default(uuid())
   totalPrice         Float
   status             OrderStatus    @default(PENDING)
-  orginalPrice       Float
+  originalPrice       Float
   paymentMethod      PaymentMethod  @default(COD)
   shippingNotes      String?
   cancellationReason String?

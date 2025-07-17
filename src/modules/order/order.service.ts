@@ -192,7 +192,7 @@ export class OrderService {
       walkinInformation: dto.walkinInformation
         ? JSON.stringify(dto.walkinInformation)
         : null,
-      orginalPrice: originalPrice,
+      originalPrice: originalPrice,
       totalPrice,
       orderItems: {
         create: orderItemsData,
@@ -275,7 +275,7 @@ export class OrderService {
         shippingNotes,
         couponId,
         walkinInformation: JSON.stringify(walkinInformation),
-        orginalPrice: originalPrice,
+        originalPrice: originalPrice,
         totalPrice,
         orderItems: {
           create: orderItems,

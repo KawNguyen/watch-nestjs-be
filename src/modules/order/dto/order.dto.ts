@@ -132,7 +132,7 @@ export class CreateOrderDto {
     example: 1099.99,
   })
   @IsNumber()
-  orginalPrice: number;
+  originalPrice: number;
 
   @ApiProperty({
     description: 'List of order items',
