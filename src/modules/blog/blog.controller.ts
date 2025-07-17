@@ -17,7 +17,7 @@ import { CreateBlogDto, UpdateBlogDto } from './dto/blog.dto';
 export class BlogController {
   constructor(private readonly blogService: BlogService) {}
 
-  @Post()
+  @Post('create')
   @ApiOperation({ summary: 'Create a new blog' })
   create(@Body() dto: CreateBlogDto) {
     return this.blogService.create(dto);
@@ -29,10 +29,10 @@ export class BlogController {
     return this.blogService.findAll();
   }
 
-  @Get(':id')
+  @Get(':slug')
   @ApiOperation({ summary: 'Get blog details by ID' })
-  findOne(@Param('id') id: string) {
-    return this.blogService.findOne(id);
+  findOne(@Param('slug') slug: string) {
+    return this.blogService.findOne(slug);
   }
 
   @Patch(':id')

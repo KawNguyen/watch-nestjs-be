@@ -13,11 +13,6 @@ export class CreateBlogDto {
   @IsNotEmpty()
   title: string;
 
-  @ApiProperty({ description: 'Unique slug for the blog' })
-  @IsString()
-  @IsNotEmpty()
-  slug: string;
-
   @ApiProperty({ description: 'Content of the blog' })
   @IsString()
   @IsNotEmpty()

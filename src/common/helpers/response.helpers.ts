@@ -2,9 +2,9 @@ export const formatResponse = (
   data: any,
   message = 'Request successful',
   meta?: {
-    totalItems: number;
-    page: number;
     limit: number;
+    page: number;
+    totalItems: number;
     totalPages: number;
   },
 ) => {
