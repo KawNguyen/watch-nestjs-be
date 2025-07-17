@@ -12,7 +12,6 @@ import {
   UpdateOrderStatusDto,
 } from './dto/order.dto';
 import { NotificationType } from '@prisma/client';
-import { Role } from '../auth/enums/role.enum';
 
 @Injectable()
 export class OrderService {
@@ -76,12 +75,23 @@ export class OrderService {
     };
   }
 
-  async getOrdersMe(requesterId: string, page = 1, limit = 10) {
+  async getOrdersMe(
+    requesterId: string,
+    status?: string,
+    page = 1,
+    limit = 10,
+  ) {
     const skip = (page - 1) * limit;
+
+    const whereClause: any = { userId: requesterId };
+
+    if (status) {
+      whereClause.status = status;
+    }
 
     const [orders, totalItems] = await Promise.all([
       this.prismaService.order.findMany({
-        where: { userId: requesterId },
+        where: whereClause,
         skip,
         take: limit,
         include: {

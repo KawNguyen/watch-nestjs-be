@@ -49,11 +49,17 @@ export class OrderController {
   @UseGuards(JwtAuthGuard)
   async getOrdersMe(
     @Req() req: Request,
+    @Query('status') status?: string,
     @Query('page') page?: number,
     @Query('limit') limit?: number,
   ) {
     const requesterId = (req as any).user.id;
-    const data = await this.orderService.getOrdersMe(requesterId, page, limit);
+    const data = await this.orderService.getOrdersMe(
+      requesterId,
+      status,
+      page,
+      limit,
+    );
     return formatResponse(data.data, 'Fetch orders by user Id successfully', {
       limit: data.limit,
       page: data.page,

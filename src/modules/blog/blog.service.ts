@@ -47,17 +47,17 @@ export class BlogService {
   }
 
   async update(id: string, dto: UpdateBlogDto) {
-    await this.findOne(id);
+    const blog = await this.findOne(id);
     return this.prismaService.blog.update({
-      where: { id },
+      where: { id: blog.id },
       data: dto,
     });
   }
 
   async remove(id: string) {
-    await this.findOne(id);
+    const blog = await this.findOne(id);
     return this.prismaService.blog.update({
-      where: { id },
+      where: { id: blog.id },
       data: { deletedAt: new Date() },
     });
   }
