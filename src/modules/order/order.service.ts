@@ -287,6 +287,7 @@ export class OrderService {
   async adminCreateWalkinOrder(dto: AdminCreateOrderDto) {
     const {
       walkinInformation,
+      deliveryAddress,
       paymentMethod,
       shippingNotes,
       originalPrice,
@@ -316,6 +317,7 @@ export class OrderService {
         shippingNotes,
         couponId,
         walkinInformation: JSON.stringify(walkinInformation),
+        deliveryAddress: JSON.stringify(deliveryAddress),
         originalPrice,
         totalPrice,
         orderItems: {

@@ -57,10 +57,10 @@ import { BlogModule } from './modules/blog/blog.module';
     //   provide: APP_GUARD,
     //   useClass: JwtAuthGuard,
     // },
-    {
-      provide: APP_GUARD,
-      useClass: RolesGuard,
-    },
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: RolesGuard,
+    // },
   ],
 })
 export class AppModule {}
