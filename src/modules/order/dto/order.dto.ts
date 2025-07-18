@@ -15,11 +15,21 @@ import {
 
 export class OrderItemDto {
   @ApiProperty({
+    description: 'ID of the cart item (optional)',
+    example: 'cartItem_123',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  id?: string;
+
+  @ApiProperty({
     description: 'ID of the watch',
     example: 'watch_789',
   })
   @IsString()
-  watchId: string;
+  @IsOptional()
+  watchId?: string;
 
   @ApiProperty({
     description: 'Quantity of the item',
@@ -56,7 +66,9 @@ export class WalkinInformationDto {
   @ApiProperty({ example: '0938252473' })
   @IsString()
   phone: string;
+}
 
+export class DeliveryAddress {
   @ApiProperty({ example: '2k Hưng Phú' })
   @IsString()
   street: string;
@@ -76,13 +88,13 @@ export class WalkinInformationDto {
 
 export class CreateOrderDto {
   @ApiProperty({
-    description: 'ID of the address (optional)',
-    example: 'address_123',
-    required: false,
+    description: 'Delivery address',
+    type: DeliveryAddress,
   })
   @IsOptional()
-  @IsString()
-  addressId?: string;
+  @ValidateNested()
+  @Type(() => DeliveryAddress)
+  deliveryAddress?: DeliveryAddress;
 
   @ApiProperty({
     description: 'ID of the coupon (optional)',
@@ -189,6 +201,15 @@ export class GetOrdersDto {
 }
 
 export class AdminCreateOrderDto {
+  @ApiProperty({
+    description: 'Delivery address',
+    type: DeliveryAddress,
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => DeliveryAddress)
+  deliveryAddress?: DeliveryAddress;
+
   @ApiProperty({
     description: 'Walk-in customer information',
     type: WalkinInformationDto,

@@ -25,7 +25,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/enums/role.enum';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles/roles.guard';
-import { Public } from '../auth/decorators/public.decorators';
+import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth/optional-jwt-auth.guard';
 
 @ApiTags('Order')
 @Controller('order')
@@ -46,14 +46,6 @@ export class OrderController {
     });
   }
 
-  @ApiOperation({ summary: 'Get order by ID' })
-  @Get(':id')
-  @UseGuards(JwtAuthGuard)
-  async getOrderById(@Param('id') id: string) {
-    const data = await this.orderService.getOrder(id);
-    return formatResponse(data, 'Fetched order successfully');
-  }
-
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiOperation({ summary: 'Get orders of account' })
@@ -70,13 +62,19 @@ export class OrderController {
     });
   }
 
+  @ApiOperation({ summary: 'Get order by ID' })
+  @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  async getOrderById(@Param('id') id: string) {
+    const data = await this.orderService.getOrder(id);
+    return formatResponse(data, 'Fetched order successfully');
+  }
+
   @ApiOperation({ summary: 'Create Order' })
   @Post('create')
-  @Public()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(OptionalJwtAuthGuard)
   async createOrder(@Body() dto: CreateOrderDto, @Req() req: Request) {
-    const user = (req as any).user;
-    const userId = user?.id ?? null;
+    const userId = (req as any).user?.id || null;
 
     const data = await this.orderService.createOrderFromCart(userId, dto);
     return formatResponse(data, 'Create order successfully');

@@ -58,7 +58,6 @@ export class OrderService {
             },
           },
           orderItems: true,
-          address: true,
           coupon: true,
         },
         orderBy: { createdAt: 'desc' },
@@ -87,7 +86,6 @@ export class OrderService {
             watch: true,
           },
         },
-        address: true,
         coupon: true,
       },
     });
@@ -120,7 +118,6 @@ export class OrderService {
               watch: true,
             },
           },
-          address: true,
           coupon: true,
         },
         orderBy: {
@@ -142,8 +139,10 @@ export class OrderService {
   }
 
   async createOrderFromCart(userId: string | null, dto: CreateOrderDto) {
-    let orderItemsData;
-    let originalPrice = 0;
+    let orderItemsData: any[];
+    const originalPrice = dto.originalPrice;
+
+    let cartItemIdsToOrder: string[] = [];
 
     if (userId) {
       const cart = await this.prismaService.cart.findUnique({
@@ -161,16 +160,27 @@ export class OrderService {
         throw new BadRequestException('Cart is empty or not found');
       }
 
-      orderItemsData = cart.cartItems.map((item) => ({
+      if (!dto.orderItems?.length) {
+        throw new BadRequestException('No order items provided');
+      }
+
+      cartItemIdsToOrder = dto.orderItems
+        .map((item) => item.id)
+        .filter((id): id is string => typeof id === 'string');
+
+      const selectedCartItems = cart.cartItems.filter((item) =>
+        cartItemIdsToOrder.includes(item.id),
+      );
+
+      if (selectedCartItems.length !== cartItemIdsToOrder.length) {
+        throw new BadRequestException('Some cart items not found in your cart');
+      }
+
+      orderItemsData = selectedCartItems.map((item) => ({
         watchId: item.watchId,
         quantity: item.quantity,
         price: item.watch.price,
       }));
-
-      originalPrice = orderItemsData.reduce(
-        (sum: number, item: any) => sum + item.price * item.quantity,
-        0,
-      );
     } else {
       if (!dto.walkinInformation || !dto.orderItems?.length) {
         throw new BadRequestException(
@@ -183,11 +193,6 @@ export class OrderService {
         quantity: item.quantity,
         price: item.price,
       }));
-
-      originalPrice = orderItemsData.reduce(
-        (sum: number, item: any) => sum + item.price * item.quantity,
-        0,
-      );
     }
 
     let totalPrice = originalPrice;
@@ -208,11 +213,13 @@ export class OrderService {
 
     const orderData: any = {
       userId,
-      addressId: dto.addressId,
       paymentMethod: dto.paymentMethod,
       shippingNotes: dto.shippingNotes,
       walkinInformation: dto.walkinInformation
         ? JSON.stringify(dto.walkinInformation)
+        : null,
+      deliveryAddress: dto.deliveryAddress
+        ? JSON.stringify(dto.deliveryAddress)
         : null,
       originalPrice: originalPrice,
       totalPrice,
@@ -223,17 +230,32 @@ export class OrderService {
     };
 
     try {
+      let cart: {
+        id: string;
+        userId: string;
+        createdAt: Date;
+        updatedAt: Date;
+        deletedAt: Date | null;
+      } | null = null;
+      if (userId) {
+        cart = await this.prismaService.cart.findUnique({
+          where: { userId },
+        });
+        if (!cart) {
+          throw new BadRequestException('Cart not found');
+        }
+      }
+
       const order = await this.prismaService.$transaction(async (tx) => {
         const createdOrder = await tx.order.create({
           data: orderData,
           include: {
             user: true,
             orderItems: true,
-            address: true,
           },
         });
 
-        if (userId) {
+        if (userId && cartItemIdsToOrder.length > 0 && cart) {
           await tx.notification.create({
             data: {
               userId,
@@ -246,7 +268,8 @@ export class OrderService {
 
           await tx.cartItem.deleteMany({
             where: {
-              cartId: (await tx.cart.findUnique({ where: { userId } }))?.id,
+              id: { in: cartItemIdsToOrder },
+              cartId: cart.id,
             },
           });
         }
@@ -296,12 +319,17 @@ export class OrderService {
         originalPrice,
         totalPrice,
         orderItems: {
-          create: orderItems,
+          create: orderItems.map((item) => ({
+            quantity: item.quantity,
+            price: item.price,
+            watch: {
+              connect: { id: item.watchId },
+            },
+          })),
         },
       },
       include: {
         orderItems: true,
-        address: true,
       },
     });
 
@@ -344,7 +372,6 @@ export class OrderService {
           include: {
             orderItems: true,
             user: true,
-            address: true,
           },
         });
 

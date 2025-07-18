@@ -53,10 +53,10 @@ import { BlogModule } from './modules/blog/blog.module';
     BlogModule,
   ],
   providers: [
-    {
-      provide: APP_GUARD,
-      useClass: JwtAuthGuard,
-    },
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: JwtAuthGuard,
+    // },
     {
       provide: APP_GUARD,
       useClass: RolesGuard,
