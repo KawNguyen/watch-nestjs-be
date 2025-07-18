@@ -18,7 +18,7 @@ import { Public } from '../auth/decorators/public.decorators';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/enums/role.enum';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth/jwt-auth.guard';
-
+import { formatResponse } from 'src/common/helpers/response.helpers';
 
 @Controller('advertisement')
 export class AdvertisementController {
@@ -28,14 +28,16 @@ export class AdvertisementController {
   @Public()
   @Get()
   async findAll() {
-    return this.advertisementService.findAll();
+    const data = await this.advertisementService.findAll();
+    return formatResponse(data, 'Fetched advertisements successfully');
   }
 
   @ApiOperation({ summary: 'Get one advertisement by ID' })
   @Public()
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    return this.advertisementService.findOne(id);
+    const data = await this.advertisementService.findOne(id);
+    return formatResponse(data, 'Fetched advertisement successfully');
   }
 
   @ApiOperation({ summary: 'Create an advertisement' })
@@ -43,7 +45,8 @@ export class AdvertisementController {
   @Roles(Role.ADMIN)
   @UseGuards(JwtAuthGuard)
   async create(@Body() dto: CreateAdvertisementDto) {
-    return this.advertisementService.create(dto);
+    const data = await this.advertisementService.create(dto);
+    return formatResponse(data, 'Advertisement created successfully');
   }
 
   @ApiOperation({ summary: 'Update an advertisement by ID' })
@@ -51,7 +54,8 @@ export class AdvertisementController {
   @Roles(Role.ADMIN)
   @UseGuards(JwtAuthGuard)
   async update(@Param('id') id: string, @Body() dto: UpdateAdvertisementDto) {
-    return this.advertisementService.update(id, dto);
+    const data = await this.advertisementService.update(id, dto);
+    return formatResponse(data, 'Advertisement updated successfully');
   }
 
   @ApiOperation({ summary: 'Delete an advertisement by ID' })
@@ -59,6 +63,7 @@ export class AdvertisementController {
   @Roles(Role.ADMIN)
   @UseGuards(JwtAuthGuard)
   async remove(@Param('id') id: string) {
-    return this.advertisementService.remove(id);
+    await this.advertisementService.remove(id);
+    return formatResponse(null, 'Advertisement deleted successfully');
   }
 }
