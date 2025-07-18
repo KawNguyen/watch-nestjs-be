@@ -160,11 +160,11 @@ export class OrderService {
         throw new BadRequestException('Cart is empty or not found');
       }
 
-      if (!dto.orderItems?.length) {
+      if (!dto.cartItems?.length) {
         throw new BadRequestException('No order items provided');
       }
 
-      cartItemIdsToOrder = dto.orderItems
+      cartItemIdsToOrder = dto.cartItems
         .map((item) => item.id)
         .filter((id): id is string => typeof id === 'string');
 
@@ -182,13 +182,13 @@ export class OrderService {
         price: item.watch.price,
       }));
     } else {
-      if (!dto.walkinInformation || !dto.orderItems?.length) {
+      if (!dto.walkinInformation || !dto.cartItems?.length) {
         throw new BadRequestException(
           'Missing walk-in information or order items',
         );
       }
 
-      orderItemsData = dto.orderItems.map((item) => ({
+      orderItemsData = dto.cartItems.map((item) => ({
         watchId: item.watchId,
         quantity: item.quantity,
         price: item.price,

@@ -13,7 +13,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 
-export class OrderItemDto {
+export class CartItemDto {
   @ApiProperty({
     description: 'ID of the cart item (optional)',
     example: 'cartItem_123',
@@ -148,12 +148,12 @@ export class CreateOrderDto {
 
   @ApiProperty({
     description: 'List of order items',
-    type: [OrderItemDto],
+    type: [CartItemDto],
   })
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => OrderItemDto)
-  orderItems?: OrderItemDto[];
+  @Type(() => CartItemDto)
+  cartItems: CartItemDto[];
 }
 
 export class CancelOrderDto {
@@ -244,10 +244,10 @@ export class AdminCreateOrderDto {
   @IsOptional()
   couponId?: string;
 
-  @ApiProperty({ type: [OrderItemDto] })
+  @ApiProperty({ type: [CartItemDto] })
   @ValidateNested({ each: true })
-  @Type(() => OrderItemDto)
-  orderItems: OrderItemDto[];
+  @Type(() => CartItemDto)
+  orderItems: CartItemDto[];
 }
 
 export class GetOrdersUserDto {
