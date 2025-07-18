@@ -24,7 +24,6 @@ export class BlogController {
 
   @Post('create')
   @ApiOperation({ summary: 'Create a new blog' })
-  @Roles(Role.ADMIN)
   @UseGuards(JwtAuthGuard)
   create(@Body() dto: CreateBlogDto) {
     return this.blogService.create(dto);
