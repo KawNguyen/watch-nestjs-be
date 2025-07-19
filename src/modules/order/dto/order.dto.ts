@@ -123,6 +123,66 @@ export class CreateOrderDto {
   paymentMethod: PaymentMethod;
 
   @ApiProperty({
+    description: 'Total price after discount',
+    example: 999.99,
+  })
+  @IsNumber()
+  totalPrice: number;
+
+  @ApiProperty({
+    description: 'Original price before discount',
+    example: 1099.99,
+  })
+  @IsNumber()
+  originalPrice: number;
+
+  @ApiProperty({
+    description: 'List of order items',
+    type: [CartItemDto],
+  })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CartItemDto)
+  cartItems: CartItemDto[];
+}
+
+export class CreateOrderWalkinDto {
+  @ApiProperty({
+    description: 'Delivery address',
+    type: DeliveryAddress,
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => DeliveryAddress)
+  deliveryAddress?: DeliveryAddress;
+
+  @ApiProperty({
+    description: 'ID of the coupon (optional)',
+    example: 'coupon_456',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  couponId?: string;
+
+  @ApiProperty({
+    description: 'Notes for shipping (optional)',
+    example: 'Please deliver after 5 PM',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  shippingNotes?: string;
+
+  @ApiProperty({
+    description: 'Payment method',
+    enum: PaymentMethod,
+    example: PaymentMethod.COD,
+  })
+  @IsEnum(PaymentMethod)
+  paymentMethod: PaymentMethod;
+
+  @ApiProperty({
     description: 'Walk-in information in JSON format',
     type: WalkinInformationDto,
     required: false,

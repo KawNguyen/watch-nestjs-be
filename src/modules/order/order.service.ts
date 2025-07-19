@@ -9,6 +9,7 @@ import {
   AdminCreateOrderDto,
   CancelOrderDto,
   CreateOrderDto,
+  CreateOrderWalkinDto,
   GetOrdersDto,
   GetOrdersUserDto,
   UpdateOrderStatusDto,
@@ -138,69 +139,155 @@ export class OrderService {
     };
   }
 
-  async createOrderFromCart(userId: string | null, dto: CreateOrderDto) {
-    let orderItemsData: any[];
+  async createOrderFromCart(userId: string, dto: CreateOrderDto) {
+    const originalPrice = dto.originalPrice;
+    const cart = await this.prismaService.cart.findUnique({
+      where: { userId },
+      include: {
+        cartItems: {
+          include: { watch: true },
+        },
+      },
+    });
+
+    if (!cart || cart.cartItems.length === 0) {
+      throw new BadRequestException('Cart is empty or not found');
+    }
+
+    if (!dto.cartItems?.length) {
+      throw new BadRequestException('No order items provided');
+    }
+
+    const cartItemIdsToOrder = dto.cartItems
+      .map((item) => item.id)
+      .filter((id): id is string => typeof id === 'string');
+
+    const selectedCartItems = cart.cartItems.filter((item) =>
+      cartItemIdsToOrder.includes(item.id),
+    );
+
+    if (selectedCartItems.length !== cartItemIdsToOrder.length) {
+      throw new BadRequestException('Some cart items not found in your cart');
+    }
+
+    const orderItemsData = selectedCartItems.map((item) => ({
+      watchId: item.watchId,
+      quantity: item.quantity,
+      price: item.watch.price,
+    }));
+
+    const { totalPrice, discountAmount } = await this.calculateDiscount(
+      originalPrice,
+      dto.couponId,
+    );
+
+    const orderData: any = {
+      userId,
+      paymentMethod: dto.paymentMethod,
+      shippingNotes: dto.shippingNotes,
+      walkinInformation: null,
+      deliveryAddress: dto.deliveryAddress
+        ? JSON.stringify(dto.deliveryAddress)
+        : null,
+      originalPrice,
+      totalPrice,
+      orderItems: { create: orderItemsData },
+      ...(dto.couponId && { couponId: dto.couponId }),
+    };
+
+    try {
+      const order = await this.prismaService.$transaction(async (tx) => {
+        const createdOrder = await tx.order.create({
+          data: orderData,
+          include: {
+            user: true,
+            orderItems: true,
+          },
+        });
+
+        await tx.notification.create({
+          data: {
+            userId,
+            orderId: createdOrder.id,
+            message: `Your order #${createdOrder.id} has been successfully created!`,
+            type: NotificationType.ORDER_CREATE,
+            isRead: false,
+          },
+        });
+
+        await tx.cartItem.deleteMany({
+          where: {
+            id: { in: cartItemIdsToOrder },
+            cartId: cart.id,
+          },
+        });
+
+        return createdOrder;
+      });
+
+      return order;
+    } catch (error) {
+      console.error('Error creating order from cart:', error);
+      throw new Error('Failed to create order');
+    }
+  }
+
+  async createWalkinOrder(dto: CreateOrderWalkinDto) {
+    if (!dto.walkinInformation || !dto.cartItems?.length) {
+      throw new BadRequestException(
+        'Missing walk-in information or order items',
+      );
+    }
+
     const originalPrice = dto.originalPrice;
 
-    let cartItemIdsToOrder: string[] = [];
+    const orderItemsData = dto.cartItems.map((item) => ({
+      watchId: item.watchId,
+      quantity: item.quantity,
+      price: item.price,
+    }));
 
-    if (userId) {
-      const cart = await this.prismaService.cart.findUnique({
-        where: { userId },
+    const { totalPrice } = await this.calculateDiscount(
+      originalPrice,
+      dto.couponId,
+    );
+
+    const orderData: any = {
+      userId: null,
+      paymentMethod: dto.paymentMethod,
+      shippingNotes: dto.shippingNotes,
+      walkinInformation: JSON.stringify(dto.walkinInformation),
+      deliveryAddress: dto.deliveryAddress
+        ? JSON.stringify(dto.deliveryAddress)
+        : null,
+      originalPrice,
+      totalPrice,
+      orderItems: { create: orderItemsData },
+      ...(dto.couponId && { couponId: dto.couponId }),
+    };
+
+    try {
+      const order = await this.prismaService.order.create({
+        data: orderData,
         include: {
-          cartItems: {
-            include: {
-              watch: true,
-            },
-          },
+          orderItems: true,
         },
       });
 
-      if (!cart || cart.cartItems.length === 0) {
-        throw new BadRequestException('Cart is empty or not found');
-      }
-
-      if (!dto.cartItems?.length) {
-        throw new BadRequestException('No order items provided');
-      }
-
-      cartItemIdsToOrder = dto.cartItems
-        .map((item) => item.id)
-        .filter((id): id is string => typeof id === 'string');
-
-      const selectedCartItems = cart.cartItems.filter((item) =>
-        cartItemIdsToOrder.includes(item.id),
-      );
-
-      if (selectedCartItems.length !== cartItemIdsToOrder.length) {
-        throw new BadRequestException('Some cart items not found in your cart');
-      }
-
-      orderItemsData = selectedCartItems.map((item) => ({
-        watchId: item.watchId,
-        quantity: item.quantity,
-        price: item.watch.price,
-      }));
-    } else {
-      if (!dto.walkinInformation || !dto.cartItems?.length) {
-        throw new BadRequestException(
-          'Missing walk-in information or order items',
-        );
-      }
-
-      orderItemsData = dto.cartItems.map((item) => ({
-        watchId: item.watchId,
-        quantity: item.quantity,
-        price: item.price,
-      }));
+      return order;
+    } catch (error) {
+      console.error('Error creating walk-in order:', error);
+      throw new Error('Failed to create walk-in order');
     }
+  }
 
+  private async calculateDiscount(originalPrice: number, couponId?: string) {
     let totalPrice = originalPrice;
     let discountAmount = 0;
 
-    if (dto.couponId) {
+    if (couponId) {
       const couponExists = await this.prismaService.coupon.findUnique({
-        where: { id: dto.couponId },
+        where: { id: couponId },
       });
 
       if (!couponExists) {
@@ -211,77 +298,7 @@ export class OrderService {
       totalPrice = originalPrice - discountAmount;
     }
 
-    const orderData: any = {
-      userId,
-      paymentMethod: dto.paymentMethod,
-      shippingNotes: dto.shippingNotes,
-      walkinInformation: dto.walkinInformation
-        ? JSON.stringify(dto.walkinInformation)
-        : null,
-      deliveryAddress: dto.deliveryAddress
-        ? JSON.stringify(dto.deliveryAddress)
-        : null,
-      originalPrice: originalPrice,
-      totalPrice,
-      orderItems: {
-        create: orderItemsData,
-      },
-      ...(dto.couponId && { couponId: dto.couponId }),
-    };
-
-    try {
-      let cart: {
-        id: string;
-        userId: string;
-        createdAt: Date;
-        updatedAt: Date;
-        deletedAt: Date | null;
-      } | null = null;
-      if (userId) {
-        cart = await this.prismaService.cart.findUnique({
-          where: { userId },
-        });
-        if (!cart) {
-          throw new BadRequestException('Cart not found');
-        }
-      }
-
-      const order = await this.prismaService.$transaction(async (tx) => {
-        const createdOrder = await tx.order.create({
-          data: orderData,
-          include: {
-            user: true,
-            orderItems: true,
-          },
-        });
-
-        if (userId && cartItemIdsToOrder.length > 0 && cart) {
-          await tx.notification.create({
-            data: {
-              userId,
-              orderId: createdOrder.id,
-              message: `Your order #${createdOrder.id} has been successfully created!`,
-              type: NotificationType.ORDER_CREATE,
-              isRead: false,
-            },
-          });
-
-          await tx.cartItem.deleteMany({
-            where: {
-              id: { in: cartItemIdsToOrder },
-              cartId: cart.id,
-            },
-          });
-        }
-
-        return createdOrder;
-      });
-
-      return order;
-    } catch (error) {
-      console.error('Error creating order:', error);
-      throw new Error('Failed to create order');
-    }
+    return { totalPrice, discountAmount };
   }
 
   async adminCreateWalkinOrder(dto: AdminCreateOrderDto) {

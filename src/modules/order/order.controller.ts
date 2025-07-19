@@ -17,6 +17,7 @@ import {
   AdminCreateOrderDto,
   CancelOrderDto,
   CreateOrderDto,
+  CreateOrderWalkinDto,
   GetOrdersDto,
   GetOrdersUserDto,
   UpdateOrderStatusDto,
@@ -72,12 +73,19 @@ export class OrderController {
 
   @ApiOperation({ summary: 'Create Order' })
   @Post('create')
-  // @UseGuards(OptionalJwtAuthGuard)
-  async createOrder(@Body() dto: CreateOrderDto, @Req() req: Request) {
-    const userId = (req as any).user?.id || null;
+  @UseGuards(JwtAuthGuard)
+  async createOrderFromCart(@Body() dto: CreateOrderDto, @Req() req: Request) {
+    const userId = (req as any).user.id;
 
     const data = await this.orderService.createOrderFromCart(userId, dto);
     return formatResponse(data, 'Create order successfully');
+  }
+
+  @ApiOperation({ summary: 'Admin: Create order for walkin' })
+  @Post('create-walkin')
+  async createWalkinOrder(@Body() dto: CreateOrderWalkinDto) {
+    const order = await this.orderService.createWalkinOrder(dto);
+    return formatResponse(order, 'Admin created walk-in order successfully');
   }
 
   @ApiOperation({ summary: 'Admin: Create order for guest user (walk-in)' })
