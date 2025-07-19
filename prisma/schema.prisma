@@ -60,9 +60,9 @@ model User {
 model Address {
   id        String    @id @default(uuid())
   street    String?
-  district  String?
-  ward      String?
-  city      String?
+  district  Json?
+  ward      Json?
+  city      Json?
   country   String?
   user      User?     @relation(fields: [userId], references: [id])
   userId    String?

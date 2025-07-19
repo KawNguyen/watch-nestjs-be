@@ -26,9 +26,18 @@ export class AddressService {
       where: {
         userId,
         street: dto.street,
-        district: dto.district,
-        ward: dto.ward,
-        city: dto.city,
+        district:
+          typeof dto.district === 'object' && dto.district !== null
+            ? { equals: dto.district.code }
+            : undefined,
+        ward:
+          typeof dto.ward === 'object' && dto.ward !== null
+            ? { equals: dto.ward.code }
+            : undefined,
+        city:
+          typeof dto.city === 'object' && dto.city !== null
+            ? { equals: dto.city.code }
+            : undefined,
         country: dto.country,
       },
     });
@@ -41,6 +50,9 @@ export class AddressService {
       data: {
         ...dto,
         userId,
+        district: dto.district ? JSON.stringify(dto.district) : undefined,
+        ward: dto.ward ? JSON.stringify(dto.ward) : undefined,
+        city: dto.city ? JSON.stringify(dto.city) : undefined,
       },
     });
   }
@@ -60,7 +72,12 @@ export class AddressService {
 
     return this.prismaService.address.update({
       where: { id: existingAddress.id },
-      data: dto,
+      data: {
+        ...dto,
+        district: dto.district ? JSON.stringify(dto.district) : undefined,
+        ward: dto.ward ? JSON.stringify(dto.ward) : undefined,
+        city: dto.city ? JSON.stringify(dto.city) : undefined,
+      },
     });
   }
 

@@ -72,7 +72,7 @@ export class OrderController {
 
   @ApiOperation({ summary: 'Create Order' })
   @Post('create')
-  @UseGuards(OptionalJwtAuthGuard)
+  // @UseGuards(OptionalJwtAuthGuard)
   async createOrder(@Body() dto: CreateOrderDto, @Req() req: Request) {
     const userId = (req as any).user?.id || null;
 
