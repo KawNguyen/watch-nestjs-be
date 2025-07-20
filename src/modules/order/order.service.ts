@@ -177,7 +177,7 @@ export class OrderService {
     }));
 
     const { totalPrice, discountAmount } = await this.calculateDiscount(
-      originalPrice,
+    originalPrice,
       dto.couponId,
     );
 
