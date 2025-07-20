@@ -270,7 +270,11 @@ export class OrderService {
       const order = await this.prismaService.order.create({
         data: orderData,
         include: {
-          orderItems: true,
+          orderItems: {
+            include: {
+              watch: true,
+            },  
+          },
         },
       });
 

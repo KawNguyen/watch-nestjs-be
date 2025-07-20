@@ -81,11 +81,11 @@ export class OrderController {
     return formatResponse(data, 'Create order successfully');
   }
 
-  @ApiOperation({ summary: 'Admin: Create order for walkin' })
+  @ApiOperation({ summary: 'Create order for walkin' })
   @Post('create-walkin')
   async createWalkinOrder(@Body() dto: CreateOrderWalkinDto) {
     const order = await this.orderService.createWalkinOrder(dto);
-    return formatResponse(order, 'Admin created walk-in order successfully');
+    return formatResponse(order, 'Created walk-in order successfully');
   }
 
   @ApiOperation({ summary: 'Admin: Create order for guest user (walk-in)' })
