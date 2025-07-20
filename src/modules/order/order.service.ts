@@ -84,7 +84,11 @@ export class OrderService {
         user: true,
         orderItems: {
           include: {
-            watch: true,
+            watch: {
+              include: {
+                images: true,
+              },
+            },
           },
         },
         coupon: true,
@@ -177,7 +181,7 @@ export class OrderService {
     }));
 
     const { totalPrice, discountAmount } = await this.calculateDiscount(
-    originalPrice,
+      originalPrice,
       dto.couponId,
     );
 
@@ -201,7 +205,15 @@ export class OrderService {
           data: orderData,
           include: {
             user: true,
-            orderItems: true,
+            orderItems: {
+              include: {
+                watch: {
+                  include: {
+                    images: true,
+                  },
+                },
+              },
+            },
           },
         });
 
@@ -270,7 +282,11 @@ export class OrderService {
       const order = await this.prismaService.order.create({
         data: orderData,
         include: {
-          orderItems: true,
+          orderItems: {
+            include: {
+              watch: true,
+            },
+          },
         },
       });
 
