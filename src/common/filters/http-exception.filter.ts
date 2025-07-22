@@ -5,6 +5,7 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
+import { MoMoException } from '../exceptions/momo.exception';
 
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {

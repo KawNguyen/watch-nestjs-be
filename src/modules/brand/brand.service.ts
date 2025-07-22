@@ -14,14 +14,6 @@ export class BrandService {
   async getAllBrands() {
     return this.prismaService.brand.findMany({
       orderBy: { createdAt: 'desc' },
-      include: {
-        image: {
-          select: {
-            absolute_url: true,
-            public_id: true,
-          },
-        },
-      },
     });
   }
 
@@ -40,7 +32,6 @@ export class BrandService {
   async createBrand(createBrandDto: CreateBrandDto) {
     const existingBrand = await this.prismaService.brand.findUnique({
       where: { name: createBrandDto.name },
-      include: { image: true },
     });
 
     if (existingBrand) {
@@ -57,10 +48,8 @@ export class BrandService {
       data: {
         ...createBrandDto,
         image: {
-          create: {
-            absolute_url: createBrandDto.image.absolute_url,
-            public_id: createBrandDto.image.public_id,
-          },
+          absolute_url: createBrandDto.image.absolute_url,
+          public_id: createBrandDto.image.public_id,
         },
         slug,
       },
@@ -70,7 +59,6 @@ export class BrandService {
   async updateBrand(id: string, updateBrandDto: UpdateBrandDto) {
     const existingBrand = await this.prismaService.brand.findUnique({
       where: { id },
-      include: { image: true },
     });
 
     console.log(updateBrandDto);
@@ -115,10 +103,6 @@ export class BrandService {
     if (!brand) {
       throw new NotFoundException('Brand not found');
     }
-
-    await this.prismaService.brandImage.deleteMany({
-      where: { brandId: id },
-    });
 
     return await this.prismaService.brand.delete({
       where: { id },

@@ -65,6 +65,7 @@ export class StockEntryService {
           user: {
             select: { id: true, email: true, firstName: true, lastName: true },
           },
+          stockItems: true,
         },
         orderBy: { createdAt: 'desc' },
       }),
@@ -124,7 +125,7 @@ export class StockEntryService {
         }
 
         const totalPrice = stockItems.reduce(
-          (acc, cur) => acc + cur.costPrice,
+          (acc, cur) => acc + cur.quantity * cur.costPrice,
           0,
         );
 

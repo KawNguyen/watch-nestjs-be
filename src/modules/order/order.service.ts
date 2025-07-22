@@ -84,7 +84,11 @@ export class OrderService {
         user: true,
         orderItems: {
           include: {
-            watch: true,
+            watch: {
+              include: {
+                images: true,
+              },
+            },
           },
         },
         coupon: true,
@@ -201,7 +205,15 @@ export class OrderService {
           data: orderData,
           include: {
             user: true,
-            orderItems: true,
+            orderItems: {
+              include: {
+                watch: {
+                  include: {
+                    images: true,
+                  },
+                },
+              },
+            },
           },
         });
 
@@ -273,7 +285,7 @@ export class OrderService {
           orderItems: {
             include: {
               watch: true,
-            },  
+            },
           },
         },
       });

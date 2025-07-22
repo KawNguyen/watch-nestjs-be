@@ -10,6 +10,7 @@ import { CreatePaymentMomoDto } from './dto/create-payment-momo.dto';
 import { PaymentResponseDto } from './dto/payment-response-momo';
 import { firstValueFrom } from 'rxjs';
 import { createHmac } from 'crypto';
+import { MoMoException } from 'src/common/exceptions/momo.exception';
 
 @Injectable()
 export class PaymentsService {
@@ -30,7 +31,7 @@ export class PaymentsService {
 
   async createPaymentMomo(
     createPaymentMomoDto: CreatePaymentMomoDto,
-  ): Promise<PaymentResponseDto> {
+  ): Promise<any> {
     const {
       amount,
       orderInfo,
@@ -72,18 +73,18 @@ export class PaymentsService {
       signature,
     };
 
-    try {
-      const response = await firstValueFrom(
-        this.httpService.post(
-          `${MOMO_CONFIG.BASE_URL}${MOMO_CONFIG.PATH}`,
-          requestBody,
-        ),
-      );
-
-      return response.data;
-    } catch (error) {
-      throw new Error(`Payment creation failed: ${error.message}`);
-    }
+    return await firstValueFrom(
+      this.httpService.post(
+        `${MOMO_CONFIG.BASE_URL}${MOMO_CONFIG.PATH}`,
+        requestBody,
+      ),
+    )
+      .then((data) => data.data)
+      .catch((err) => ({
+        status: 'error',
+        resultCode: err.response.data.resultCode,
+        message: err.response.data.message,
+      }));
   }
 
   private generateRawSignature(params: {
