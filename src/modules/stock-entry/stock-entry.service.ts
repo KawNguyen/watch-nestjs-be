@@ -19,25 +19,6 @@ export class StockEntryService {
 
   constructor(private readonly prismaService: PrismaService) {}
 
-  async updateInventoryQuantities(
-    tx: Prisma.TransactionClient,
-    stockItems: any,
-  ) {
-    for (const stockItem of stockItems) {
-      const { watchId, quantity } = stockItem;
-      await tx.watchInventory.upsert({
-        where: { watchId },
-        create: {
-          watchId,
-          quantity,
-        },
-        update: {
-          quantity,
-        },
-      });
-    }
-  }
-
   async getAllStockEntries(dto: GetAllStockEntriesDto) {
     const { page = 1, limit = 12, keyword, createdBy } = dto;
     const skip = (page - 1) * limit;
@@ -146,7 +127,24 @@ export class StockEntryService {
           },
         });
 
-        await this.updateInventoryQuantities(tx, stockItems);
+        // await this.updateInventoryQuantities(tx, stockItems);
+
+        await Promise.all(
+          stockItems.map((item) =>
+            tx.watchInventory.upsert({
+              where: { watchId: item.watchId },
+              create: {
+                watchId: item.watchId,
+                quantity: item.quantity,
+              },
+              update: {
+                quantity: {
+                  increment: item.quantity,
+                },
+              },
+            }),
+          ),
+        );
 
         return stockEntry;
       } catch (error) {
