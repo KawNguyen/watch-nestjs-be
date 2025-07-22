@@ -4,6 +4,6 @@ import { AddressService } from './address.service';
 
 @Module({
   providers: [AddressService],
-  controllers: [AddressController]
+  controllers: [AddressController],
 })
 export class AddressModule {}

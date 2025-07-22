@@ -81,6 +81,9 @@ export class WatchService {
           images: {
             select: { absolute_url: true },
           },
+          inventory: {
+            select: { quantity: true },
+          },
         },
         skip,
         take: limit,
@@ -111,6 +114,11 @@ export class WatchService {
         images: {
           select: {
             absolute_url: true,
+          },
+        },
+        inventory: {
+          select: {
+            quantity: true,
           },
         },
       },

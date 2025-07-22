@@ -127,8 +127,6 @@ export class StockEntryService {
           },
         });
 
-        // await this.updateInventoryQuantities(tx, stockItems);
-
         await Promise.all(
           stockItems.map((item) =>
             tx.watchInventory.upsert({

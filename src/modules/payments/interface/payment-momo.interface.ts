@@ -17,9 +17,9 @@ export interface MomoPaymentRequest {
 }
 
 export interface MomoConfig {
-    accessKey: string;
-    secretKey: string;
-    partnerCode: string;
-    redirectUrl: string;
-    ipnUrl: string;
+  accessKey: string;
+  secretKey: string;
+  partnerCode: string;
+  redirectUrl: string;
+  ipnUrl: string;
 }

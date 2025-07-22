@@ -1,4 +1,3 @@
-
 import {
   Injectable,
   NotFoundException,
@@ -6,7 +5,10 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { generateSlug } from 'src/utils/slug.utils';
-import { CreateBandMaterialDto, UpdateBandMaterialDto } from './dto/band-material.dto';
+import {
+  CreateBandMaterialDto,
+  UpdateBandMaterialDto,
+} from './dto/band-material.dto';
 
 @Injectable()
 export class BandMaterialService {

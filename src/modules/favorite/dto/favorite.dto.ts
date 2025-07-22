@@ -54,5 +54,3 @@ export class FavoriteResponseDto {
   @IsOptional()
   watch?: any;
 }
-
-

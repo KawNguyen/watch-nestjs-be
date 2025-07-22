@@ -41,4 +41,3 @@ export class UpdateQuantityDto {
   @Min(1)
   quantity: number;
 }
-
