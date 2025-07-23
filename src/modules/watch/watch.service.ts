@@ -91,7 +91,7 @@ export class WatchService {
             select: { absolute_url: true },
           },
           inventory: {
-            select: { quantity: true },
+            select: { quantity: true, lowStockThreshold: true },
           },
         },
         skip,
