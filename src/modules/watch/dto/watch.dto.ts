@@ -11,7 +11,7 @@ import {
   IsArray,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
-import { WatchGender } from '@prisma/client';
+import { WatchGender, WatchStatus } from '@prisma/client';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class WatchImages {
@@ -36,6 +36,13 @@ export class GetWatchesDto {
   )
   @IsEnum(WatchGender, { each: true })
   genders?: WatchGender[];
+
+  @ApiPropertyOptional({
+    description: 'Filter by status',
+    enum: WatchStatus,
+  })
+  @IsEnum(WatchStatus)
+  status?: WatchStatus;
 
   @ApiPropertyOptional({
     description: 'Filter by brand slugs',
@@ -136,6 +143,10 @@ export class CreateWatchDto {
   @IsOptional()
   @IsEnum(WatchGender)
   gender?: WatchGender;
+
+  @ApiPropertyOptional({ enum: WatchStatus, default: WatchStatus.PUBLISHED })
+  @IsEnum(WatchStatus)
+  status: WatchStatus;
 
   @ApiProperty()
   @IsUUID()

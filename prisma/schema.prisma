@@ -72,15 +72,15 @@ model Address {
 }
 
 model Brand {
-  id        String      @id @default(uuid())
-  slug      String?     @unique
-  code      String      @unique @default(dbgenerated("concat('BR', upper(\"substring\"(replace(((gen_random_uuid())::character varying)::text, '-'::text, ''::text), 1, 8)))"))
-  name      String      @unique @db.VarChar(100)
-  country   String?     @db.VarChar(100)
+  id        String    @id @default(uuid())
+  slug      String?   @unique
+  code      String    @unique @default(dbgenerated("concat('BR', upper(\"substring\"(replace(((gen_random_uuid())::character varying)::text, '-'::text, ''::text), 1, 8)))"))
+  name      String    @unique @db.VarChar(100)
+  country   String?   @db.VarChar(100)
   watches   Watch[]
   image     Json
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
   @@index([name])
@@ -143,6 +143,7 @@ model Watch {
   name            String          @db.VarChar(100)
   description     String?
   gender          WatchGender     @default(UNISEX)
+  status          WatchStatus     @default(PUBLISHED)
   brandId         String
   materialId      String
   bandMaterialId  String
@@ -412,4 +413,10 @@ enum OrderStatus {
   DELIVERED
   COMPLETED
   CANCELED
+}
+
+enum WatchStatus {
+  PUBLISHED
+  DRAFT
+  ARCHIVED
 }

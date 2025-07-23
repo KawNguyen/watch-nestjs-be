@@ -10,7 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { WatchService } from './watch.service';
-import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { CreateWatchDto, GetWatchesDto, UpdateWatchDto } from './dto/watch.dto';
 
