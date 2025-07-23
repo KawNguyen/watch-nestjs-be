@@ -41,6 +41,7 @@ export class GetWatchesDto {
     description: 'Filter by status',
     enum: WatchStatus,
   })
+  @IsOptional()
   @IsEnum(WatchStatus)
   status?: WatchStatus;
 
