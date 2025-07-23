@@ -1,7 +1,12 @@
 import { generateSlug } from 'src/utils/slug.utils';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateWatchDto, GetWatchesDto, UpdateWatchDto, UpdateWatchStatusDto } from './dto/watch.dto';
+import {
+  CreateWatchDto,
+  GetWatchesDto,
+  UpdateWatchDto,
+  UpdateWatchStatusDto,
+} from './dto/watch.dto';
 import { Prisma, WatchStatus } from '@prisma/client';
 
 @Injectable()
@@ -10,6 +15,7 @@ export class WatchService {
 
   async getWatches(dto: GetWatchesDto) {
     const {
+      status,
       genders,
       brands,
       materials,
@@ -25,6 +31,9 @@ export class WatchService {
     const skip = (page - 1) * limit;
 
     const where: Prisma.WatchWhereInput = {
+      ...(status && {
+        status: status,
+      }),
       ...(genders?.length && { gender: { in: genders } }),
       ...(minPrice !== undefined || maxPrice !== undefined
         ? {
