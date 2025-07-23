@@ -417,6 +417,6 @@ enum OrderStatus {
 
 enum WatchStatus {
   PUBLISHED
-  DRAFT
+  DRAFTED
   ARCHIVED
 }
