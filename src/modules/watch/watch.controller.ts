@@ -12,7 +12,12 @@ import {
 import { WatchService } from './watch.service';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
-import { CreateWatchDto, GetWatchesDto, UpdateWatchDto } from './dto/watch.dto';
+import {
+  CreateWatchDto,
+  GetWatchesDto,
+  UpdateWatchDto,
+  UpdateWatchStatusDto,
+} from './dto/watch.dto';
 
 import { Roles } from 'src/modules/auth/decorators/roles.decorator';
 import { Role } from 'src/modules/auth/enums/role.enum';
@@ -75,5 +80,20 @@ export class WatchController {
   async deleteWatch(@Param('watchId') watchId: string) {
     const data = await this.watchService.deleteWatch(watchId);
     return formatResponse(data, 'Watch deleted successfully');
+  }
+
+  @ApiOperation({ summary: 'Upload watch status' })
+  @Patch('update/:watchId/status')
+  @Roles(Role.ADMIN)
+  @UseGuards(JwtAuthGuard)
+  async updateWatchStatus(
+    @Param('watchId') watchId: string,
+    @Body() updateWatchStatusDto: UpdateWatchStatusDto,
+  ) {
+    const data = await this.watchService.updateWatchStatus(
+      watchId,
+      updateWatchStatusDto,
+    );
+    return formatResponse(data, 'Update watch status successfully');
   }
 }

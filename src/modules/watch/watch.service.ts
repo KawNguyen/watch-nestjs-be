@@ -1,8 +1,8 @@
 import { generateSlug } from 'src/utils/slug.utils';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateWatchDto, GetWatchesDto, UpdateWatchDto } from './dto/watch.dto';
-import { Prisma } from '@prisma/client';
+import { CreateWatchDto, GetWatchesDto, UpdateWatchDto, UpdateWatchStatusDto } from './dto/watch.dto';
+import { Prisma, WatchStatus } from '@prisma/client';
 
 @Injectable()
 export class WatchService {
@@ -240,6 +240,27 @@ export class WatchService {
 
     return this.prismaService.watch.delete({
       where: { id },
+    });
+  }
+
+  async updateWatchStatus(watchId: string, data: UpdateWatchStatusDto) {
+    const existingWatch = await this.prismaService.watch.findUnique({
+      where: { id: watchId },
+    });
+
+    if (!existingWatch) {
+      throw new BadRequestException(
+        `Watch with id "${watchId}" does not exist`,
+      );
+    }
+
+    return await this.prismaService.watch.update({
+      where: {
+        id: watchId,
+      },
+      data: {
+        status: data.status,
+      },
     });
   }
 }

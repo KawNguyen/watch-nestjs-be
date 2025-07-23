@@ -202,4 +202,9 @@ export class CreateWatchDto {
   images?: WatchImages[];
 }
 
+export class UpdateWatchStatusDto {
+  @IsEnum(WatchStatus)
+  status: WatchStatus;
+}
+
 export class UpdateWatchDto extends CreateWatchDto {}
