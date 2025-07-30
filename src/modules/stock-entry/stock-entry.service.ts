@@ -8,6 +8,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import {
   CreateStockEntryDto,
   GetAllStockEntriesDto,
+  GetStockStatisticsDto,
 } from './dto/stock-entry.dto';
 import { Prisma } from '@prisma/client';
 
@@ -154,7 +155,9 @@ export class StockEntryService {
     return result;
   }
 
-  async getStockStatistics(startDate?: string, endDate?: string) {
+  async getStockStatistics(dto: GetStockStatisticsDto) {
+    const { startDate, endDate, year, month, date } = dto;
+
     const where: any = {};
 
     if (startDate || endDate) {
@@ -165,6 +168,27 @@ export class StockEntryService {
       if (endDate) {
         where.createdAt.lte = new Date(endDate + 'T23:59:59.999Z');
       }
+    } else if (year && month && date) {
+      const y = parseInt(year, 10);
+      const m = parseInt(month, 10);
+      const d = parseInt(date, 10);
+
+      if (
+        isNaN(y) ||
+        isNaN(m) ||
+        isNaN(d) ||
+        m < 1 ||
+        m > 12 ||
+        d < 1 ||
+        d > 31
+      ) {
+        throw new BadRequestException('Invalid year, month, or date');
+      }
+
+      where.createdAt = {
+        gte: new Date(y, m - 1, d, 0, 0, 0, 0),
+        lt: new Date(y, m - 1, d + 1, 0, 0, 0, 0),
+      };
     }
 
     const [totalEntries, totalValue, totalItems] = await Promise.all([
@@ -185,7 +209,24 @@ export class StockEntryService {
       }),
     ]);
 
+    const stockStatistics = await this.prismaService.stockEntry.findMany({
+      where,
+      select: {
+        createdAt: true,
+        totalPrice: true,
+        stockItems: {
+          select: {
+            watchId: true,
+            quantity: true,
+            costPrice: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
     return {
+      stockStatistics: stockStatistics,
       totalEntries,
       totalValue: totalValue._sum.totalPrice || 0,
       totalItems: totalItems._sum.quantity || 0,

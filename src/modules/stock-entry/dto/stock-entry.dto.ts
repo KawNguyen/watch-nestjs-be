@@ -87,3 +87,36 @@ export class GetAllStockEntriesDto {
   @IsString()
   createdBy?: string;
 }
+
+export class GetStockStatisticsDto {
+  @ApiProperty({ description: 'Year for statistics', required: false })
+  @IsOptional()
+  @IsString()
+  year?: string;
+
+  @ApiProperty({ description: 'Month for statistics', required: false })
+  @IsOptional()
+  @IsString()
+  month?: string;
+
+  @ApiProperty({ description: 'Date for statistics', required: false })
+  @IsOptional()
+  @IsString()
+  date?: string;
+  
+  @ApiProperty({
+    description: 'Start date for statistics (YYYY-MM-DD)',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  startDate?: string;
+
+  @ApiProperty({
+    description: 'End date for statistics (YYYY-MM-DD)',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  endDate?: string;
+}

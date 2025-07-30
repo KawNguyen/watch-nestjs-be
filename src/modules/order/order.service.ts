@@ -11,10 +11,11 @@ import {
   CreateOrderDto,
   CreateOrderWalkinDto,
   GetOrdersDto,
+  GetOrdersStatisticsDto,
   GetOrdersUserDto,
   UpdateOrderStatusDto,
 } from './dto/order.dto';
-import { NotificationType } from '@prisma/client';
+import { NotificationType, OrderStatus } from '@prisma/client';
 import { MailService } from '../mail/mail.service';
 
 @Injectable()
@@ -23,6 +24,110 @@ export class OrderService {
     private readonly prismaService: PrismaService,
     private readonly mailService: MailService,
   ) {}
+
+  async statisticsOrders(dto: GetOrdersStatisticsDto) {
+    const { year, month, date, startDate, endDate, status } = dto;
+
+    const filters: any = {};
+
+    if (startDate || endDate) {
+      filters.createdAt = {};
+
+      if (startDate) {
+        filters.createdAt.gte = new Date(startDate);
+      }
+
+      if (endDate) {
+        filters.createdAt.lte = new Date(endDate + 'T23:59:59.999Z');
+      }
+    }
+
+    else if (year && month && date) {
+      const y = parseInt(year, 10);
+      const m = parseInt(month, 10);
+      const d = parseInt(date, 10);
+
+      if (
+        isNaN(y) ||
+        isNaN(m) ||
+        isNaN(d) ||
+        m < 1 ||
+        m > 12 ||
+        d < 1 ||
+        d > 31
+      ) {
+        throw new BadRequestException('Invalid year, month or date');
+      }
+
+      filters.createdAt = {
+        gte: new Date(y, m - 1, d, 0, 0, 0, 0),
+        lt: new Date(y, m - 1, d + 1, 0, 0, 0, 0),
+      };
+    }
+
+    if (status) {
+      filters.status = status;
+    } else {
+      filters.status = { not: OrderStatus.CANCELED };
+    }
+
+    const [totalPriceAllOrders, totalOrders, orders] = await Promise.all([
+      this.prismaService.order.aggregate({
+        _sum: {
+          totalPrice: true,
+        },
+        where: filters,
+      }),
+      this.prismaService.order.count({
+        where: filters,
+      }),
+      this.prismaService.order.findMany({
+        where: filters,
+        select: {
+          id: true,
+          status: true,
+          totalPrice: true,
+          createdAt: true,
+        },
+      }),
+    ]);
+
+    return {
+      orders,
+      totalPrice: totalPriceAllOrders._sum.totalPrice || 0,
+      totalOrders,
+    };
+  }
+
+  async getBestSellingProducts() {
+    const bestSellingProducts = await this.prismaService.orderItem.groupBy({
+      by: ['watchId'],
+      _sum: {
+        quantity: true,
+      },
+      orderBy: {
+        _sum: {
+          quantity: 'desc',
+        },
+      },
+      take: 10,
+    });
+
+    const productIds = bestSellingProducts.map((item) => item.watchId);
+
+    const products = await this.prismaService.watch.findMany({
+      where: { id: { in: productIds } },
+      include: {
+        images: true,
+      },
+    });
+
+    return products.map((product) => ({
+      ...product,
+      totalSold: bestSellingProducts.find((item) => item.watchId === product.id)
+        ?._sum.quantity,
+    }));
+  }
 
   async getAllOrders(dto: GetOrdersDto) {
     const { page = 1, limit = 12, keyword, status, userId } = dto;
@@ -402,7 +507,7 @@ export class OrderService {
       PENDING: ['PROCESSING'],
       PROCESSING: ['SHIPPING'],
       SHIPPING: ['DELIVERED'],
-      DELIVERED: [],
+      DELIVERED: ['COMPLETED'],
     };
 
     const current = order.status;

@@ -13,6 +13,7 @@ import { StockEntryService } from './stock-entry.service';
 import {
   CreateStockEntryDto,
   GetAllStockEntriesDto,
+  GetStockStatisticsDto,
 } from './dto/stock-entry.dto';
 import { formatResponse } from 'src/common/helpers/response.helpers';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -23,6 +24,13 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth/jwt-auth.guard';
 @Controller('stock-entry')
 export class StockEntryController {
   constructor(private readonly stockEntryService: StockEntryService) {}
+
+  @Get('statistics')
+  @ApiOperation({ summary: 'Get stock entry statistics' })
+  async getStockStatistics(@Query() query: GetStockStatisticsDto) {
+    const data = await this.stockEntryService.getStockStatistics(query);
+    return formatResponse(data, 'Fetch stock statistics successfully');
+  }
 
   @ApiOperation({ summary: 'Get all stock entry' })
   @Get()
@@ -45,29 +53,6 @@ export class StockEntryController {
   async getStockEntryByID(@Param('id') id: string) {
     const data = await this.stockEntryService.getStockEntryById(id);
     return formatResponse(data, 'Fetch stock entry by ID successfully');
-  }
-
-  @Get('statistics')
-  @ApiOperation({ summary: 'Get stock entry statistics' })
-  @ApiQuery({
-    name: 'startDate',
-    required: false,
-    description: 'Start date (YYYY-MM-DD)',
-  })
-  @ApiQuery({
-    name: 'endDate',
-    required: false,
-    description: 'End date (YYYY-MM-DD)',
-  })
-  async getStockStatistics(
-    @Query('startDate') startDate?: string,
-    @Query('endDate') endDate?: string,
-  ) {
-    const data = await this.stockEntryService.getStockStatistics(
-      startDate,
-      endDate,
-    );
-    return formatResponse(data, 'Fetch stock statistics successfully');
   }
 
   @ApiOperation({ summary: 'Add Stock' })

@@ -19,6 +19,7 @@ import {
   CreateOrderDto,
   CreateOrderWalkinDto,
   GetOrdersDto,
+  GetOrdersStatisticsDto,
   GetOrdersUserDto,
   UpdateOrderStatusDto,
 } from './dto/order.dto';
@@ -26,12 +27,32 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/enums/role.enum';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles/roles.guard';
-import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth/optional-jwt-auth.guard';
 
 @ApiTags('Order')
 @Controller('order')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
+
+  @ApiOperation({ summary: 'Get order statistics by month' })
+  @Get('statistics')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  async getOrderStatisticsByMonth(@Query() query: GetOrdersStatisticsDto) {
+    const data = await this.orderService.statisticsOrders(query);
+    return formatResponse(
+      data,
+      `Fetched ${query.startDate ? `${query.startDate} to ${query.endDate}` : 'all'} orders statistics successfully`,
+    );
+  }
+
+  @ApiOperation({ summary: 'Get best selling watches' })
+  @Get('statistics/best-selling')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  async getBestSellingWatches() {
+    const data = await this.orderService.getBestSellingProducts();
+    return formatResponse(data, 'Fetched best selling watches successfully');
+  }
 
   @ApiOperation({ summary: 'Get all orders' })
   @Get()
