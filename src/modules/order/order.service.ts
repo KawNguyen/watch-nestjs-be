@@ -15,10 +15,14 @@ import {
   UpdateOrderStatusDto,
 } from './dto/order.dto';
 import { NotificationType } from '@prisma/client';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class OrderService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly mailService: MailService,
+  ) {}
 
   async getAllOrders(dto: GetOrdersDto) {
     const { page = 1, limit = 12, keyword, status, userId } = dto;
@@ -217,6 +221,11 @@ export class OrderService {
           },
         });
 
+        await this.mailService.sendOrderSuccess(
+          createdOrder.user?.email || '',
+          createdOrder.id,
+        );
+
         await tx.notification.create({
           data: {
             userId,
@@ -289,6 +298,11 @@ export class OrderService {
           },
         },
       });
+
+      await this.mailService.sendOrderSuccess(
+        dto.walkinInformation.email,
+        order.id,
+      );
 
       return order;
     } catch (error) {
@@ -384,9 +398,25 @@ export class OrderService {
       throw new NotFoundException('Order not found');
     }
 
+    const validTransitions = {
+      PENDING: ['PROCESSING'],
+      PROCESSING: ['SHIPPING'],
+      SHIPPING: ['DELIVERED'],
+      DELIVERED: [],
+    };
+
+    const current = order.status;
+    const next = updateDto.status;
+
+    if (!validTransitions[current]?.includes(next)) {
+      throw new BadRequestException(
+        `Cannot transition order from ${current} to ${next}`,
+      );
+    }
+
     try {
       const updated = await this.prismaService.$transaction(async (tx) => {
-        if (order.status === 'PENDING' && updateDto.status === 'PROCESSING') {
+        if (current === 'PENDING' && next === 'PROCESSING') {
           for (const item of order.orderItems) {
             await tx.watchInventory.update({
               where: { watchId: item.watchId },
@@ -402,7 +432,7 @@ export class OrderService {
         const updatedOrder = await tx.order.update({
           where: { id: orderId },
           data: {
-            status: updateDto.status,
+            status: next,
           },
           include: {
             orderItems: true,
@@ -410,13 +440,22 @@ export class OrderService {
           },
         });
 
+        const messages: Record<string, string> = {
+          PROCESSING: `Your order #${order.id} is now being processed.`,
+          SHIPPING: `Your order #${order.id} has been shipped!`,
+          DELIVERED: `Your order #${order.id} has been delivered. Thank you!`,
+        };
+
+        const message =
+          messages[next] ?? `Your order #${order.id} has been updated.`;
+
         if (order.userId) {
           await tx.notification.create({
             data: {
               userId: order.userId,
               orderId: order.id,
-              message: `Your order #${order.id} has been successfully created!`,
-              type: NotificationType.ORDER_CREATE,
+              message,
+              type: NotificationType.ORDER_UPDATE,
               isRead: false,
             },
           });

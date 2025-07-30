@@ -65,7 +65,7 @@ export class OrderController {
 
   @ApiOperation({ summary: 'Get order by ID' })
   @Get(':id')
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   async getOrderById(@Param('id') id: string) {
     const data = await this.orderService.getOrder(id);
     return formatResponse(data, 'Fetched order successfully');

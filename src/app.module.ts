@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { UserModule } from './modules/user/user.module';
-import { APP_GUARD } from '@nestjs/core';
 import { MovementModule } from './modules/movement/movement.module';
 import { MaterialModule } from './modules/material/material.module';
 import { FavoriteModule } from './modules/favorite/favorite.module';
@@ -15,8 +14,6 @@ import { PaymentsModule } from './modules/payments/payments.module';
 import { AddressModule } from './modules/address/address.module';
 import { AdvertisementModule } from './modules/advertisement/advertisement.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { JwtAuthGuard } from './modules/auth/guards/jwt-auth/jwt-auth.guard';
-import { RolesGuard } from './modules/auth/guards/roles/roles.guard';
 import { BandMaterialModule } from './modules/band-material/band-material.module';
 import { BrandModule } from './modules/brand/brand.module';
 import { CartModule } from './modules/cart/cart.module';
@@ -24,6 +21,7 @@ import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 import { WatchModule } from './modules/watch/watch.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { BlogModule } from './modules/blog/blog.module';
+import { MailModule } from './modules/mail/mail.module';
 
 @Module({
   imports: [
@@ -51,16 +49,7 @@ import { BlogModule } from './modules/blog/blog.module';
     PaymentsModule,
     NotificationModule,
     BlogModule,
-  ],
-  providers: [
-    // {
-    //   provide: APP_GUARD,
-    //   useClass: JwtAuthGuard,
-    // },
-    // {
-    //   provide: APP_GUARD,
-    //   useClass: RolesGuard,
-    // },
+    MailModule,
   ],
 })
 export class AppModule {}

@@ -9,23 +9,25 @@ import * as nodemailer from 'nodemailer';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/modules/user/user.service';
 import { CreateUserDto } from 'src/modules/user/dto/user.dto';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class AuthService {
-  private transporter: nodemailer.Transporter;
+  // private transporter: nodemailer.Transporter;
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
+    private readonly mailService: MailService, // Inject MailService
   ) {
-    this.transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-    });
+    // this.transporter = nodemailer.createTransport({
+    //   service: 'gmail',
+    //   auth: {
+    //     user: process.env.EMAIL_USER,
+    //     pass: process.env.EMAIL_PASSWORD,
+    //   },
+    // });
   }
 
   async loginAdmin(email: string, password: string) {
@@ -107,7 +109,7 @@ export class AuthService {
       },
     });
 
-    await this.sendOtpEmail(email, otp);
+    await this.mailService.sendOTP(email, otp);
 
     return { message: 'OTP sent to your email' };
   }
@@ -175,14 +177,14 @@ export class AuthService {
     };
   }
 
-  private async sendOtpEmail(email: string, otp: string) {
-    await this.transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: 'OTP Verification',
-      text: `Your OTP is: ${otp}, expires in 3 minutes`,
-    });
-  }
+  // private async sendOtpEmail(email: string, otp: string) {
+  //   await this.transporter.sendMail({
+  //     from: process.env.EMAIL_USER,
+  //     to: email,
+  //     subject: 'OTP Verification',
+  //     text: `Your OTP is: ${otp}, expires in 3 minutes`,
+  //   });
+  // }
 
   async loginGoogle(email: string) {
     const user = await this.prisma.user.findUnique({

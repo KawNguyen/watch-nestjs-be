@@ -11,9 +11,11 @@ import googleAuthConfig from './config/google-auth.config';
 import { UserService } from 'src/modules/user/user.service';
 import jwtConfig from './config/jwt.config';
 import { CloudinaryModule } from '../cloudinary/cloudinary.module';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
+    MailModule,
     PassportModule,
     CloudinaryModule,
     JwtModule.registerAsync(jwtConfig.asProvider()),

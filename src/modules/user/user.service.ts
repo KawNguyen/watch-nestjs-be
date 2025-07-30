@@ -96,11 +96,6 @@ export class UserService {
   }
 
   async findMe(id: string) {
-    if (!id) {
-      // throw new ForbiddenException('User ID is required');
-      return null; // Do not throw an exception, just return null
-    }
-
     const user = await this.prisma.user.findUnique({
       where: { id },
       select: {

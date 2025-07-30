@@ -16,6 +16,7 @@ import { Public } from '../auth/decorators/public.decorators';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth/jwt-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/enums/role.enum';
+import { formatResponse } from 'src/common/helpers/response.helpers';
 
 @ApiTags('Blogs')
 @Controller('blogs')
@@ -25,37 +26,42 @@ export class BlogController {
   @Post('create')
   @ApiOperation({ summary: 'Create a new blog' })
   @UseGuards(JwtAuthGuard)
-  create(@Body() dto: CreateBlogDto) {
-    return this.blogService.create(dto);
+  async create(@Body() dto: CreateBlogDto) {
+    const res = await this.blogService.create(dto);
+    return formatResponse(res, 'Blog created successfully');
   }
 
   @Get()
   @ApiOperation({ summary: 'Get all blogs (excluding soft-deleted ones)' })
   @Public()
-  findAll() {
-    return this.blogService.findAll();
+  async findAll() {
+    const res = await this.blogService.findAll();
+    return formatResponse(res, 'Fetched all blogs successfully');
   }
 
   @Get(':slug')
   @ApiOperation({ summary: 'Get blog details by ID' })
   @Public()
-  findOne(@Param('slug') slug: string) {
-    return this.blogService.findOne(slug);
+  async findOne(@Param('slug') slug: string) {
+    const res = await this.blogService.findOne(slug);
+    return formatResponse(res, 'Fetched blog successfully');
   }
 
-  @Patch(':id')
+  @Patch('update/:id')
   @ApiOperation({ summary: 'Update a blog by ID' })
   @Roles(Role.ADMIN)
   @UseGuards(JwtAuthGuard)
-  update(@Param('id') id: string, @Body() dto: UpdateBlogDto) {
-    return this.blogService.update(id, dto);
+  async update(@Param('id') id: string, @Body() dto: UpdateBlogDto) {
+    const res = await this.blogService.update(id, dto);
+    return formatResponse(res, 'Blog updated successfully');
   }
 
-  @Delete(':id')
+  @Delete('delete/:id')
   @ApiOperation({ summary: 'Soft delete a blog by ID' })
   @Roles(Role.ADMIN)
   @UseGuards(JwtAuthGuard)
-  remove(@Param('id') id: string) {
-    return this.blogService.remove(id);
+  async remove(@Param('id') id: string) {
+    const res = await this.blogService.remove(id);
+    return formatResponse(res, 'Blog deleted successfully');
   }
 }

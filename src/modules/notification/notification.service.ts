@@ -20,10 +20,11 @@ export class NotificationService {
     });
   }
 
-  async markAsRead(id: string): Promise<Notification> {
+  async markAsRead(id: string, userId: string): Promise<Notification> {
     return this.prisma.notification.update({
       where: {
         id,
+        userId,
       },
       data: {
         isRead: true,
@@ -31,15 +32,38 @@ export class NotificationService {
     });
   }
 
-  async getAllNotificationsByUserId(userId: string): Promise<Notification[]> {
-    return this.prisma.notification.findMany({
-      where: {
-        userId,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+  async getAllNotificationsByUserId(
+    userId: string,
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<{
+    data: Notification[];
+    total: number;
+    limit: number;
+    totalPages: number;
+    currentPage: number;
+  }> {
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.notification.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.notification.count({ where: { userId } }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data,
+      total,
+      limit,
+      totalPages,
+      currentPage: page,
+    };
   }
 
   async createOrderNotification(
