@@ -6,13 +6,18 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Request,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ReviewService } from './review.service';
 
 import { formatResponse } from 'src/common/helpers/response.helpers';
-import { CreateReviewDto, UpdateReviewDto } from './dto/review.dto';
+import {
+  CreateReviewDto,
+  ReviewQueryDto,
+  UpdateReviewDto,
+} from './dto/review.dto';
 import { Public } from '../auth/decorators/public.decorators';
 
 @ApiTags('Review')
@@ -20,11 +25,33 @@ import { Public } from '../auth/decorators/public.decorators';
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
 
+  @ApiOperation({ summary: 'Get all reviews' })
+  @Get()
+  async getAllReviews(@Query() query: ReviewQueryDto) {
+    const data = await this.reviewService.findAllReviews(
+      query.page,
+      query.limit,
+    );
+    return formatResponse(data.items, 'Fetch all reviews successfully', {
+      limit: data.limit,
+      page: data.page,
+      totalItems: data.totalItems,
+      totalPages: data.totalPages,
+    });
+  }
+
   @ApiOperation({ summary: 'Get all reviews by watch slug (for detail page)' })
   @Public()
   @Get(':slug')
-  async getAllReviewsBySlug(@Param('slug') slug: string) {
-    const data = await this.reviewService.findAllReviewBySlug(slug);
+  async getAllReviewsBySlug(
+    @Param('slug') slug: string,
+    @Query() query: ReviewQueryDto,
+  ) {
+    const data = await this.reviewService.findAllReviewBySlug(
+      slug,
+      query.page,
+      query.limit,
+    );
     return formatResponse(
       data.items,
       'Fetch all reviews by slug successfully',
