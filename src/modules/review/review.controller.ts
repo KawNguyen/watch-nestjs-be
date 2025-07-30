@@ -67,7 +67,7 @@ export class ReviewController {
   @ApiOperation({ summary: 'Create a new review for a watch' })
   @Post('create')
   async create(@Request() req, @Body() dto: CreateReviewDto) {
-    const data = await this.reviewService.createReview(req.user.sub, dto);
+    const data = await this.reviewService.createReview(req.user.id, dto);
     return formatResponse(data, 'Review created successfully');
   }
 
