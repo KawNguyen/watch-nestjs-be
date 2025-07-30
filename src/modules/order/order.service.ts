@@ -26,7 +26,7 @@ export class OrderService {
   ) {}
 
   async statisticsOrders(dto: GetOrdersStatisticsDto) {
-    const { year, month, date, startDate, endDate, status } = dto;
+    const { startDate, endDate, status } = dto;
 
     const filters: any = {};
 
@@ -40,29 +40,6 @@ export class OrderService {
       if (endDate) {
         filters.createdAt.lte = new Date(endDate + 'T23:59:59.999Z');
       }
-    }
-
-    else if (year && month && date) {
-      const y = parseInt(year, 10);
-      const m = parseInt(month, 10);
-      const d = parseInt(date, 10);
-
-      if (
-        isNaN(y) ||
-        isNaN(m) ||
-        isNaN(d) ||
-        m < 1 ||
-        m > 12 ||
-        d < 1 ||
-        d > 31
-      ) {
-        throw new BadRequestException('Invalid year, month or date');
-      }
-
-      filters.createdAt = {
-        gte: new Date(y, m - 1, d, 0, 0, 0, 0),
-        lt: new Date(y, m - 1, d + 1, 0, 0, 0, 0),
-      };
     }
 
     if (status) {
@@ -507,7 +484,7 @@ export class OrderService {
       PENDING: ['PROCESSING'],
       PROCESSING: ['SHIPPING'],
       SHIPPING: ['DELIVERED'],
-      DELIVERED: ['COMPLETED'],
+      DELIVERED: [],
     };
 
     const current = order.status;
@@ -703,6 +680,42 @@ export class OrderService {
     } catch (error) {
       console.error('Error cancelling order by admin:', error);
       throw new Error('Failed to cancel order by admin');
+    }
+  }
+
+  async completeOrder(orderId: string, requesterId: string) {
+    const order = await this.prismaService.order.findUnique({
+      where: { id: orderId, userId: requesterId },
+      select: {
+        id: true,
+        userId: true,
+        status: true,
+        orderItems: true,
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    if (order.status !== 'DELIVERED') {
+      throw new BadRequestException(
+        'Only orders with DELIVERED status can be completed',
+      );
+    }
+
+    try {
+      await this.prismaService.$transaction(async (tx) => {
+        await tx.order.update({
+          where: { id: orderId },
+          data: { status: 'COMPLETED' },
+        });
+      });
+
+      return { message: 'Order marked as completed successfully' };
+    } catch (error) {
+      console.error('Error completing order:', error);
+      throw new Error('Failed to complete order');
     }
   }
 }

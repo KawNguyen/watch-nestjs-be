@@ -86,7 +86,6 @@ export class OrderController {
 
   @ApiOperation({ summary: 'Get order by ID' })
   @Get(':id')
-  // @UseGuards(JwtAuthGuard)
   async getOrderById(@Param('id') id: string) {
     const data = await this.orderService.getOrder(id);
     return formatResponse(data, 'Fetched order successfully');
@@ -131,6 +130,15 @@ export class OrderController {
       updateOrderStatusDto,
     );
     return formatResponse(data, 'Update status order successfully');
+  }
+
+  @ApiOperation({ summary: 'Update Status Order Complete (USER)' })
+  @Patch('complete/:orderId')
+  @UseGuards(JwtAuthGuard)
+  async completeOrder(@Param('orderId') orderId: string, @Req() req: Request) {
+    const requesterId = (req as any).user.id;
+    const data = await this.orderService.completeOrder(orderId, requesterId);
+    return formatResponse(data, 'Order completed successfully');
   }
 
   @ApiOperation({ summary: 'Cancel Order' })

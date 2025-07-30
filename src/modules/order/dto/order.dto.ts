@@ -14,21 +14,6 @@ import {
 } from 'class-validator';
 
 export class GetOrdersStatisticsDto {
-  @ApiProperty({ description: 'Year for statistics', required: false })
-  @IsOptional()
-  @IsString()
-  year?: string;
-
-  @ApiProperty({ description: 'Month for statistics', required: false })
-  @IsOptional()
-  @IsString()
-  month?: string;
-
-  @ApiProperty({ description: 'Date for statistics', required: false })
-  @IsOptional()
-  @IsString()
-  date?: string;
-
   @ApiProperty({
     description: 'Start date for statistics (YYYY-MM-DD)',
     required: false,
