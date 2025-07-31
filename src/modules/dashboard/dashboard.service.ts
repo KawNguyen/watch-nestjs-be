@@ -31,7 +31,7 @@ export class DashboardService {
   private async getOrderInsight(filters: any) {
     return await this.prismaService.order.aggregate({
       _count: {
-        _all: true
+        _all: true,
       },
       _sum: {
         totalPrice: true,
@@ -325,7 +325,7 @@ export class DashboardService {
 
     const [
       totalOrderByStatus,
-      totalPriceAllOrders,
+      totalOrderInsights,
       totalLowStockProducts,
       saleInsights,
     ] = await Promise.all([
@@ -337,7 +337,8 @@ export class DashboardService {
 
     return {
       totalOrderByStatus,
-      totalPrice: totalPriceAllOrders._sum.totalPrice || 0,
+      totalOrders: totalOrderInsights._count._all || 0,
+      totalPrice: totalOrderInsights._sum.totalPrice || 0,
       totalLowStockProducts,
       ...saleInsights,
     };
