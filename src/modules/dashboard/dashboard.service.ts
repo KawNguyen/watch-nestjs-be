@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { QueryDashboardStatisticDto } from './dto/query-dashboard-statistic.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { OrderStatus } from '@prisma/client';
+import { OrderStatus, Prisma } from '@prisma/client';
 
 @Injectable()
 export class DashboardService {
@@ -318,8 +318,100 @@ export class DashboardService {
     };
   }
 
+  // private async getDailyRevenue(startDate: string, endDate: string) {
+  //   // Get all completed orders within the date range
+  //   const orders = await this.prismaService.order.findMany({
+  //     where: {
+  //       status: OrderStatus.COMPLETED,
+  //       createdAt: {
+  //         gte: new Date(startDate),
+  //         lte: new Date(endDate + 'T23:59:59.999Z'), // Include end of day
+  //       },
+  //     },
+  //     select: {
+  //       totalPrice: true,
+  //       createdAt: true,
+  //     },
+  //   });
+
+  //   // Generate date series
+  //   const start = new Date(startDate);
+  //   const end = new Date(endDate);
+  //   const dateRange: string[] = [];
+
+  //   for (
+  //     let date = new Date(start);
+  //     date <= end;
+  //     date.setDate(date.getDate() + 1)
+  //   ) {
+  //     dateRange.push(date.toISOString().split('T')[0]);
+  //   }
+
+  //   // Group orders by date and calculate metrics
+  //   const ordersByDate = new Map<
+  //     string,
+  //     { revenue: number; orderCount: number }
+  //   >();
+
+  //   orders.forEach((order) => {
+  //     const dateKey = order.createdAt.toISOString().split('T')[0];
+  //     const existing = ordersByDate.get(dateKey) || {
+  //       revenue: 0,
+  //       orderCount: 0,
+  //     };
+
+  //     ordersByDate.set(dateKey, {
+  //       revenue: existing.revenue + order.totalPrice,
+  //       orderCount: existing.orderCount + 1,
+  //     });
+  //   });
+
+  //   // Format results to match desired structure
+  //   return dateRange.map((date) => ({
+  //     date,
+  //     revenue: Math.round(ordersByDate.get(date)?.revenue || 0),
+  //     orderCount: ordersByDate.get(date)?.orderCount || 0,
+  //   }));
+  // }
+
+  private async getDailyRevenue(startDate: string, endDate: string) {
+    // This single query replaces all the logic from your original function.
+    const query = Prisma.sql`
+    SELECT
+      to_char(day_series.day, 'YYYY-MM-DD') AS date,
+      COALESCE(SUM(o."totalPrice"), 0)::float AS revenue,
+      COUNT(o.id)::int AS "orderCount"
+    FROM
+      -- 1. Generate a series of all dates in the range directly in the DB
+      (SELECT generate_series(
+          ${new Date(startDate)}::date,
+          ${new Date(endDate)}::date,
+          '1 day'::interval
+        )::date AS day) AS day_series
+    -- 2. Join with orders that fall on each specific day
+    LEFT JOIN "Order" AS o ON date_trunc('day', o."createdAt") = day_series.day
+    AND o.status = 'COMPLETED'
+    -- 3. Group and aggregate within the DB
+    GROUP BY
+      day_series.day
+    ORDER BY
+      day_series.day ASC;
+  `;
+
+    // 4. Execute the single, powerful query
+    return await this.prismaService.$queryRaw<
+      [{ date: string; revenue: number; orderCount: number }]
+    >(query);
+  }
+
   async getStatistics(query: QueryDashboardStatisticDto) {
     const { startDate, endDate } = query;
+
+    const today = new Date();
+    const endDateForLast7Days = today.toISOString().split('T')[0];
+    const startDateForLast7Days = new Date(today.setDate(today.getDate() - 6))
+      .toISOString()
+      .split('T')[0];
 
     const filters = this.getDateRangeFilter(startDate, endDate);
 
@@ -328,11 +420,13 @@ export class DashboardService {
       totalOrderInsights,
       totalLowStockProducts,
       saleInsights,
+      dailyRevenueLast7Days,
     ] = await Promise.all([
       this.getOrderStatusCounts(filters),
       this.getOrderInsight(filters),
       this.getLowStockProducts(),
       this.getSaleInsigts(),
+      this.getDailyRevenue(startDateForLast7Days, endDateForLast7Days),
     ]);
 
     return {
@@ -341,6 +435,7 @@ export class DashboardService {
       totalPrice: totalOrderInsights._sum.totalPrice || 0,
       totalLowStockProducts,
       ...saleInsights,
+      dailyRevenueLast7Days,
     };
   }
 }
