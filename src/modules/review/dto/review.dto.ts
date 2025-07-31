@@ -2,14 +2,17 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsInt, IsOptional, IsString, IsUUID, Max, Min } from 'class-validator';
 
 export class CreateReviewDto {
+  @ApiProperty({ description: 'ID of the watch being reviewed' })
   @IsUUID()
   watchId: string;
 
+  @ApiProperty({ description: 'Rating for the review' })
   @IsInt()
   @Min(1)
   @Max(5)
   rating: number;
 
+  @ApiProperty({ description: 'Comment for the review', required: false })
   @IsOptional()
   @IsString()
   comment?: string;
