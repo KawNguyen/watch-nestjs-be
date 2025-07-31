@@ -378,7 +378,7 @@ export class DashboardService {
     // This single query replaces all the logic from your original function.
     const query = Prisma.sql`
     SELECT
-      to_char(day_series.day, 'YYYY-MM-DD') AS date,
+      to_char(day_series.day, 'DD-MM') AS date,
       COALESCE(SUM(o."totalPrice"), 0)::float AS revenue,
       COUNT(o.id)::int AS "orderCount"
     FROM
