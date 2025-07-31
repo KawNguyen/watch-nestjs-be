@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
@@ -144,8 +145,12 @@ export class OrderService {
               lastName: true,
             },
           },
-          orderItems: true,
           coupon: true,
+          _count: {
+            select: {
+              orderItems: true,
+            },
+          },
         },
         orderBy: { createdAt: 'desc' },
       }),
@@ -227,6 +232,34 @@ export class OrderService {
       totalItems,
       totalPages: Math.ceil(totalItems / limit),
     };
+  }
+
+  async trackingOrder(trackingNumber: string, phoneLast4Digits: string) {
+    const order = await this.prismaService.order.findUnique({
+      where: { id: trackingNumber },
+      include: {
+        orderItems: true,
+        user: true,
+        coupon: true,
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Không tìm thấy đơn hàng');
+    }
+
+    const userPhone = order.user?.phone;
+    if (!userPhone || userPhone.length < 4) {
+      throw new UnauthorizedException('Số điện thoại không hợp lệ');
+    }
+
+    const actualLast4 = userPhone.slice(-4);
+
+    if (phoneLast4Digits !== actualLast4) {
+      throw new UnauthorizedException('Xác minh số điện thoại thất bại');
+    }
+
+    return order;
   }
 
   async createOrderFromCart(userId: string, dto: CreateOrderDto) {

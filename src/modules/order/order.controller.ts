@@ -21,6 +21,7 @@ import {
   GetOrdersDto,
   GetOrdersStatisticsDto,
   GetOrdersUserDto,
+  TrackingOrderDto,
   UpdateOrderStatusDto,
 } from './dto/order.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -56,8 +57,8 @@ export class OrderController {
 
   @ApiOperation({ summary: 'Get all orders' })
   @Get()
-  @Roles(Role.ADMIN)
-  @UseGuards(JwtAuthGuard)
+  // @Roles(Role.ADMIN)
+  // @UseGuards(JwtAuthGuard) 
   async getAllOrders(@Query() query: GetOrdersDto) {
     const data = await this.orderService.getAllOrders(query);
     return formatResponse(data.items, 'Fetched orders successfully', {
@@ -83,6 +84,13 @@ export class OrderController {
       totalPages: data.totalPages,
     });
   }
+
+  @ApiOperation({ summary:'Track order by tracking number' })
+  @Get('track/:trackingNumber')
+  async trackOrder(@Param('trackingNumber') trackingNumber: string, @Body() dto: TrackingOrderDto) {
+    const data = await this.orderService.trackingOrder(trackingNumber, dto.phoneLast4Digits);
+    return formatResponse(data, 'Fetched order successfully');
+  } 
 
   @ApiOperation({ summary: 'Get order by ID' })
   @Get(':id')
