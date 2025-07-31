@@ -168,6 +168,43 @@ export class OrderService {
     };
   }
 
+  async getOrdersForTracking(query: string) {
+    const whereClause: any = {};
+
+    if (query) {
+      whereClause.user = {
+        OR: [
+          { email: { contains: query, mode: 'insensitive' } },
+          { firstName: { contains: query, mode: 'insensitive' } },
+          { lastName: { contains: query, mode: 'insensitive' } },
+        ],
+      };
+    }
+
+    const orders = await this.prismaService.order.findMany({
+      where: whereClause,
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        orderItems: true,
+      },
+    });
+
+    if (orders.length === 0) {
+      throw new NotFoundException(
+        'No orders found with the provided tracking number',
+      );
+    }
+
+    return orders;
+  }
+
   async getOrder(id: string) {
     const order = await this.prismaService.order.findUnique({
       where: { id },
