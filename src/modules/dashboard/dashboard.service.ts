@@ -382,51 +382,51 @@ export class DashboardService {
       COALESCE(SUM(o."totalPrice"), 0)::float AS revenue,
       COUNT(o.id)::int AS "orderCount"
     FROM
-      -- 1. Generate a series of all dates in the range directly in the DB
       (SELECT generate_series(
           ${new Date(startDate)}::date,
           ${new Date(endDate)}::date,
           '1 day'::interval
         )::date AS day) AS day_series
-    -- 2. Join with orders that fall on each specific day
     LEFT JOIN "Order" AS o ON date_trunc('day', o."createdAt") = day_series.day
     AND o.status = 'COMPLETED'
-    -- 3. Group and aggregate within the DB
     GROUP BY
       day_series.day
     ORDER BY
       day_series.day ASC;
   `;
 
-    // 4. Execute the single, powerful query
     return await this.prismaService.$queryRaw<
       [{ date: string; revenue: number; orderCount: number }]
     >(query);
   }
 
   async getStatistics(query: QueryDashboardStatisticDto) {
-    const { startDate, endDate } = query;
+    let { startDate, endDate } = query;
 
-    const today = new Date();
-    const endDateForLast7Days = today.toISOString().split('T')[0];
-    const startDateForLast7Days = new Date(today.setDate(today.getDate() - 6))
-      .toISOString()
-      .split('T')[0];
+    if (!startDate || !endDate) {
+      const today = new Date();
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(today.getDate() - 6); // Lấy 7 ngày tính cả hôm nay
 
-    const filters = this.getDateRangeFilter(startDate, endDate);
+      // Format lại thành chuỗi 'YYYY-MM-DD'
+      endDate = today.toISOString().split('T')[0];
+      startDate = sevenDaysAgo.toISOString().split('T')[0];
+    }
+
+    const filters = this.getDateRangeFilter(query.startDate, query.endDate);
 
     const [
       totalOrderByStatus,
       totalOrderInsights,
       totalLowStockProducts,
       saleInsights,
-      dailyRevenueLast7Days,
+      dailyRevenue,
     ] = await Promise.all([
       this.getOrderStatusCounts(filters),
       this.getOrderInsight(filters),
       this.getLowStockProducts(),
       this.getSaleInsigts(),
-      this.getDailyRevenue(startDateForLast7Days, endDateForLast7Days),
+      this.getDailyRevenue(startDate, endDate),
     ]);
 
     return {
@@ -435,7 +435,7 @@ export class DashboardService {
       totalPrice: totalOrderInsights._sum.totalPrice || 0,
       totalLowStockProducts,
       ...saleInsights,
-      dailyRevenueLast7Days,
+      dailyRevenue,
     };
   }
 }
