@@ -22,6 +22,7 @@ import { WatchModule } from './modules/watch/watch.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { BlogModule } from './modules/blog/blog.module';
 import { MailModule } from './modules/mail/mail.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { MailModule } from './modules/mail/mail.module';
     NotificationModule,
     BlogModule,
     MailModule,
+    DashboardModule,
   ],
 })
 export class AppModule {}
