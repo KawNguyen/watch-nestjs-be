@@ -61,6 +61,7 @@ export class ReviewService {
               firstName: true,
               lastName: true,
               email: true,
+              avatar: true,
             },
           },
         },
@@ -113,7 +114,7 @@ export class ReviewService {
     });
   }
 
-  async deleteReview(userId: string, reviewId: string) {
+  async deleteReview(userId: string, reviewId: string, isAdmin: string) {
     const review = await this.prismaService.review.findUnique({
       where: { id: reviewId },
     });
@@ -122,7 +123,7 @@ export class ReviewService {
       throw new NotFoundException('Review not found.');
     }
 
-    if (review.userId !== userId) {
+    if (review.userId !== userId && !isAdmin) {
       throw new ForbiddenException(
         'You are not authorized to delete this review.',
       );
