@@ -274,7 +274,7 @@ model Order {
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
   deletedAt          DateTime?
-  Notification       Notification[]
+  notification       Notification[]
 }
 
 model OrderItem {

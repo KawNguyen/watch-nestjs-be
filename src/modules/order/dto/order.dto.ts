@@ -36,6 +36,15 @@ export class GetOrdersStatisticsDto {
   status?: OrderStatus;
 }
 
+export class TrackingOrderDto{
+  @ApiProperty({
+    description: 'Last 4 digits of the phone number used for the order',
+    example: '1234',
+  })
+  @IsString()
+  phoneLast4Digits: string;
+}
+
 export class CartItemDto {
   @ApiProperty({
     description: 'ID of the cart item (optional)',

@@ -21,12 +21,14 @@ import {
   GetOrdersDto,
   GetOrdersStatisticsDto,
   GetOrdersUserDto,
+  TrackingOrderDto,
   UpdateOrderStatusDto,
 } from './dto/order.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/enums/role.enum';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles/roles.guard';
+import { Public } from '../auth/decorators/public.decorators';
 
 @ApiTags('Order')
 @Controller('order')
@@ -68,6 +70,14 @@ export class OrderController {
     });
   }
 
+  @ApiOperation({ summary: 'Get orders for tracking' })
+  @Get('tracking')
+  @Public()
+  async getOrdersForTracking(@Query('keyword') keyword: string) {
+    const data = await this.orderService.getOrdersForTracking(keyword);
+    return formatResponse(data, 'Fetched orders for tracking successfully');
+  }
+
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiOperation({ summary: 'Get orders of account' })
@@ -82,6 +92,20 @@ export class OrderController {
       totalItems: data.totalItems,
       totalPages: data.totalPages,
     });
+  }
+
+  @ApiOperation({ summary: 'Track order by tracking number' })
+  @Get('track/:trackingNumber')
+  @Public()
+  async trackOrder(
+    @Param('trackingNumber') trackingNumber: string,
+    @Query() dto: TrackingOrderDto,
+  ) {
+    const data = await this.orderService.trackingOrder(
+      trackingNumber,
+      dto.phoneLast4Digits,
+    );
+    return formatResponse(data, 'Fetched order successfully');
   }
 
   @ApiOperation({ summary: 'Get order by ID' })
