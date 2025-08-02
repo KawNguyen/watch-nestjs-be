@@ -330,6 +330,26 @@ export class OrderService {
       throw new BadRequestException('Some cart items not found in your cart');
     }
 
+    const watchIds = selectedCartItems.map((item) => item.watchId);
+    const inventories = await this.prismaService.watchInventory.findMany({
+      where: { watchId: { in: watchIds } },
+      select: { watchId: true, quantity: true },
+    });
+
+    const inventoryMap = new Map(
+      inventories.map((inv) => [inv.watchId, inv.quantity]),
+    );
+
+    for (const cartItem of selectedCartItems) {
+      const availableQuantity = inventoryMap.get(cartItem.watchId) || 0;
+
+      if (cartItem.quantity > availableQuantity) {
+        throw new BadRequestException(
+          `Insufficient stock for ${cartItem.watch.name}. Available: ${availableQuantity}, Requested: ${cartItem.quantity}`,
+        );
+      }
+    }
+
     const orderItemsData = selectedCartItems.map((item) => ({
       watchId: item.watchId,
       quantity: item.quantity,
@@ -357,6 +377,15 @@ export class OrderService {
 
     try {
       const order = await this.prismaService.$transaction(async (tx) => {
+        for (const cartItem of selectedCartItems) {
+          await tx.watchInventory.update({
+            where: { watchId: cartItem.watchId },
+            data: {
+              quantity: { decrement: cartItem.quantity },
+            },
+          });
+        }
+
         const createdOrder = await tx.order.create({
           data: orderData,
           include: {
@@ -412,6 +441,37 @@ export class OrderService {
       );
     }
 
+    const watchIds = dto.cartItems
+      .map((item) => item.watchId)
+      .filter((id): id is string => typeof id === 'string');
+
+    const inventories = await this.prismaService.watchInventory.findMany({
+      where: { watchId: { in: watchIds } },
+      select: { watchId: true, quantity: true },
+    });
+
+    const inventoryMap = new Map(
+      inventories.map((inv) => [inv.watchId, inv.quantity]),
+    );
+
+    for (const item of dto.cartItems) {
+      if (!item.watchId) {
+        throw new BadRequestException('Invalid watchId in cart item');
+      }
+      const availableQuantity = inventoryMap.get(item.watchId) || 0;
+
+      if (item.quantity > availableQuantity) {
+        const watch = await this.prismaService.watch.findUnique({
+          where: { id: item.watchId },
+          select: { name: true },
+        });
+
+        throw new BadRequestException(
+          `Insufficient stock for ${watch?.name || 'product'}. Available: ${availableQuantity}, Requested: ${item.quantity}`,
+        );
+      }
+    }
+
     const originalPrice = dto.originalPrice;
 
     const orderItemsData = dto.cartItems.map((item) => ({
@@ -440,21 +500,34 @@ export class OrderService {
     };
 
     try {
-      const order = await this.prismaService.order.create({
-        data: orderData,
-        include: {
-          orderItems: {
-            include: {
-              watch: true,
+      const order = await this.prismaService.$transaction(async (tx) => {
+        for (const item of dto.cartItems) {
+          await tx.watchInventory.update({
+            where: { watchId: item.watchId },
+            data: {
+              quantity: { decrement: item.quantity },
+            },
+          });
+        }
+
+        const createdOrder = await tx.order.create({
+          data: orderData,
+          include: {
+            orderItems: {
+              include: {
+                watch: true,
+              },
             },
           },
-        },
-      });
+        });
 
-      await this.mailService.sendOrderSuccess(
-        dto.walkinInformation.email,
-        order.id,
-      );
+        await this.mailService.sendOrderSuccess(
+          dto.walkinInformation?.email ?? '',
+          createdOrder.id,
+        );
+
+        return createdOrder;
+      });
 
       return order;
     } catch (error) {
