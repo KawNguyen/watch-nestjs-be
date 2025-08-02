@@ -85,6 +85,21 @@ export class ReviewService {
   }
 
   async createReview(requesterId: string, createReviewDto: CreateReviewDto) {
+    if (!requesterId) {
+      throw new ForbiddenException('You must be logged in to create a review.');
+    }
+
+    const existingReview = await this.prismaService.review.findFirst({
+      where: {
+        userId: requesterId,
+        watchId: createReviewDto.watchId,
+      },
+    });
+
+    if (existingReview) {
+      throw new ForbiddenException('You have already reviewed this watch.');
+    }
+
     return await this.prismaService.review.create({
       data: {
         ...createReviewDto,
@@ -123,7 +138,7 @@ export class ReviewService {
       throw new NotFoundException('Review not found.');
     }
 
-    if (review.userId !== userId && !isAdmin) {
+    if (review.userId !== userId && isAdmin !== "ADMIN") {
       throw new ForbiddenException(
         'You are not authorized to delete this review.',
       );
