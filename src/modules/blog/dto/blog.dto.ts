@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsString,
   IsNotEmpty,
@@ -6,6 +7,17 @@ import {
   IsBoolean,
   IsUUID,
 } from 'class-validator';
+
+export class GetAllBlogsDto {
+  // @ApiPropertyOptional({
+  //   description: 'Filter by public blogs',
+  //   required: false,
+  // })
+  @IsOptional()
+  @IsBoolean()
+  @Type(() => Boolean)
+  isPublished?: boolean | string = true;
+}
 
 export class CreateBlogDto {
   @ApiProperty({ description: 'Blog title' })

@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateBlogDto, UpdateBlogDto } from './dto/blog.dto';
+import { CreateBlogDto, GetAllBlogsDto, UpdateBlogDto } from './dto/blog.dto';
 import { generateSlug } from 'src/utils/slug.utils';
 
 @Injectable()
@@ -31,9 +31,23 @@ export class BlogService {
     });
   }
 
-  async findAll() {
+  async findAll(filters: { isPublished?: string; deletedAt?: string }) {
+    const where: any = {};
+
+    if (filters.isPublished !== undefined) {
+      where.isPublished = filters.isPublished === 'true';
+    }
+
+    if (filters.deletedAt !== undefined) {
+      if (filters.deletedAt === 'null') {
+        where.deletedAt = null;
+      } else {
+        where.deletedAt = { not: null };
+      }
+    }
+
     return this.prismaService.blog.findMany({
-      where: { deletedAt: null },
+      where,
       orderBy: { createdAt: 'desc' },
     });
   }

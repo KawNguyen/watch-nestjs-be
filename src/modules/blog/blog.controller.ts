@@ -8,10 +8,11 @@ import {
   Patch,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { BlogService } from './blog.service';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { CreateBlogDto, UpdateBlogDto } from './dto/blog.dto';
+import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import { CreateBlogDto, GetAllBlogsDto, UpdateBlogDto } from './dto/blog.dto';
 import { Public } from '../auth/decorators/public.decorators';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth/jwt-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -23,20 +24,17 @@ import { formatResponse } from 'src/common/helpers/response.helpers';
 export class BlogController {
   constructor(private readonly blogService: BlogService) {}
 
-  @Post('create')
-  @ApiOperation({ summary: 'Create a new blog' })
-  @UseGuards(JwtAuthGuard)
-  async create(@Body() dto: CreateBlogDto) {
-    const res = await this.blogService.create(dto);
-    return formatResponse(res, 'Blog created successfully');
-  }
-
   @Get()
-  @ApiOperation({ summary: 'Get all blogs (excluding soft-deleted ones)' })
+  @ApiOperation({ summary: 'Get all blogs (with optional filters)' })
+  @ApiQuery({ name: 'isPublished', required: false, type: Boolean })
+  @ApiQuery({ name: 'deletedAt', required: false, type: String })
   @Public()
-  async findAll() {
-    const res = await this.blogService.findAll();
-    return formatResponse(res, 'Fetched all blogs successfully');
+  async findAll(
+    @Query('isPublished') isPublished?: string,
+    @Query('deletedAt') deletedAt?: string,
+  ) {
+    const blogs = await this.blogService.findAll({ isPublished, deletedAt });
+    return formatResponse(blogs, 'Fetched blogs successfully');
   }
 
   @Get(':slug')
@@ -45,6 +43,14 @@ export class BlogController {
   async findOne(@Param('slug') slug: string) {
     const res = await this.blogService.findOne(slug);
     return formatResponse(res, 'Fetched blog successfully');
+  }
+
+  @Post('create')
+  @ApiOperation({ summary: 'Create a new blog' })
+  @UseGuards(JwtAuthGuard)
+  async create(@Body() dto: CreateBlogDto) {
+    const res = await this.blogService.create(dto);
+    return formatResponse(res, 'Blog created successfully');
   }
 
   @Patch('update/:id')

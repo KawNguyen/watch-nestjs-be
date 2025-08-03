@@ -7,7 +7,7 @@ import {
   UpdateWatchDto,
   UpdateWatchStatusDto,
 } from './dto/watch.dto';
-import { Prisma, WatchStatus } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class WatchService {

@@ -345,7 +345,7 @@ export class OrderService {
 
       if (cartItem.quantity > availableQuantity) {
         throw new BadRequestException(
-          `Insufficient stock for ${cartItem.watch.name}. Available: ${availableQuantity}, Requested: ${cartItem.quantity}`,
+          `Sản phẩm hiện tại không đủ số lượng. Xin quý khách liên hệ cửa hàng`,
         );
       }
     }
