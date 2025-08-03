@@ -541,16 +541,28 @@ export class OrderService {
     let discountAmount = 0;
 
     if (couponId) {
-      const couponExists = await this.prismaService.coupon.findUnique({
+      const coupon = await this.prismaService.coupon.findUnique({
         where: { id: couponId },
       });
 
-      if (!couponExists) {
+      if (!coupon) {
         throw new BadRequestException('Invalid coupon ID');
       }
 
-      discountAmount = originalPrice * (couponExists.discountValue / 100);
+      if (coupon.discountType === 'PERCENT') {
+        discountAmount = originalPrice * (coupon.discountValue / 100);
+      } else if (coupon.discountType === 'FIXED') {
+        discountAmount = coupon.discountValue;
+      } else {
+        throw new BadRequestException('Invalid coupon type');
+      }
+
       totalPrice = originalPrice - discountAmount;
+
+      // Đảm bảo không âm
+      if (totalPrice < 0) {
+        totalPrice = 0;
+      }
     }
 
     return { totalPrice, discountAmount };
