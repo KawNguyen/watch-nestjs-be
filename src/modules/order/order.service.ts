@@ -18,12 +18,14 @@ import {
 } from './dto/order.dto';
 import { NotificationType, OrderStatus } from '@prisma/client';
 import { MailService } from '../mail/mail.service';
+import { CouponService } from '../coupon/coupon.service';
 
 @Injectable()
 export class OrderService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly mailService: MailService,
+    private readonly couponService: CouponService,
   ) {}
 
   async statisticsOrders(dto: GetOrdersStatisticsDto) {
@@ -356,8 +358,9 @@ export class OrderService {
       price: item.watch.price,
     }));
 
-    const { totalPrice, discountAmount } = await this.calculateDiscount(
+    const { totalPrice } = await this.calculateDiscount(
       originalPrice,
+      userId,
       dto.couponId,
     );
 
@@ -480,10 +483,7 @@ export class OrderService {
       price: item.price,
     }));
 
-    const { totalPrice } = await this.calculateDiscount(
-      originalPrice,
-      dto.couponId,
-    );
+    const totalPrice = originalPrice;
 
     const orderData: any = {
       userId: null,
@@ -536,7 +536,11 @@ export class OrderService {
     }
   }
 
-  private async calculateDiscount(originalPrice: number, couponId?: string) {
+  private async calculateDiscount(
+    originalPrice: number,
+    userId: string,
+    couponId?: string,
+  ) {
     let totalPrice = originalPrice;
     let discountAmount = 0;
 
@@ -557,9 +561,10 @@ export class OrderService {
         throw new BadRequestException('Invalid coupon type');
       }
 
+      await this.couponService.markCouponAsUsed(userId, coupon.id);
+
       totalPrice = originalPrice - discountAmount;
 
-      // Đảm bảo không âm
       if (totalPrice < 0) {
         totalPrice = 0;
       }

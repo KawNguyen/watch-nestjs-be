@@ -4,8 +4,10 @@ import {
   IsBoolean,
   IsDateString,
   IsEnum,
+  IsNotEmpty,
   IsNumber,
   IsOptional,
+  IsPositive,
   IsString,
   MaxLength,
   Min,
@@ -121,4 +123,20 @@ export class UpdateCouponDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+}
+
+export class ValidateCouponDto {
+  @IsString()
+  @IsNotEmpty()
+  couponCode: string;
+
+  @IsNumber()
+  @IsPositive()
+  orderValue: number;
+}
+
+export class CheckCouponUsageDto {
+  @IsString()
+  @IsNotEmpty()
+  couponId: string;
 }
