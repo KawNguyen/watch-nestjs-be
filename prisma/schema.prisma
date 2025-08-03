@@ -31,30 +31,31 @@ model PendingUser {
 }
 
 model User {
-  id           String         @id @default(uuid())
-  email        String         @unique
-  password     String
-  role         UserRole       @default(CUSTOMER)
-  phone        String?
-  firstName    String         @default("")
-  lastName     String         @default("")
-  avatar       Json?
-  otp          String?
-  otpExpiry    DateTime?
-  accessToken  String?
-  cart         Cart?
-  couponUsages CouponUsage[]
-  favorites    Favorite[]
-  orders       Order[]
-  reviews      Review[]
-  sessions     Session[]
-  addresses    Address[]
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  deletedAt    DateTime?
-  StockEntry   StockEntry[]
-  Notification Notification[]
-  Blog         Blog[]
+  id            String          @id @default(uuid())
+  email         String          @unique
+  password      String
+  role          UserRole        @default(CUSTOMER)
+  phone         String?
+  firstName     String          @default("")
+  lastName      String          @default("")
+  avatar        Json?
+  otp           String?
+  otpExpiry     DateTime?
+  accessToken   String?
+  cart          Cart?
+  couponUsages  CouponUsage[]
+  favorites     Favorite[]
+  orders        Order[]
+  reviews       Review[]
+  sessions      Session[]
+  addresses     Address[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  deletedAt     DateTime?
+  StockEntry    StockEntry[]
+  Notification  Notification[]
+  Blog          Blog[]
+  ReturnRequest ReturnRequest[]
 }
 
 model Address {
@@ -257,37 +258,39 @@ model StockItem {
 }
 
 model Order {
-  id                 String         @id @default(uuid())
+  id                 String          @id @default(uuid())
   totalPrice         Float
-  status             OrderStatus    @default(PENDING)
+  status             OrderStatus     @default(PENDING)
   originalPrice      Float
-  paymentMethod      PaymentMethod  @default(COD)
+  paymentMethod      PaymentMethod   @default(COD)
   shippingNotes      String?
   cancellationReason String?
   orderItems         OrderItem[]
   userId             String?
-  user               User?          @relation(fields: [userId], references: [id])
+  user               User?           @relation(fields: [userId], references: [id])
   deliveryAddress    Json?
   couponId           String?
   walkinInformation  Json?
-  coupon             Coupon?        @relation(fields: [couponId], references: [id])
-  createdAt          DateTime       @default(now())
-  updatedAt          DateTime       @updatedAt
+  coupon             Coupon?         @relation(fields: [couponId], references: [id])
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
   deletedAt          DateTime?
   notification       Notification[]
+  ReturnRequest      ReturnRequest[]
 }
 
 model OrderItem {
-  id        String    @id @default(uuid())
-  quantity  Int       @default(1)
-  price     Float
-  orderId   String
-  order     Order     @relation(fields: [orderId], references: [id])
-  watchId   String
-  watch     Watch     @relation(fields: [watchId], references: [id])
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  id            String          @id @default(uuid())
+  quantity      Int             @default(1)
+  price         Float
+  orderId       String
+  order         Order           @relation(fields: [orderId], references: [id])
+  watchId       String
+  watch         Watch           @relation(fields: [watchId], references: [id])
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  deletedAt     DateTime?
+  ReturnRequest ReturnRequest[]
 }
 
 model Review {
@@ -378,6 +381,33 @@ model Blog {
   deletedAt   DateTime?
 
   @@index([userId])
+}
+
+model ReturnRequest {
+  id          String              @id @default(uuid())
+  userId      String
+  orderId     String
+  orderItemId String
+  reason      String
+  status      ReturnRequestStatus @default(PENDING)
+  description String?
+  images      Json?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  processedAt DateTime?
+  deletedAt   DateTime?
+
+  user      User      @relation(fields: [userId], references: [id])
+  order     Order     @relation(fields: [orderId], references: [id])
+  orderItem OrderItem @relation(fields: [orderItemId], references: [id])
+}
+
+enum ReturnRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+  CANCELED
 }
 
 enum NotificationType {

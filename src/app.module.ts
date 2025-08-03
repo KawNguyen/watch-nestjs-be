@@ -23,6 +23,7 @@ import { NotificationModule } from './modules/notification/notification.module';
 import { BlogModule } from './modules/blog/blog.module';
 import { MailModule } from './modules/mail/mail.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { ReturnRequestModule } from './modules/return-request/return-request.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     BlogModule,
     MailModule,
     DashboardModule,
+    ReturnRequestModule,
   ],
 })
 export class AppModule {}
