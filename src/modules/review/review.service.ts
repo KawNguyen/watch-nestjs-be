@@ -21,6 +21,7 @@ export class ReviewService {
               firstName: true,
               lastName: true,
               email: true,
+              avatar: true,
             },
           },
         },
@@ -138,7 +139,7 @@ export class ReviewService {
       throw new NotFoundException('Review not found.');
     }
 
-    if (review.userId !== userId && isAdmin !== "ADMIN") {
+    if (review.userId !== userId && isAdmin !== 'ADMIN') {
       throw new ForbiddenException(
         'You are not authorized to delete this review.',
       );
