@@ -24,6 +24,7 @@ import { BlogModule } from './modules/blog/blog.module';
 import { MailModule } from './modules/mail/mail.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { ReturnRequestModule } from './modules/return-request/return-request.module';
+import { SupportRequestModule } from './modules/support-request/support-request.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { ReturnRequestModule } from './modules/return-request/return-request.mod
     MailModule,
     DashboardModule,
     ReturnRequestModule,
+    SupportRequestModule,
   ],
 })
 export class AppModule {}

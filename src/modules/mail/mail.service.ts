@@ -11,6 +11,45 @@ export class MailService {
     },
   });
 
+  async sendWelcomeEmail(to: string, name: string) {
+    await this.transporter.sendMail({
+      from: `"KronLux Shop" <${process.env.EMAIL_USER}>`,
+      to,
+      subject: 'Chào mừng bạn đến với KronLux Shop',
+      html: `<h3>Xin chào ${name},</h3>
+      <p>Cảm ơn bạn đã đăng ký tài khoản tại KronLux Shop. Chúng tôi rất vui được chào đón bạn!</p>
+      <p>Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi qua email này.</p>
+      <p>Cảm ơn bạn đã mua sắm tại KronLux Shop!</p>`,
+    });
+  }
+
+  async supportRequestCreated(to: string, supportRequestId: string) {
+    await this.transporter.sendMail({
+      from: `"KronLux Shop" <${process.env.EMAIL_USER}>`,
+      to,
+      subject: 'Yêu cầu hỗ trợ đã được gửi',
+      html: `<h3>Yêu cầu hỗ trợ của bạn với ID #${supportRequestId} đã được gửi thành công!</h3>
+      <p>Chúng tôi sẽ xem xét yêu cầu của bạn và liên hệ với bạn trong thời gian sớm nhất.</p>
+      `,
+    });
+  }
+
+  async supportRequestResponse(
+    to: string,
+    supportRequestId: string,
+    response: string,
+  ) {
+    await this.transporter.sendMail({
+      from: `"KronLux Shop" <${process.env.EMAIL_USER}>`,
+      to,
+      subject: 'Phản hồi yêu cầu hỗ trợ',
+      html: `<h3>Chúng tôi đã phản hồi yêu cầu hỗ trợ của bạn với ID #${supportRequestId}!</h3>
+      <p>${response}</p>
+      <p>Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi qua email này.</p>
+      `,
+    });
+  }
+
   async sendOTP(to: string, otp: string) {
     await this.transporter.sendMail({
       from: `"KronLux Shop" <${process.env.EMAIL_USER}>`,

@@ -402,6 +402,23 @@ model ReturnRequest {
   orderItem OrderItem @relation(fields: [orderItemId], references: [id])
 }
 
+model SupportRequest {
+  id        String    @id @default(uuid())
+  email     String
+  subject   String
+  message   String
+  response  String?
+  status    SupportStatus @default(UN_CHECKED)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+}
+
+enum SupportStatus {
+  UN_CHECKED
+  CHECKED
+}
+
 enum ReturnRequestStatus {
   PENDING
   APPROVED
