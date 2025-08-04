@@ -217,6 +217,10 @@ export class OrderService {
             watch: {
               include: {
                 images: true,
+                brand: true,
+                movement: true,
+                bandMaterial: true,
+                material: true,
               },
             },
           },
@@ -414,7 +418,7 @@ export class OrderService {
           data: {
             userId,
             orderId: createdOrder.id,
-            message: `Your order #${createdOrder.id} has been successfully created!`,
+            message: `Đơn hàng #${createdOrder.id} đã được tạo thành công!`,
             type: NotificationType.ORDER_CREATE,
             isRead: false,
           },
@@ -683,13 +687,13 @@ export class OrderService {
         });
 
         const messages: Record<string, string> = {
-          PROCESSING: `Your order #${order.id} is now being processed.`,
-          SHIPPING: `Your order #${order.id} has been shipped!`,
-          DELIVERED: `Your order #${order.id} has been delivered. Thank you!`,
+          PROCESSING: `Đơn hàng #${order.id} của bạn đã được duyệt.`,
+          SHIPPING: `Đơn hàng #${order.id} của bạn đang được giao hàng!`,
+          DELIVERED: `Đơn hàng #${order.id} của bạn đã được giao đến. Cảm ơn bạn!`,
         };
 
         const message =
-          messages[next] ?? `Your order #${order.id} has been updated.`;
+          messages[next] ?? `Đơn hàng #${order.id} của bạn đã được cập nhật.`;
 
         if (order.userId) {
           await tx.notification.create({
@@ -759,7 +763,7 @@ export class OrderService {
             data: {
               userId: order.userId,
               orderId: order.id,
-              message: `Your order #${order.id} has been cancelled for the following reason: ${cancelDto.reason}.`,
+              message: `Đơn hàng #${order.id} của bạn đã bị hủy vì lý do: ${cancelDto.reason}.`,
               type: NotificationType.ORDER_CANCELED,
               isRead: false,
             },
@@ -819,7 +823,7 @@ export class OrderService {
             data: {
               userId: order.userId,
               orderId: order.id,
-              message: `Your order #${order.id} has been cancelled by admin. Reason: ${cancelDto.reason}`,
+              message: `Đơn hàng #${order.id} của bạn đã bị hủy bởi quản trị viên. Lý do: ${cancelDto.reason}`,
               type: NotificationType.ORDER_CANCELED,
               isRead: false,
             },
