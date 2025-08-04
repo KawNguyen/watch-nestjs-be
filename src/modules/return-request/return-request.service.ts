@@ -177,7 +177,15 @@ export class ReturnRequestService {
         order: true,
         orderItem: {
           include: {
-            watch: true,
+            watch: {
+              include: {
+                images: {
+                  select: {
+                    absolute_url: true,
+                  },
+                },
+              },
+            },
           },
         },
       },
