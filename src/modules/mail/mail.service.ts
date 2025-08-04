@@ -41,4 +41,65 @@ export class MailService {
       <p>Cảm ơn bạn đã mua sắm tại KronLux Shop!</p>`,
     });
   }
+
+  async sendReturnRequestCreated(to: string, returnRequestId: string) {
+    await this.transporter.sendMail({
+      from: `"KronLux Shop" <${process.env.EMAIL_USER}>`,
+      to,
+      subject: 'Yêu cầu đổi trả đã được tạo',
+      html: `<h3>Yêu cầu đổi trả của bạn với ID #${returnRequestId} đã được tạo thành công!</h3>
+      <p>Chúng tôi sẽ xem xét yêu cầu của bạn và liên hệ với bạn trong thời gian sớm nhất.</p>
+      <p>Cảm ơn bạn đã mua sắm tại KronLux Shop!</p>`,
+    });
+  }
+
+  async sendReturnRequestStatusUpdate(
+    to: string,
+    returnRequestId: string,
+    status: string,
+  ) {
+    await this.transporter.sendMail({
+      from: `"KronLux Shop" <${process.env.EMAIL_USER}>`,
+      to,
+      subject: 'Cập nhật trạng thái yêu cầu đổi trả',
+      html: `<h3>Trạng thái yêu cầu đổi trả của bạn với ID #${returnRequestId} đã được cập nhật thành: ${status}!</h3>
+      <p>Vui lòng kiểm tra trang quản lý yêu cầu đổi trả của bạn để biết thêm chi tiết.</p>
+      <p>Cảm ơn bạn đã mua sắm tại KronLux Shop!</p>`,
+    });
+  }
+
+  async sendReturnRequestApproved(to: string, returnRequestId: string) {
+    await this.transporter.sendMail({
+      from: `"KronLux Shop" <${process.env.EMAIL_USER}>`,
+      to,
+      subject: 'Yêu cầu đổi trả đã được phê duyệt',
+      html: `<h3>Yêu cầu đổi trả của bạn với ID #${returnRequestId} đã được phê duyệt!</h3>
+      <p>Vui lòng giữ sản phẩm để nhân viên giao hàng đến lấy trong thời gian sớm nhất.</p>
+      <p>Cảm ơn bạn đã mua sắm tại KronLux Shop!</p>`,
+    });
+  }
+
+  async sendReturnRequestRejected(to: string, returnRequestId: string) {
+    await this.transporter.sendMail({
+      from: `"KronLux Shop" <${process.env.EMAIL_USER}>`,
+      to,
+      subject: 'Yêu cầu đổi trả đã bị từ chối',
+      html: `<h3>Rất tiếc, yêu cầu đổi trả của bạn với ID #${returnRequestId} đã bị từ chối!</h3>
+      <p>Bạn có thể đến cửa hàng, để nhân viên hỗ trợ bạn tốt hơn.</p>
+      <p>Nếu vẫn còn thắc mắc, vui lòng liên hệ với chúng tôi qua email này.</p>
+      <p>Cảm ơn bạn đã mua sắm tại KronLux Shop!</p>`,
+    });
+  }
+
+  async sendReturnRequestCompleted(to: string, returnRequestId: string) {
+    await this.transporter.sendMail({
+      from: `"KronLux Shop" <${process.env.EMAIL_USER}>`,
+      to,
+      subject: 'Yêu cầu đổi trả đã hoàn thành',
+      html: `<h3>Yêu cầu đổi trả của bạn với ID #${returnRequestId} đã được hoàn thành!</h3>
+      <p>Trong vòng 2-3 ngày tới, nhân viên giao hàng sẽ đến lấy sản phẩm của bạn. Vui lòng bạn hãy giữ điện thoại bên mình để nhận thông báo từ nhân viên giao hàng.</p>
+      <p></p>
+      <p>Cảm ơn bạn đã mua sắm tại KronLux Shop! Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi.</p>`,
+    });
+  }
 }

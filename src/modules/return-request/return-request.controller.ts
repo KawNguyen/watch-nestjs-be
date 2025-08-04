@@ -18,6 +18,7 @@ import { Role } from '../auth/enums/role.enum';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles/roles.guard';
 import { formatResponse } from 'src/common/helpers/response.helpers';
+import { CreateReturnRequestDto } from './dto/create-return-request.dto';
 
 @Controller('return-request')
 export class ReturnRequestController {
@@ -25,26 +26,17 @@ export class ReturnRequestController {
 
   @ApiOperation({ summary: 'Get all return requests' })
   @Get()
-  @ApiQuery({ name: 'userId', required: false })
-  @ApiQuery({ name: 'status', required: false, enum: ReturnRequestStatus })
   @ApiQuery({ name: 'page', required: false, type: Number, default: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, default: 12 })
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard)
   @Roles(Role.ADMIN)
-  async findAll(
-    @Query('userId') userId?: string,
-    @Query('status') status?: ReturnRequestStatus,
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
-  ) {
+  async findAll(@Query('page') page?: number, @Query('limit') limit?: number) {
     const res = await this.service.findAll({
-      userId,
-      status,
       page,
       limit,
     });
 
-    return formatResponse(res, 'Return requests fetched successfully', {
+    return formatResponse(res.items, 'Return requests fetched successfully', {
       page: res.page,
       limit: res.limit,
       totalItems: res.totalItems,
@@ -63,7 +55,7 @@ export class ReturnRequestController {
   @ApiOperation({ summary: 'Create a return request' })
   @Post(`create`)
   @UseGuards(JwtAuthGuard)
-  async create(@Body() body: any, @Req() req: Request) {
+  async create(@Body() body: CreateReturnRequestDto, @Req() req: Request) {
     const userId = (req as any).user.id;
     const res = await this.service.create(userId, body);
     return formatResponse(res, 'Return request created successfully');
