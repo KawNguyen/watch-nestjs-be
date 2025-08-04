@@ -65,7 +65,7 @@ export class MailService {
       to,
       subject: 'Xác nhận đơn hàng',
       html: `<h3>Đơn hàng của bạn #${orderId} đã được đặt thành công!</h3>
-      <p>Bạn có thể kiểm tra đơn hàng tại trang quản lý đơn hàng của bạn. Hoặc nếu bạn không đăng nhập, bạn có thể kiểm tra đơn hàng của mình tại trang <a href="${process.env.FRONTEND_URL}/order/${orderId}">đây</a>.</p>
+      <p>Bạn có thể kiểm tra đơn hàng tại trang quản lý đơn hàng của bạn. Hoặc nếu bạn không đăng nhập, bạn có thể kiểm tra đơn hàng của mình tại trang <a href="${process.env.FRONTEND_URL}/tracking-order">đây</a>.</p>
       <p>Cảm ơn bạn đã mua sắm tại KronLux Shop!</p>`,
     });
   }
