@@ -5,8 +5,10 @@ import {
   IsOptional,
   IsNumber,
   Min,
-  Max,
+  IsEnum,
 } from 'class-validator';
+import { Type } from 'class-transformer';
+import { ReturnRequestStatus } from '@prisma/client';
 
 export class CreateReturnRequestDto {
   @ApiProperty({
@@ -31,6 +33,7 @@ export class CreateReturnRequestDto {
   })
   @IsNumber()
   @Min(1)
+  @Type(() => Number)
   returnQuantity: number;
 
   @ApiProperty({
@@ -40,7 +43,7 @@ export class CreateReturnRequestDto {
   @IsString()
   @IsNotEmpty()
   reason: string;
-  
+
   @ApiProperty({
     description: 'Optional images related to the return request',
     type: String,
@@ -49,4 +52,39 @@ export class CreateReturnRequestDto {
   })
   @IsOptional()
   images?: string[];
+}
+
+export class GetReturnRequestsQueryDto {
+  @ApiProperty({
+    description: 'Page number for pagination',
+    example: 1,
+    required: false,
+    type: Number,
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(1)
+  page?: number;
+
+  @ApiProperty({
+    description: 'Number of items per page',
+    example: 10,
+    required: false,
+    type: Number,
+  })  
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(1)
+  limit?: number;
+
+  @ApiProperty({
+    description: 'Filter by return request status',
+    enum: ReturnRequestStatus,
+    required: false,
+  })
+  @IsOptional()
+  @IsEnum(ReturnRequestStatus)
+  status?: ReturnRequestStatus;
 }

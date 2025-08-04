@@ -53,21 +53,6 @@ export class MailService {
     });
   }
 
-  async sendReturnRequestStatusUpdate(
-    to: string,
-    returnRequestId: string,
-    status: string,
-  ) {
-    await this.transporter.sendMail({
-      from: `"KronLux Shop" <${process.env.EMAIL_USER}>`,
-      to,
-      subject: 'Cập nhật trạng thái yêu cầu đổi trả',
-      html: `<h3>Trạng thái yêu cầu đổi trả của bạn với ID #${returnRequestId} đã được cập nhật thành: ${status}!</h3>
-      <p>Vui lòng kiểm tra trang quản lý yêu cầu đổi trả của bạn để biết thêm chi tiết.</p>
-      <p>Cảm ơn bạn đã mua sắm tại KronLux Shop!</p>`,
-    });
-  }
-
   async sendReturnRequestApproved(to: string, returnRequestId: string) {
     await this.transporter.sendMail({
       from: `"KronLux Shop" <${process.env.EMAIL_USER}>`,

@@ -407,7 +407,6 @@ enum ReturnRequestStatus {
   APPROVED
   REJECTED
   COMPLETED
-  CANCELED
 }
 
 enum NotificationType {

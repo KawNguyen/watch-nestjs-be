@@ -18,7 +18,10 @@ import { Role } from '../auth/enums/role.enum';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles/roles.guard';
 import { formatResponse } from 'src/common/helpers/response.helpers';
-import { CreateReturnRequestDto } from './dto/create-return-request.dto';
+import {
+  CreateReturnRequestDto,
+  GetReturnRequestsQueryDto,
+} from './dto/create-return-request.dto';
 
 @Controller('return-request')
 export class ReturnRequestController {
@@ -42,6 +45,28 @@ export class ReturnRequestController {
       totalItems: res.totalItems,
       totalPages: res.totalPages,
     });
+  }
+
+  @ApiOperation({ summary: 'Get return requests for the authenticated user' })
+  @Get('my-return-requests')
+  @UseGuards(JwtAuthGuard)
+  async findMe(@Req() req: Request, @Query() query: GetReturnRequestsQueryDto) {
+    const userId = (req as any).user.id;
+    const res = await this.service.findMe(userId, {
+      page: query.page,
+      limit: query.limit,
+      status: query.status as ReturnRequestStatus,
+    });
+    return formatResponse(
+      res.items,
+      'Your return requests fetched successfully',
+      {
+        page: res.page,
+        limit: res.limit,
+        totalItems: res.totalItems,
+        totalPages: res.totalPages,
+      },
+    );
   }
 
   @ApiOperation({ summary: 'Get a return request by ID' })

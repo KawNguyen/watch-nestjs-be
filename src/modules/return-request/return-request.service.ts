@@ -6,6 +6,7 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { MailService } from '../mail/mail.service';
 import { ReturnRequestStatus } from '@prisma/client';
+import { GetReturnRequestsQueryDto } from './dto/create-return-request.dto';
 
 @Injectable()
 export class ReturnRequestService {
@@ -188,6 +189,62 @@ export class ReturnRequestService {
     return request;
   }
 
+  async findMe(userId: string, dto: GetReturnRequestsQueryDto) {
+    const page = Number(dto.page) || 1;
+    const limit = Number(dto.limit) || 10;
+    const skip = (page - 1) * limit;
+    const take = limit;
+    const whereClause: any = {
+      userId,
+      status: dto.status,
+      deletedAt: null,
+    };
+    const totalItems = await this.prisma.returnRequest.count({
+      where: whereClause,
+    });
+    const totalPages = Math.ceil(totalItems / limit);
+    const returnRequests = await this.prisma.returnRequest.findMany({
+      where: whereClause,
+      skip,
+      take,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        order: {
+          select: {
+            id: true,
+            totalPrice: true,
+          },
+        },
+        orderItem: {
+          include: {
+            watch: {
+              select: {
+                id: true,
+                name: true,
+                price: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    return {
+      items: returnRequests,
+      totalItems,
+      totalPages,
+      page,
+      limit,
+    };
+  }
+
   async updateStatus(id: string, status: ReturnRequestStatus) {
     const request = await this.prisma.returnRequest.findUnique({
       where: { id },
@@ -219,7 +276,6 @@ export class ReturnRequestService {
         },
       });
 
-      // Cập nhật kho khi trạng thái là COMPLETED
       if (status === ReturnRequestStatus.COMPLETED) {
         const watchId = request.orderItem.watchId;
         const returnQuantity =
@@ -247,20 +303,6 @@ export class ReturnRequestService {
       }
 
       try {
-        const statusMessages = {
-          [ReturnRequestStatus.PENDING]: 'Đang chờ xử lý',
-          [ReturnRequestStatus.APPROVED]: 'Đã phê duyệt',
-          [ReturnRequestStatus.REJECTED]: 'Đã từ chối',
-          [ReturnRequestStatus.COMPLETED]: 'Đã hoàn thành',
-          [ReturnRequestStatus.CANCELED]: 'Đã hủy',
-        };
-
-        await this.mailService.sendReturnRequestStatusUpdate(
-          request.user.email,
-          request.id,
-          statusMessages[status] || status,
-        );
-
         switch (status) {
           case ReturnRequestStatus.APPROVED:
             await this.mailService.sendReturnRequestApproved(
@@ -279,7 +321,6 @@ export class ReturnRequestService {
               request.user.email,
               request.id,
             );
-            break;
         }
       } catch (error) {
         console.log('Lỗi gửi email:', error);
