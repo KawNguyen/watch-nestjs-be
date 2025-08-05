@@ -593,17 +593,6 @@ export class OrderService {
       throw new BadRequestException('Order must contain at least one item');
     }
 
-    // let discountAmount = 0;
-
-    // if (couponId) {
-    //   const coupon = await this.prismaService.coupon.findUnique({
-    //     where: { id: couponId },
-    //   });
-    //   if (!coupon) throw new BadRequestException('Invalid coupon');
-    //   discountAmount = originalPrice * (coupon.discountValue / 100);
-    //   totalPrice = originalPrice - discountAmount;
-    // }
-
     const order = await this.prismaService.order.create({
       data: {
         paymentMethod,
